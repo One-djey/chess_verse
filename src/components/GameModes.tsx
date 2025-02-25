@@ -8,7 +8,19 @@ const gameModes: GameMode[] = [
     title: 'Mode Classique',
     description: 'Le jeu d\'échecs traditionnel avec toutes ses règles classiques.',
     image: 'https://images.unsplash.com/photo-1529699211952-734e80c4d42b?auto=format&fit=crop&q=80&w=800',
+    rules: {
+      borderless: false
+    }
   },
+  {
+    id: 'borderless',
+    title: 'Mode Borderless',
+    description: 'Un mode sans frontières où les pièces peuvent traverser les bords du plateau, créant des possibilités stratégiques uniques.',
+    image: 'https://images.unsplash.com/photo-1586165368502-1bad197a6461?auto=format&fit=crop&q=80&w=800',
+    rules: {
+      borderless: true
+    }
+  }
 ];
 
 export default function GameModes() {
@@ -39,3 +51,5 @@ export default function GameModes() {
     </div>
   );
 }
+
+export { gameModes }

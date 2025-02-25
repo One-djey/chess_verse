@@ -1,4 +1,4 @@
-import { Piece, PieceType, Position, PieceColor } from '../types/chess';
+import { Piece, PieceType, Position, PieceColor, GameMode } from '../types/chess';
 
 export const UNICODE_PIECES: Record<PieceColor, Record<PieceType, string>> = {
   white: {
@@ -51,42 +51,119 @@ export const initialPieces: Piece[] = [
   })),
 ];
 
-const isWithinBoard = (pos: Position): boolean => {
-  return pos.x >= 0 && pos.x < 8 && pos.y >= 0 && pos.y < 8;
+const doesPathCrossForbiddenBorder = (start: Position, target: Position, color: PieceColor): boolean => {
+  // Calculate movement vector
+  const dx = target.x - start.x;
+  const dy = target.y - start.y;
+
+  // For white pieces: check if path crosses bottom border (y = 7)
+  // For black pieces: check if path crosses top border (y = 0)
+  const forbiddenY = color === 'white' ? 7 : 0;
+
+  // If movement is purely horizontal, no forbidden border crossing
+  if (dy === 0) return false;
+
+  // For vertical or diagonal movement, check if the path crosses the forbidden border
+  if (color === 'white') {
+    // White pieces can't move through bottom border (y = 7)
+    // Check if the path goes from y < 7 to y > 7 or vice versa
+    const crossesBottom = (start.y <= 7 && target.y > 7) || (start.y > 7 && target.y <= 7);
+    return crossesBottom;
+  } else {
+    // Black pieces can't move through top border (y = 0)
+    // Check if the path goes from y > 0 to y < 0 or vice versa
+    const crossesTop = (start.y >= 0 && target.y < 0) || (start.y < 0 && target.y >= 0);
+    return crossesTop;
+  }
 };
 
-const isSamePosition = (a: Position, b: Position): boolean => {
-  return a.x === b.x && a.y === b.y;
+const getPieceAt = (position: Position, pieces: Piece[]): Piece | null => {
+  const normalizedPos = {
+    x: ((position.x % 8) + 8) % 8,
+    y: ((position.y % 8) + 8) % 8
+  };
+  return pieces.find(p => p.position.x === normalizedPos.x && p.position.y === normalizedPos.y) || null;
 };
 
-const isPathClear = (start: Position, end: Position, pieces: Piece[]): boolean => {
-  const dx = Math.sign(end.x - start.x);
-  const dy = Math.sign(end.y - start.y);
-  let x = start.x + dx;
-  let y = start.y + dy;
+const isPathClear = (start: Position, end: Position, pieces: Piece[], gameMode: GameMode): boolean => {
+  if (!gameMode.rules?.borderless) {
+    const dx = Math.sign(end.x - start.x);
+    const dy = Math.sign(end.y - start.y);
+    let x = start.x + dx;
+    let y = start.y + dy;
 
-  while (x !== end.x || y !== end.y) {
+    while (x !== end.x || y !== end.y) {
+      if (getPieceAt({ x, y }, pieces)) return false;
+      x += dx;
+      y += dy;
+    }
+    return true;
+  }
+
+  // For borderless mode, check all possible paths
+  const dx = end.x - start.x;
+  const dy = end.y - start.y;
+  const steps = Math.max(Math.abs(dx), Math.abs(dy));
+  
+  const piece = pieces.find(p => p.position.x === start.x && p.position.y === start.y);
+  if (!piece) return false;
+
+  // Check if the path crosses a forbidden border
+  if (doesPathCrossForbiddenBorder(start, end, piece.color)) {
+    return false;
+  }
+
+  // Check each step of the path for pieces
+  for (let i = 1; i < steps; i++) {
+    const x = start.x + Math.round((dx * i) / steps);
+    const y = start.y + Math.round((dy * i) / steps);
     if (getPieceAt({ x, y }, pieces)) {
       return false;
     }
-    x += dx;
-    y += dy;
   }
-
+  
   return true;
 };
 
-export const getPieceAt = (position: Position, pieces: Piece[]): Piece | null => {
-  return pieces.find(p => p.position.x === position.x && p.position.y === position.y) || null;
+export const getValidMoves = (piece: Piece, pieces: Piece[], gameMode: GameMode): Position[] => {
+  const validMoves: Position[] = [];
+  const range = gameMode.rules?.borderless ? 16 : 8;
+
+  for (let x = -8; x < range; x++) {
+    for (let y = -8; y < range; y++) {
+      const target = { x, y };
+      if (isValidMove(piece, target, pieces, gameMode) &&
+          !wouldBeInCheck(piece, target, pieces, gameMode)) {
+        validMoves.push(target);
+      }
+    }
+  }
+
+  return validMoves;
 };
 
-export const isValidMove = (piece: Piece, target: Position, pieces: Piece[]): boolean => {
-  if (!isWithinBoard(target)) return false;
-  
-  const targetPiece = getPieceAt(target, pieces);
+export const isValidMove = (piece: Piece, target: Position, pieces: Piece[], gameMode: GameMode): boolean => {
+  if (!gameMode.rules?.borderless) {
+    if (target.x < 0 || target.x > 7 || target.y < 0 || target.y > 7) return false;
+  }
+
+  const normalizedTarget = {
+    x: ((target.x % 8) + 8) % 8,
+    y: ((target.y % 8) + 8) % 8
+  };
+
+  const targetPiece = getPieceAt(normalizedTarget, pieces);
   if (targetPiece?.color === piece.color) return false;
 
-  if (isSamePosition(piece.position, target)) return false;
+  if (!gameMode.rules?.borderless && (
+    piece.position.x === normalizedTarget.x && 
+    piece.position.y === normalizedTarget.y
+  )) return false;
+
+  // Check if the move crosses a forbidden border
+  if (gameMode.rules?.borderless && doesPathCrossForbiddenBorder(piece.position, target, piece.color)) {
+    return false;
+  }
 
   const dx = target.x - piece.position.x;
   const dy = target.y - piece.position.y;
@@ -104,7 +181,8 @@ export const isValidMove = (piece: Piece, target: Position, pieces: Piece[]): bo
           return true;
         }
         if (piece.position.y === startRank && dy === 2 * direction) {
-          return !targetPiece && !getPieceAt({ x: piece.position.x, y: piece.position.y + direction }, pieces);
+          const intermediateY = piece.position.y + direction;
+          return !targetPiece && !getPieceAt({ x: piece.position.x, y: intermediateY }, pieces);
         }
       }
       
@@ -116,19 +194,17 @@ export const isValidMove = (piece: Piece, target: Position, pieces: Piece[]): bo
     }
 
     case 'knight':
+      // For knights, we still need to check if the move crosses a forbidden border
       return (absDx === 2 && absDy === 1) || (absDx === 1 && absDy === 2);
 
     case 'bishop':
-      if (absDx !== absDy) return false;
-      return isPathClear(piece.position, target, pieces);
+      return absDx === absDy && isPathClear(piece.position, target, pieces, gameMode);
 
     case 'rook':
-      if (dx !== 0 && dy !== 0) return false;
-      return isPathClear(piece.position, target, pieces);
+      return (dx === 0 || dy === 0) && isPathClear(piece.position, target, pieces, gameMode);
 
     case 'queen':
-      if (absDx !== absDy && dx !== 0 && dy !== 0) return false;
-      return isPathClear(piece.position, target, pieces);
+      return (absDx === absDy || dx === 0 || dy === 0) && isPathClear(piece.position, target, pieces, gameMode);
 
     case 'king':
       return absDx <= 1 && absDy <= 1;
@@ -138,42 +214,33 @@ export const isValidMove = (piece: Piece, target: Position, pieces: Piece[]): bo
   }
 };
 
-// Simule un mouvement et vérifie si le roi est toujours en échec
-const wouldBeInCheck = (piece: Piece, target: Position, pieces: Piece[]): boolean => {
+export const wouldBeInCheck = (piece: Piece, target: Position, pieces: Piece[], gameMode: GameMode): boolean => {
+  const normalizedTarget = {
+    x: ((target.x % 8) + 8) % 8,
+    y: ((target.y % 8) + 8) % 8
+  };
+  
   const simulatedPieces = pieces.filter(p => 
-    !(p.position.x === target.x && p.position.y === target.y)
+    !(p.position.x === normalizedTarget.x && p.position.y === normalizedTarget.y)
   ).map(p => 
-    p === piece ? { ...p, position: target } : p
+    p === piece ? { ...p, position: normalizedTarget } : p
   );
   
-  return isInCheck(piece.color, simulatedPieces);
+  return isInCheck(piece.color, simulatedPieces, gameMode);
 };
 
-export const isInCheck = (color: PieceColor, pieces: Piece[]): boolean => {
+export const isInCheck = (color: PieceColor, pieces: Piece[], gameMode: GameMode): boolean => {
   const king = pieces.find(p => p.type === 'king' && p.color === color);
   if (!king) return false;
 
   return pieces.some(piece => 
     piece.color !== color && 
-    isValidMove(piece, king.position, pieces)
+    isValidMove(piece, king.position, pieces, gameMode)
   );
 };
 
-export const hasLegalMoves = (color: PieceColor, pieces: Piece[]): boolean => {
+export const hasLegalMoves = (color: PieceColor, pieces: Piece[], gameMode: GameMode): boolean => {
   return pieces
     .filter(piece => piece.color === color)
-    .some(piece =>
-      Array(8)
-        .fill(null)
-        .some((_, y) =>
-          Array(8)
-            .fill(null)
-            .some((_, x) => {
-              const target = { x, y };
-              return isValidMove(piece, target, pieces) && !wouldBeInCheck(piece, target, pieces);
-            })
-        )
-    );
+    .some(piece => getValidMoves(piece, pieces, gameMode).length > 0);
 };
-
-export { wouldBeInCheck }

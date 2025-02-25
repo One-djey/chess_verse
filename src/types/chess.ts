@@ -18,6 +18,9 @@ export interface GameMode {
   title: string;
   description: string;
   image: string;
+  rules?: {
+    borderless?: boolean;
+  };
 }
 
 export interface GameState {
@@ -30,4 +33,5 @@ export interface GameState {
   moveCount: { white: number; black: number };
   gameOver: boolean;
   winner: PieceColor | null;
+  gameMode: GameMode;
 }

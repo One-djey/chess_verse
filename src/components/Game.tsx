@@ -3,12 +3,15 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Flag } from 'lucide-react';
 import ChessBoard from './ChessBoard';
 import GameOver from './GameOver';
-import { GameState, Piece, Position } from '../types/chess';
-import { initialPieces, isValidMove, isInCheck, hasLegalMoves, wouldBeInCheck } from '../utils/chess';
+import { GameState, Piece, Position, GameMode } from '../types/chess';
+import { initialPieces, isValidMove, isInCheck, hasLegalMoves, wouldBeInCheck, getValidMoves } from '../utils/chess';
+import { gameModes } from './GameModes';
 
 export default function Game() {
   const { modeId } = useParams();
   const navigate = useNavigate();
+  const gameMode = gameModes.find(mode => mode.id === modeId);
+
   const [gameState, setGameState] = useState<GameState>({
     pieces: initialPieces,
     currentTurn: 'white',
@@ -19,29 +22,19 @@ export default function Game() {
     moveCount: { white: 0, black: 0 },
     gameOver: false,
     winner: null,
+    gameMode: gameMode || gameModes[0]
   });
 
   useEffect(() => {
-    if (!modeId) {
+    if (!modeId || !gameMode) {
       navigate('/');
     }
-  }, [modeId, navigate]);
+  }, [modeId, navigate, gameMode]);
 
   const handlePieceSelect = (piece: Piece) => {
     if (piece.color !== gameState.currentTurn) return;
-
-    const validMoves = Array(8)
-      .fill(null)
-      .flatMap((_, y) =>
-        Array(8)
-          .fill(null)
-          .map((_, x) => ({ x, y }))
-          .filter(pos => 
-            isValidMove(piece, pos, gameState.pieces) && 
-            !wouldBeInCheck(piece, pos, gameState.pieces)
-          )
-      );
-
+    const validMoves = getValidMoves(piece, gameState.pieces, gameState.gameMode);
+    
     setGameState(prev => ({
       ...prev,
       selectedPiece: piece,
@@ -52,21 +45,22 @@ export default function Game() {
   const handleMove = (target: Position) => {
     if (!gameState.selectedPiece) return;
 
-    // Create a new array of pieces with the move applied
+    const normalizedTarget = {
+      x: ((target.x % 8) + 8) % 8,
+      y: ((target.y % 8) + 8) % 8
+    };
+
     const newPieces = gameState.pieces.reduce<Piece[]>((acc, piece) => {
-      // Skip the captured piece if there is one
-      if (piece.position.x === target.x && piece.position.y === target.y) {
+      if (piece.position.x === normalizedTarget.x && piece.position.y === normalizedTarget.y) {
         return acc;
       }
 
-      // Update the moved piece's position
       if (piece === gameState.selectedPiece) {
-        const updatedPiece = { ...piece, position: target };
+        const updatedPiece = { ...piece, position: normalizedTarget };
         
-        // Handle pawn promotion
         if (updatedPiece.type === 'pawn') {
-          if ((updatedPiece.color === 'white' && target.y === 0) ||
-              (updatedPiece.color === 'black' && target.y === 7)) {
+          if ((updatedPiece.color === 'white' && normalizedTarget.y === 0) ||
+              (updatedPiece.color === 'black' && normalizedTarget.y === 7)) {
             updatedPiece.type = 'queen';
           }
         }
@@ -74,13 +68,12 @@ export default function Game() {
         return [...acc, updatedPiece];
       }
 
-      // Keep other pieces unchanged
       return [...acc, piece];
     }, []);
 
     const nextTurn = gameState.currentTurn === 'white' ? 'black' : 'white';
-    const nextIsCheck = isInCheck(nextTurn, newPieces);
-    const nextHasLegalMoves = hasLegalMoves(nextTurn, newPieces);
+    const nextIsCheck = isInCheck(nextTurn, newPieces, gameState.gameMode);
+    const nextHasLegalMoves = hasLegalMoves(nextTurn, newPieces, gameState.gameMode);
 
     setGameState(prev => ({
       ...prev,
@@ -93,7 +86,7 @@ export default function Game() {
         ...prev.moveCount,
         [prev.currentTurn]: prev.moveCount[prev.currentTurn] + 1,
       },
-      gameOver: nextIsCheck && !nextHasLegalMoves, // Échec et mat
+      gameOver: nextIsCheck && !nextHasLegalMoves,
       winner: nextIsCheck && !nextHasLegalMoves ? prev.currentTurn : null,
     }));
   };
@@ -117,13 +110,14 @@ export default function Game() {
       moveCount: { white: 0, black: 0 },
       gameOver: false,
       winner: null,
+      gameMode: gameMode || gameModes[0]
     });
   };
 
   return (
     <div className="min-h-screen bg-gray-100">
       <nav className="bg-white shadow-md px-4 py-2 flex justify-between items-center">
-        <h1 className="text-xl font-bold">Échecs</h1>
+        <h1 className="text-xl font-bold">{gameState.gameMode.title}</h1>
         <button
           onClick={handleResign}
           className="flex items-center gap-2 px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
@@ -142,6 +136,7 @@ export default function Game() {
           isCheck={gameState.isCheck}
           onPieceSelect={handlePieceSelect}
           onMove={handleMove}
+          gameMode={gameState.gameMode}
         />
       </div>
 
