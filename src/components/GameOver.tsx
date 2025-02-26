@@ -20,26 +20,26 @@ export default function GameOver({ winner, duration, moveCount, onReplay }: Game
         <div className="text-center">
           <Trophy className="w-16 h-16 mx-auto mb-4 text-yellow-400" />
           <h2 className="text-3xl font-bold mb-4">
-            Victoire des {winner === 'white' ? 'Blancs' : 'Noirs'} !
+            {winner === 'white' ? 'White' : 'Black'} wins!
           </h2>
           <p className="text-gray-600 mb-2">
-            Durée de la partie : {minutes}m {seconds}s
+            Match duration: {minutes}m {seconds}s
           </p>
           <p className="text-gray-600 mb-6">
-            Nombre de coups : {moveCount}
+            Number of moves: {moveCount}
           </p>
           <div className="space-x-4">
             <button
               onClick={onReplay}
               className="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600"
             >
-              Rejouer
+              Play again
             </button>
             <button
               onClick={() => navigate('/')}
               className="bg-gray-500 text-white px-6 py-2 rounded-lg hover:bg-gray-600"
             >
-              Menu Principal
+              Main Menu
             </button>
           </div>
         </div>

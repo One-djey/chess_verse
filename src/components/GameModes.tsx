@@ -5,8 +5,8 @@ import { GameMode } from '../types/chess';
 export const gameModes: GameMode[] = [
   {
     id: 'classic',
-    title: 'Mode Classique',
-    description: 'Le jeu d\'échecs traditionnel avec toutes ses règles classiques.',
+    title: 'Classic',
+    description: 'The traditional chess game with all its classic rules.',
     image: 'https://images.unsplash.com/photo-1529699211952-734e80c4d42b?auto=format&fit=crop&q=80&w=800',
     rules: {
       borderless: false,
@@ -15,8 +15,8 @@ export const gameModes: GameMode[] = [
   },
   {
     id: 'borderless',
-    title: 'Mode Borderless',
-    description: 'Un mode sans frontières où les pièces peuvent traverser les bords du plateau, créant des possibilités stratégiques uniques.',
+    title: 'Borderless',
+    description: 'A borderless mode where pieces can cross the edges of the board, creating unique strategic possibilities.',
     image: 'https://images.unsplash.com/photo-1586165368502-1bad197a6461?auto=format&fit=crop&q=80&w=800',
     rules: {
       borderless: true,
@@ -25,8 +25,8 @@ export const gameModes: GameMode[] = [
   },
   {
     id: 'all-random',
-    title: 'Mode All Random',
-    description: 'Les pièces sont choisies et placées aléatoirement au début de la partie, créant une expérience unique à chaque fois.',
+    title: 'All Random',
+    description: 'Pieces are randomly chosen and placed at the start of the game, creating a unique experience every time.',
     image: 'https://images.unsplash.com/photo-1580541832626-2a7131ee809f?auto=format&fit=crop&q=80&w=800',
     rules: {
       borderless: false,
@@ -40,7 +40,7 @@ export default function GameModes() {
 
   return (
     <div className="min-h-screen bg-gray-100 p-8">
-      <h1 className="text-4xl font-bold text-center mb-12">Choisissez votre mode de jeu</h1>
+      <h1 className="text-4xl font-bold text-center mb-12">Choose your game mode</h1>
       <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         {gameModes.map((mode) => (
           <div
