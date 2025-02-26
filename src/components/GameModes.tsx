@@ -2,14 +2,15 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { GameMode } from '../types/chess';
 
-const gameModes: GameMode[] = [
+export const gameModes: GameMode[] = [
   {
     id: 'classic',
     title: 'Mode Classique',
     description: 'Le jeu d\'échecs traditionnel avec toutes ses règles classiques.',
     image: 'https://images.unsplash.com/photo-1529699211952-734e80c4d42b?auto=format&fit=crop&q=80&w=800',
     rules: {
-      borderless: false
+      borderless: false,
+      randomPieces: false
     }
   },
   {
@@ -18,7 +19,18 @@ const gameModes: GameMode[] = [
     description: 'Un mode sans frontières où les pièces peuvent traverser les bords du plateau, créant des possibilités stratégiques uniques.',
     image: 'https://images.unsplash.com/photo-1586165368502-1bad197a6461?auto=format&fit=crop&q=80&w=800',
     rules: {
-      borderless: true
+      borderless: true,
+      randomPieces: false
+    }
+  },
+  {
+    id: 'all-random',
+    title: 'Mode All Random',
+    description: 'Les pièces sont choisies et placées aléatoirement au début de la partie, créant une expérience unique à chaque fois.',
+    image: 'https://images.unsplash.com/photo-1580541832626-2a7131ee809f?auto=format&fit=crop&q=80&w=800',
+    rules: {
+      borderless: false,
+      randomPieces: true
     }
   }
 ];
@@ -51,5 +63,3 @@ export default function GameModes() {
     </div>
   );
 }
-
-export { gameModes }

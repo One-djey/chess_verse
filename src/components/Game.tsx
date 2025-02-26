@@ -4,7 +4,7 @@ import { Flag } from 'lucide-react';
 import ChessBoard from './ChessBoard';
 import GameOver from './GameOver';
 import { GameState, Piece, Position, GameMode } from '../types/chess';
-import { initialPieces, isValidMove, isInCheck, hasLegalMoves, wouldBeInCheck, getValidMoves } from '../utils/chess';
+import { getInitialPieces, isValidMove, isInCheck, hasLegalMoves, wouldBeInCheck, getValidMoves } from '../utils/chess';
 import { gameModes } from './GameModes';
 
 export default function Game() {
@@ -13,7 +13,7 @@ export default function Game() {
   const gameMode = gameModes.find(mode => mode.id === modeId);
 
   const [gameState, setGameState] = useState<GameState>({
-    pieces: initialPieces,
+    pieces: [],
     currentTurn: 'white',
     selectedPiece: null,
     validMoves: [],
@@ -28,7 +28,15 @@ export default function Game() {
   useEffect(() => {
     if (!modeId || !gameMode) {
       navigate('/');
+      return;
     }
+
+    // Initialize pieces based on game mode
+    setGameState(prev => ({
+      ...prev,
+      pieces: getInitialPieces(gameMode),
+      gameMode
+    }));
   }, [modeId, navigate, gameMode]);
 
   const handlePieceSelect = (piece: Piece) => {
@@ -101,7 +109,7 @@ export default function Game() {
 
   const handleReplay = () => {
     setGameState({
-      pieces: initialPieces,
+      pieces: getInitialPieces(gameMode || gameModes[0]),
       currentTurn: 'white',
       selectedPiece: null,
       validMoves: [],

@@ -20,6 +20,7 @@ export interface GameMode {
   image: string;
   rules?: {
     borderless?: boolean;
+    randomPieces?: boolean;
   };
 }
 
