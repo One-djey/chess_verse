@@ -36,3 +36,9 @@ export interface GameState {
   winner: PieceColor | null;
   gameMode: GameMode;
 }
+
+export interface CastlingMove {
+  kingTarget: Position;
+  rookTarget: Position;
+  rook: Piece;
+}

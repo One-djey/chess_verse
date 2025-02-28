@@ -1,6 +1,6 @@
 import React from 'react';
 import { Piece, Position, GameMode } from '../types/chess';
-import { UNICODE_PIECES } from '../utils/chess';
+import { UNICODE_PIECES, findCastlingMove } from '../utils/chess';
 
 interface ChessBoardProps {
   pieces: Piece[];
@@ -74,10 +74,31 @@ export default function ChessBoard({
     return glowClasses;
   };
 
+  // Check if a move is a castling move
+  const isCastlingMove = (x: number, y: number) => {
+    if (!selectedPiece || selectedPiece.type !== 'king') return false;
+    
+    // For king, check if the move is 2 squares horizontally
+    if (Math.abs(selectedPiece.position.x - x) === 2 && selectedPiece.position.y === y) {
+      // Find the corresponding castling move
+      const target = { x, y };
+      const castlingMove = findCastlingMove(
+        selectedPiece, 
+        target, 
+        pieces, 
+        gameMode
+      );
+      return castlingMove !== null;
+    }
+    
+    return false;
+  };
+
   const renderSquare = (x: number, y: number) => {
     const piece = pieces.find((p) => p.position.x === x && p.position.y === y);
     const isSelected = selectedPiece?.position.x === x && selectedPiece?.position.y === y;
     const isValidMove = isValidMovePosition(x, y);
+    const isCastling = isCastlingMove(x, y);
     const isLight = (x + y) % 2 === 0;
     const borderGlow = getBorderGlow(x, y);
 
@@ -85,6 +106,7 @@ export default function ChessBoard({
       w-full h-full flex items-center justify-center text-4xl relative
       ${isLight ? 'bg-gray-200' : 'bg-gray-600'}
       ${isValidMove ? 'after:absolute after:inset-0 after:bg-blue-400 after:bg-opacity-40 after:pointer-events-none' : ''}
+      ${isCastling ? 'after:absolute after:inset-0 after:bg-purple-400 after:bg-opacity-40 after:pointer-events-none' : ''}
       transition-colors duration-200
     `;
 

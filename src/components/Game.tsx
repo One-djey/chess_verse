@@ -4,7 +4,15 @@ import { Flag } from 'lucide-react';
 import ChessBoard from './ChessBoard';
 import GameOver from './GameOver';
 import { GameState, Piece, Position, GameMode } from '../types/chess';
-import { getInitialPieces, isValidMove, isInCheck, hasLegalMoves, wouldBeInCheck, getValidMoves } from '../utils/chess';
+import { 
+  getInitialPieces, 
+  isValidMove, 
+  isInCheck, 
+  hasLegalMoves, 
+  wouldBeInCheck, 
+  getValidMoves,
+  findCastlingMove
+} from '../utils/chess';
 import { gameModes } from './GameModes';
 
 export default function Game() {
@@ -58,14 +66,31 @@ export default function Game() {
       y: ((target.y % 8) + 8) % 8
     };
 
-    const newPieces = gameState.pieces.reduce<Piece[]>((acc, piece) => {
-      if (piece.position.x === normalizedTarget.x && piece.position.y === normalizedTarget.y) {
+    // Check if this is a castling move
+    const castlingMove = findCastlingMove(
+      gameState.selectedPiece, 
+      normalizedTarget, 
+      gameState.pieces, 
+      gameState.gameMode
+    );
+
+    let newPieces = gameState.pieces.reduce<Piece[]>((acc, piece) => {
+      // Skip pieces that are captured
+      if (piece.position.x === normalizedTarget.x && 
+          piece.position.y === normalizedTarget.y && 
+          piece !== gameState.selectedPiece) {
         return acc;
       }
 
+      // Move the selected piece
       if (piece === gameState.selectedPiece) {
-        const updatedPiece = { ...piece, position: normalizedTarget };
+        const updatedPiece = { 
+          ...piece, 
+          position: normalizedTarget,
+          hasMoved: true // Mark the piece as moved
+        };
         
+        // Handle pawn promotion
         if (updatedPiece.type === 'pawn') {
           if ((updatedPiece.color === 'white' && normalizedTarget.y === 0) ||
               (updatedPiece.color === 'black' && normalizedTarget.y === 7)) {
@@ -74,6 +99,11 @@ export default function Game() {
         }
         
         return [...acc, updatedPiece];
+      }
+
+      // Handle the rook in castling
+      if (castlingMove && piece === castlingMove.rook) {
+        return [...acc, { ...piece, position: castlingMove.rookTarget, hasMoved: true }];
       }
 
       return [...acc, piece];
