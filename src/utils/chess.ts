@@ -33,30 +33,32 @@ export const getInitialPieces = (gameMode: GameMode): Piece[] => {
   
   return [
     // White pieces
-    { type: 'rook', color: 'white', position: { x: 0, y: 7 }, hasMoved: false },
-    { type: 'knight', color: 'white', position: { x: 1, y: 7 } },
-    { type: 'bishop', color: 'white', position: { x: 2, y: 7 } },
-    { type: 'queen', color: 'white', position: { x: 3, y: 7 } },
-    { type: 'king', color: 'white', position: { x: 4, y: 7 }, hasMoved: false },
-    { type: 'bishop', color: 'white', position: { x: 5, y: 7 } },
-    { type: 'knight', color: 'white', position: { x: 6, y: 7 } },
-    { type: 'rook', color: 'white', position: { x: 7, y: 7 }, hasMoved: false },
+    { id: 'wr1', type: 'rook', color: 'white', position: { x: 0, y: 7 }, hasMoved: false },
+    { id: 'wn1', type: 'knight', color: 'white', position: { x: 1, y: 7 } },
+    { id: 'wb1', type: 'bishop', color: 'white', position: { x: 2, y: 7 } },
+    { id: 'wq1', type: 'queen', color: 'white', position: { x: 3, y: 7 } },
+    { id: 'wk1', type: 'king', color: 'white', position: { x: 4, y: 7 }, hasMoved: false },
+    { id: 'wb2', type: 'bishop', color: 'white', position: { x: 5, y: 7 } },
+    { id: 'wn2', type: 'knight', color: 'white', position: { x: 6, y: 7 } },
+    { id: 'wr2', type: 'rook', color: 'white', position: { x: 7, y: 7 }, hasMoved: false },
     ...Array(8).fill(null).map((_, i) => ({
+      id: `wp${i + 1}`,
       type: 'pawn' as PieceType,
       color: 'white' as PieceColor,
       position: { x: i, y: 6 },
     })),
 
     // Black pieces
-    { type: 'rook', color: 'black', position: { x: 0, y: 0 }, hasMoved: false },
-    { type: 'knight', color: 'black', position: { x: 1, y: 0 } },
-    { type: 'bishop', color: 'black', position: { x: 2, y: 0 } },
-    { type: 'queen', color: 'black', position: { x: 3, y: 0 } },
-    { type: 'king', color: 'black', position: { x: 4, y: 0 }, hasMoved: false },
-    { type: 'bishop', color: 'black', position: { x: 5, y: 0 } },
-    { type: 'knight', color: 'black', position: { x: 6, y: 0 } },
-    { type: 'rook', color: 'black', position: { x: 7, y: 0 }, hasMoved: false },
+    { id: 'br1', type: 'rook', color: 'black', position: { x: 0, y: 0 }, hasMoved: false },
+    { id: 'bn1', type: 'knight', color: 'black', position: { x: 1, y: 0 } },
+    { id: 'bb1', type: 'bishop', color: 'black', position: { x: 2, y: 0 } },
+    { id: 'bq1', type: 'queen', color: 'black', position: { x: 3, y: 0 } },
+    { id: 'bk1', type: 'king', color: 'black', position: { x: 4, y: 0 }, hasMoved: false },
+    { id: 'bb2', type: 'bishop', color: 'black', position: { x: 5, y: 0 } },
+    { id: 'bn2', type: 'knight', color: 'black', position: { x: 6, y: 0 } },
+    { id: 'br2', type: 'rook', color: 'black', position: { x: 7, y: 0 }, hasMoved: false },
     ...Array(8).fill(null).map((_, i) => ({
+      id: `bp${i + 1}`,
       type: 'pawn' as PieceType,
       color: 'black' as PieceColor,
       position: { x: i, y: 1 },
@@ -68,15 +70,19 @@ export const initialPieces = getInitialPieces({ id: 'classic', title: '', descri
 
 const generateRandomPieces = (): Piece[] => {
   const pieces: Piece[] = [];
+  let whiteId = 1;
+  let blackId = 1;
   
   // Generate pieces for both colors
   ['white', 'black'].forEach(color => {
     const pieceColor = color as PieceColor;
     const startRow = pieceColor === 'white' ? 7 : 0;
     const pawnRow = pieceColor === 'white' ? 6 : 1;
+    const prefix = pieceColor === 'white' ? 'w' : 'b';
     
     // Always place king in its standard position
     pieces.push({
+      id: `${prefix}k1`,
       type: 'king',
       color: pieceColor,
       position: { x: 4, y: startRow },
@@ -104,50 +110,47 @@ const generateRandomPieces = (): Piece[] => {
       [availablePositions[i], availablePositions[j]] = [availablePositions[j], availablePositions[i]];
     }
     
-      const pieceProbabilities = [
-          { type: 'pawn', probability: 8 },
-          { type: 'rook', probability: 2 },
-          { type: 'knight', probability: 2 },
-          { type: 'bishop', probability: 2 },
-          { type: 'queen', probability: 1 },
+    const pieceProbabilities = [
+      { type: 'pawn', probability: 8 },
+      { type: 'rook', probability: 2 },
+      { type: 'knight', probability: 2 },
+      { type: 'bishop', probability: 2 },
+      { type: 'queen', probability: 1 },
     ];
     
-      const totalProbability = pieceProbabilities.reduce(
-          (sum, piece) => sum + piece.probability,
-          0
-      );
+    const totalProbability = pieceProbabilities.reduce(
+      (sum, piece) => sum + piece.probability,
+      0
+    );
 
-      const piecePool: PieceType[] = [];
-      const poolSize = 15; // King is always there
+    const piecePool: PieceType[] = [];
+    const poolSize = 15; // King is always there
 
-      for (let i = 0; i < poolSize; i++) {
-          let random = Math.random() * totalProbability;
-          for (let piece of pieceProbabilities) {
-              random -= piece.probability;
-              if (random <= 0) {
-                  piecePool.push(piece.type as PieceType);
-                  break; // Sortir de la boucle une fois la pièce sélectionnée
-              }
-          }
-      }
-      console.log(piecePool);
-    
-    // Assign pieces to positions
-    availablePositions.forEach((position, index) => {
-      // If we have more positions than pieces in the pool, just use what we have
-      if (index < piecePool.length) {
-        const piece = {
-          type: piecePool[index],
-          color: pieceColor,
-          position: position
-        };
-        
-        // Add hasMoved property for rooks
-        if (piece.type === 'rook') {
-          piece.hasMoved = false;
+    // Générer le pool de pièces
+    for (let i = 0; i < poolSize; i++) {
+      let random = Math.random() * totalProbability;
+      for (let piece of pieceProbabilities) {
+        random -= piece.probability;
+        if (random <= 0) {
+          piecePool.push(piece.type as PieceType);
+          break;
         }
+      }
+    }
+    
+    // Assign pieces to positions with unique IDs
+    availablePositions.forEach((position, index) => {
+      if (index < piecePool.length) {
+        const pieceType = piecePool[index];
+        const pieceId = prefix + pieceType[0] + (pieceColor === 'white' ? whiteId++ : blackId++);
         
-        pieces.push(piece);
+        pieces.push({
+          id: pieceId,
+          type: pieceType,
+          color: pieceColor,
+          position: position,
+          hasMoved: false
+        });
       }
     });
   });
@@ -466,3 +469,24 @@ export const findCastlingMove = (king: Piece, target: Position, pieces: Piece[],
     move.kingTarget.x === target.x && move.kingTarget.y === target.y
   ) || null;
 };
+
+export const getDifficultyDescription = (level: number, with_elo: boolean = false): string => {
+  const levels = [
+    "Beginner", "Beginner",
+    "Club Beginner", "Club Beginner",
+    "Intermediate Club Player", "Intermediate Club Player",
+    "Advanced Club Player", "Advanced Club Player",
+    "Candidate Master", "Candidate Master",
+    "FIDE Master", "FIDE Master",
+    "International Master", "International Master",
+    "Grandmaster", "Grandmaster",
+    "Super Grandmaster", "Super Grandmaster",
+    "Superhuman", "Superhuman"
+  ];
+
+  const elo = 1000 + level * 100;
+  const description = levels[level - 1];
+
+  return with_elo ? `${description} (Elo ~${elo})` : description;
+};
+

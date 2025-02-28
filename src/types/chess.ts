@@ -2,6 +2,7 @@ export type PieceType = 'pawn' | 'rook' | 'knight' | 'bishop' | 'queen' | 'king'
 export type PieceColor = 'white' | 'black';
 
 export interface Piece {
+  id: string;
   type: PieceType;
   color: PieceColor;
   position: Position;
