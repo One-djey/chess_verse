@@ -31,7 +31,7 @@ export default function Game() {
     const savedSettings = localStorage.getItem(STORAGE_KEY);
     return savedSettings ? JSON.parse(savedSettings) : {
       aiEnabled: true,
-      aiDifficulty: 10
+      aiDifficulty: 5
     };
   });
 
