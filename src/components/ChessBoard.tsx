@@ -236,7 +236,7 @@ export default function ChessBoard({
               ${isPlayable && !isSelected ? 'drop-shadow-[0_0_4px_rgba(59,130,246,1)]' : ''}
               ${piece.color === currentTurn && isCheck && piece.type === 'king' ? 'drop-shadow-[0_0_6px rgba(249,115,22,1)]' : ''}
               ${isSelected ? 'scale-110 drop-shadow-[0_0_6px rgba(59,130,246,1)]' : ''}
-              ${imagesLoaded ? 'opacity-100 transition-opacity duration-500' : 'opacity-0'}
+              ${imagesLoaded ? 'opacity-100' : 'opacity-0'}
             `;
 
             return (
