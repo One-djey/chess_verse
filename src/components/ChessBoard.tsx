@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { Piece, Position, GameMode } from '../types/chess';
 import { UNICODE_PIECES, findCastlingMove } from '../utils/chess';
 
@@ -26,6 +26,7 @@ export default function ChessBoard({
   aiEnabled = false,
 }: ChessBoardProps) {
   const pieceRefs = useRef<Map<string, { x: number; y: number }>>(new Map());
+  const [imagesLoaded, setImagesLoaded] = useState(false);
 
   // Update piece positions with animation
   useEffect(() => {
@@ -36,6 +37,10 @@ export default function ChessBoard({
       }
     });
   }, [pieces]);
+
+  const handleImageLoad = () => {
+    setImagesLoaded(true);
+  };
 
   const isValidMovePosition = (x: number, y: number) => {
     return validMoves.some(move => {
@@ -229,8 +234,9 @@ export default function ChessBoard({
               transform transition-all duration-300 ease-in-out
               ${isPlayable ? 'hover:scale-110' : 'opacity-80'}
               ${isPlayable && !isSelected ? 'drop-shadow-[0_0_4px_rgba(59,130,246,1)]' : ''}
-              ${piece.color === currentTurn && isCheck && piece.type === 'king' ? 'drop-shadow-[0_0_6px_rgba(249,115,22,1)]' : ''}
-              ${isSelected ? 'scale-110 drop-shadow-[0_0_6px_rgba(59,130,246,1)]' : ''}
+              ${piece.color === currentTurn && isCheck && piece.type === 'king' ? 'drop-shadow-[0_0_6px rgba(249,115,22,1)]' : ''}
+              ${isSelected ? 'scale-110 drop-shadow-[0_0_6px rgba(59,130,246,1)]' : ''}
+              ${imagesLoaded ? 'opacity-100 transition-opacity duration-500' : 'opacity-0'}
             `;
 
             return (
@@ -245,11 +251,14 @@ export default function ChessBoard({
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  fontSize: '2.5rem',
-                  lineHeight: '1',
                 }}
               >
-                {UNICODE_PIECES[piece.color][piece.type]}
+                <img 
+                  src={`/ressources/pieces/${piece.color}_${piece.type}.png`} 
+                  alt={`${piece.color} ${piece.type}`} 
+                  style={{ width: '80%', height: '80%' }} 
+                  onLoad={handleImageLoad}
+                />
               </div>
             );
           })}
