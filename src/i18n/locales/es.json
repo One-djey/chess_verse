@@ -2,7 +2,8 @@
   "nav": {
     "settings": "Ajustes",
     "surrender": "Rendirse",
-    "back": "Volver"
+    "back": "Volver",
+    "invite": "Invitar"
   },
   "modeSelect": {
     "subtitle": "¿Cómo quieres jugar?",
@@ -99,6 +100,8 @@
     "es": "Español",
     "ja": "日本語",
     "zh": "中文",
-    "ko": "한국어"
+    "ko": "한국어",
+    "it": "Italiano",
+    "ar": "العربية"
   }
 }

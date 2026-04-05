@@ -1,0 +1,107 @@
+{
+  "nav": {
+    "settings": "الإعدادات",
+    "surrender": "استسلام",
+    "back": "رجوع",
+    "invite": "دعوة"
+  },
+  "modeSelect": {
+    "subtitle": "كيف تريد اللعب؟",
+    "local": "محلي",
+    "localDesc": "العب ضد الذكاء الاصطناعي أو مع صديق على نفس الجهاز.",
+    "multiplayer": "متعدد اللاعبين",
+    "multiplayerDesc": "تحدى صديقاً عن بعد — بدون خادم."
+  },
+  "gameModeSelect": {
+    "title": "اختر وضع اللعبة",
+    "localBadge": "محلي",
+    "multiplayerBadge": "متعدد اللاعبين"
+  },
+  "modes": {
+    "classic": {
+      "title": "كلاسيكي",
+      "description": "لعبة الشطرنج التقليدية بكل قواعدها الكلاسيكية."
+    },
+    "borderless": {
+      "title": "بلا حدود",
+      "description": "يمكن للقطع تجاوز حواف الرقعة، مما يخلق إمكانيات استراتيجية فريدة."
+    },
+    "all-random": {
+      "title": "عشوائي تماماً",
+      "description": "يتم وضع القطع بشكل عشوائي في البداية، مما يخلق تجربة فريدة في كل مرة."
+    }
+  },
+  "p2p": {
+    "joinGame": "الانضمام إلى اللعبة",
+    "connectingViaP2P": "جارٍ الاتصال عبر P2P…",
+    "waitingForHost": "في انتظار المضيف…",
+    "connectedStarting": "متصل! جارٍ البدء…",
+    "connectionLost": "انقطع الاتصال",
+    "backToMenu": "العودة إلى القائمة",
+    "cancel": "إلغاء",
+    "inviteOpponent": "ادعُ خصمك",
+    "shareQrOrLink": "شارك رمز QR أو الرابط",
+    "inviteQrAlt": "رمز QR للدعوة",
+    "shareLink": "مشاركة الرابط",
+    "copyLink": "نسخ الرابط",
+    "copied": "تم النسخ!",
+    "waitingForOpponent": "في انتظار الخصم…",
+    "opponentConnected": "الخصم متصل!",
+    "startingGame": "جارٍ بدء اللعبة…"
+  },
+  "p2pStatus": {
+    "opponentDisconnected": "انقطع اتصال الخصم",
+    "youPlayAs": "أنت تلعب بـ",
+    "white": "الأبيض",
+    "black": "الأسود",
+    "yourTurn": "دورك",
+    "opponentTurn": "دور الخصم",
+    "establishing": "جارٍ إنشاء اتصال P2P…"
+  },
+  "gameOver": {
+    "opponentLeft": "عاد الخصم إلى القائمة الرئيسية.",
+    "draw": "تعادل!",
+    "whiteSurrendered": "استسلم الأبيض",
+    "blackSurrendered": "استسلم الأسود",
+    "whiteWins": "فاز الأبيض!",
+    "blackWins": "فاز الأسود!",
+    "defeat": "هزيمة!",
+    "victory": "انتصار!",
+    "white": "أبيض",
+    "black": "أسود",
+    "stalemate": "تعادل بالإحاطة — لا حركات قانونية",
+    "onlyKings": "لم يبق سوى الملكان",
+    "duration": "المدة",
+    "movesPlayed": "الحركات المُلعبة",
+    "aiLevel": "مستوى الذكاء الاصطناعي",
+    "opponentWantsRematch": "الخصم يريد مباراة انتقام!",
+    "accept": "قبول",
+    "decline": "رفض",
+    "waitingForOpponent": "في انتظار الخصم…",
+    "playAgain": "العب مجدداً",
+    "rematch": "انتقام",
+    "mainMenu": "القائمة الرئيسية"
+  },
+  "gameSettings": {
+    "title": "إعدادات اللعبة",
+    "gameType": "نوع اللعبة",
+    "soloPlay": "فردي",
+    "vsAI": "ضد الذكاء الاصطناعي",
+    "flipBoard": "قلب الرقعة في كل دور",
+    "flipBoardDesc": "تدور الرقعة بعد كل حركة",
+    "aiDifficulty": "صعوبة الذكاء الاصطناعي",
+    "beginner": "مبتدئ",
+    "superhuman": "خارق",
+    "language": "اللغة"
+  },
+  "languages": {
+    "en": "English",
+    "fr": "Français",
+    "es": "Español",
+    "ja": "日本語",
+    "zh": "中文",
+    "ko": "한국어",
+    "it": "Italiano",
+    "ar": "العربية"
+  }
+}

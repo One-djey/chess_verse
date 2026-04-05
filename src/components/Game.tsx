@@ -1,10 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Flag, Settings } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import ChessBoard from './ChessBoard';
 import GameOver from './GameOver';
-import GameSettings from './GameSettings';
+import NavBar from './NavBar';
 import P2PStatusBar from './P2PStatusBar';
 import { GameState, Piece, Position, GameMode, PieceColor } from '../types/chess';
 import { RematchState } from '../types/p2p';
@@ -31,7 +30,6 @@ export default function Game() {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const aiRef = useRef<ChessAI | null>(null);
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   const {
     isP2PMode,
@@ -403,29 +401,19 @@ export default function Game() {
   // Rotate black piece images 180° only in solo default (no flipBoard, no AI, no P2P)
   const rotatePieces = !isP2PMode && !aiEnabled && !settings.flipBoard;
 
+  const playTypeLabel = isP2PMode ? t('modeSelect.multiplayer') : t('modeSelect.local');
+
   return (
     <div className="min-h-screen bg-gray-100">
-      <nav className="bg-white shadow-md px-4 py-2 flex justify-between items-center">
-        <h1 className="text-xl font-bold">{t(`modes.${gameState.gameMode.id}.title`)}</h1>
-        <div className="flex items-center gap-4">
-          {!isP2PMode && (
-            <button
-              onClick={() => setIsSettingsOpen(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-            >
-              <Settings size={20} />
-              {t('nav.settings')}
-            </button>
-          )}
-          <button
-            onClick={handleResign}
-            className="flex items-center gap-2 px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
-          >
-            <Flag size={20} />
-            {t('nav.surrender')}
-          </button>
-        </div>
-      </nav>
+      <NavBar
+        breadcrumbs={[
+          { label: playTypeLabel },
+          { label: t(`modes.${gameState.gameMode.id}.title`) },
+        ]}
+        onSurrender={handleResign}
+        gameSettings={!isP2PMode ? settings : null}
+        onGameSettingsChange={!isP2PMode ? handleSettingsChange : undefined}
+      />
 
       {isP2PMode && (
         <P2PStatusBar
@@ -451,15 +439,6 @@ export default function Game() {
           rotateBlackPieces={rotatePieces}
         />
       </div>
-
-      {!isP2PMode && (
-        <GameSettings
-          isOpen={isSettingsOpen}
-          onClose={() => setIsSettingsOpen(false)}
-          settings={settings}
-          onSettingsChange={handleSettingsChange}
-        />
-      )}
 
       {gameState.gameOver && (
         <GameOver

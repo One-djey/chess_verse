@@ -2,7 +2,8 @@
   "nav": {
     "settings": "설정",
     "surrender": "항복",
-    "back": "뒤로"
+    "back": "뒤로",
+    "invite": "초대"
   },
   "modeSelect": {
     "subtitle": "어떻게 플레이하시겠습니까?",
@@ -99,6 +100,8 @@
     "es": "Español",
     "ja": "日本語",
     "zh": "中文",
-    "ko": "한국어"
+    "ko": "한국어",
+    "it": "Italiano",
+    "ar": "العربية"
   }
 }
