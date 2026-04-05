@@ -15,7 +15,6 @@ export default function P2PLobby() {
 
   const { startRoom, joinExistingRoom, leaveRoom, connectionState } = useP2P();
 
-  const [selectedMode, setSelectedMode] = useState<GameMode>(gameModes[0]);
   const [roomId, setRoomId] = useState('');
   const [shareUrl, setShareUrl] = useState('');
   const [qrDataUrl, setQrDataUrl] = useState('');
@@ -40,11 +39,10 @@ export default function P2PLobby() {
       .catch(console.error);
   }, [roomId]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const handleCreateGame = () => {
+  const handleCreateGame = (mode: GameMode) => {
     const id = generateRoomId();
     setRoomId(id);
-    // Handlers registered synchronously inside startRoom — no race condition
-    startRoom(id, selectedMode, () => navigate('/game/p2p'));
+    startRoom(id, mode, () => navigate('/game/p2p'));
   };
 
   const handleCopy = async () => {
@@ -122,14 +120,12 @@ export default function P2PLobby() {
             <p className="text-gray-500 text-center mb-6">Challenge a friend directly, no server needed</p>
 
             <h2 className="font-semibold text-lg mb-3">Choose a game mode</h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {gameModes.map(mode => (
                 <div
                   key={mode.id}
-                  onClick={() => setSelectedMode(mode)}
-                  className={`rounded-lg overflow-hidden cursor-pointer border-2 transition shadow-sm hover:shadow-md ${
-                    selectedMode.id === mode.id ? 'border-blue-500' : 'border-transparent hover:border-gray-300'
-                  }`}
+                  onClick={() => handleCreateGame(mode)}
+                  className="rounded-lg overflow-hidden cursor-pointer border-2 border-transparent transition shadow-sm hover:shadow-md hover:border-blue-400 hover:scale-105"
                 >
                   <img src={mode.image} alt={mode.title} className="w-full h-28 object-cover" />
                   <div className="p-3 bg-white">
@@ -139,12 +135,6 @@ export default function P2PLobby() {
                 </div>
               ))}
             </div>
-            <button
-              onClick={handleCreateGame}
-              className="w-full py-3 bg-blue-500 text-white font-semibold rounded-lg hover:bg-blue-600 transition"
-            >
-              Create game
-            </button>
           </>
         )}
 
