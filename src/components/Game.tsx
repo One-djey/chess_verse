@@ -385,17 +385,18 @@ export default function Game() {
   const lockedColor = isP2PMode ? playerColor : (aiEnabled ? 'white' : null);
 
   // Board orientation:
-  // P2P black player → always flipped
-  // vs AI            → never flipped
+  // P2P black player  → always flipped
+  // vs AI             → never flipped
   // Solo + flipBoard  → flips each turn (animated in ChessBoard)
-  // Solo default      → statically flipped (black at bottom, phone passed across)
+  // Solo default      → normal orientation, black pieces rotated 180°
   const boardFlipped = isP2PMode
     ? playerColor === 'black'
-    : aiEnabled
-      ? false
-      : settings.flipBoard
-        ? gameState.currentTurn === 'black'
-        : true;
+    : !aiEnabled && settings.flipBoard
+      ? gameState.currentTurn === 'black'
+      : false;
+
+  // Rotate black piece images 180° only in solo default (no flipBoard, no AI, no P2P)
+  const rotatePieces = !isP2PMode && !aiEnabled && !settings.flipBoard;
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -442,6 +443,7 @@ export default function Game() {
           gameMode={gameState.gameMode}
           lockedColor={lockedColor}
           flipped={boardFlipped}
+          rotateBlackPieces={rotatePieces}
         />
       </div>
 

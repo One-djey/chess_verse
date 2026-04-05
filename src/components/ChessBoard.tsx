@@ -13,6 +13,7 @@ interface ChessBoardProps {
   gameMode: GameMode;
   lockedColor?: PieceColor | null;
   flipped?: boolean;
+  rotateBlackPieces?: boolean;
 }
 
 export default function ChessBoard({
@@ -26,6 +27,7 @@ export default function ChessBoard({
   gameMode,
   lockedColor = null,
   flipped = false,
+  rotateBlackPieces = false,
 }: ChessBoardProps) {
   const pieceRefs = useRef<Map<string, { x: number; y: number }>>(new Map());
   const [imagesLoaded, setImagesLoaded] = useState(false);
@@ -295,7 +297,11 @@ export default function ChessBoard({
                 <img
                   src={`/ressources/pieces/${piece.color}_${piece.type}.png`}
                   alt={`${piece.color} ${piece.type}`}
-                  style={{ width: '80%', height: '80%' }}
+                  style={{
+                    width: '80%',
+                    height: '80%',
+                    transform: rotateBlackPieces && piece.color === 'black' ? 'rotate(180deg)' : undefined,
+                  }}
                   onLoad={handleImageLoad}
                 />
               </div>
