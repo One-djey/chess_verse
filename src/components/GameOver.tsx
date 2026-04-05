@@ -37,21 +37,18 @@ export default function GameOver({
   const getTitle = () => {
     if (isDraw) return 'Draw!';
     if (surrenderedBy) {
-      if (isP2PMode) {
-        return surrenderedBy === playerColor ? 'You surrendered' : 'Opponent surrendered';
-      }
-      // Local 2-player
       return `${surrenderedBy === 'white' ? 'White' : 'Black'} surrendered`;
     }
     if (isP2PMode) {
-      return winner === playerColor ? 'You win!' : 'You lose!';
+      return winner === 'white' ? 'White wins!' : 'Black wins!';
     }
-    // vs AI
     return aiEnabled && winner === 'black' ? 'Defeat!' : 'Victory!';
   };
 
-  const isDefeat = (isP2PMode && winner !== playerColor && !isDraw) ||
-    (!isP2PMode && aiEnabled && winner === 'black');
+  // Trophy styled from viewer's perspective only (colour, not text)
+  const isDefeat = isP2PMode
+    ? winner !== null && winner !== playerColor
+    : !isP2PMode && aiEnabled && winner === 'black';
 
   const stats = [
     { icon: <Clock className="w-5 h-5" />, label: 'Duration', value: `${minutes}m ${seconds}s` },
@@ -60,53 +57,6 @@ export default function GameOver({
       icon: <Brain className="w-5 h-5" />, label: 'AI Level', value: getDifficultyDescription(aiDifficulty)
     }] : []),
   ];
-
-  // ── Rematch section (P2P only) ─────────────────────────────────────────────
-  const renderRematch = () => {
-    if (!isP2PMode) return null;
-
-    if (rematchState === 'offered') {
-      return (
-        <div className="mb-4 p-4 bg-indigo-50 border border-indigo-200 rounded-lg text-center">
-          <p className="font-semibold text-indigo-800 mb-3">Opponent wants a rematch!</p>
-          <div className="flex gap-3">
-            <button
-              onClick={onAcceptRematch}
-              className="flex-1 bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 font-medium transition"
-            >
-              Accept
-            </button>
-            <button
-              onClick={onDeclineRematch}
-              className="flex-1 bg-gray-100 text-gray-700 py-2 rounded-lg hover:bg-gray-200 font-medium transition"
-            >
-              Decline
-            </button>
-          </div>
-        </div>
-      );
-    }
-
-    if (rematchState === 'requested' || rematchState === 'starting') {
-      return (
-        <div className="mb-4 flex items-center justify-center gap-2 p-3 bg-gray-50 rounded-lg text-gray-500 text-sm">
-          <Loader2 size={16} className="animate-spin" />
-          Waiting for opponent…
-        </div>
-      );
-    }
-
-    // idle — show rematch button
-    return (
-      <button
-        onClick={onRematch}
-        className="flex-1 flex items-center justify-center gap-2 bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700 transition font-medium"
-      >
-        <RefreshCw size={18} />
-        Rematch
-      </button>
-    );
-  };
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100]">
@@ -121,9 +71,7 @@ export default function GameOver({
             {!isDraw && (
               <div className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 bg-white px-4 py-1 rounded-full border border-gray-200">
                 <span className="text-sm font-medium text-gray-600">
-                  {isP2PMode
-                    ? (winner === playerColor ? 'You' : 'Opponent')
-                    : (winner === 'white' ? 'White' : 'Black')}
+                  {winner === 'white' ? 'White' : 'Black'}
                 </span>
               </div>
             )}
@@ -151,23 +99,38 @@ export default function GameOver({
             ))}
           </div>
 
-          {/* Rematch (P2P) */}
-          {renderRematch()}
+          {/* Rematch offered by opponent */}
+          {isP2PMode && rematchState === 'offered' && (
+            <div className="mb-4 p-4 bg-indigo-50 border border-indigo-200 rounded-lg text-center">
+              <p className="font-semibold text-indigo-800 mb-3">Opponent wants a rematch!</p>
+              <div className="flex gap-3">
+                <button onClick={onAcceptRematch} className="flex-1 bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 font-medium transition">Accept</button>
+                <button onClick={onDeclineRematch} className="flex-1 bg-gray-100 text-gray-700 py-2 rounded-lg hover:bg-gray-200 font-medium transition">Decline</button>
+              </div>
+            </div>
+          )}
 
-          {/* Bottom buttons */}
+          {/* Waiting / starting */}
+          {isP2PMode && (rematchState === 'requested' || rematchState === 'starting') && (
+            <div className="mb-4 flex items-center justify-center gap-2 p-3 bg-gray-50 rounded-lg text-gray-500 text-sm">
+              <Loader2 size={16} className="animate-spin" />
+              Waiting for opponent…
+            </div>
+          )}
+
+          {/* Bottom buttons — always on the same row */}
           <div className="flex gap-4 justify-center mt-2">
             {!isP2PMode && (
-              <button
-                onClick={onReplay}
-                className="flex-1 bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition font-medium"
-              >
+              <button onClick={onReplay} className="flex-1 bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition font-medium">
                 Play Again
               </button>
             )}
-            <button
-              onClick={() => navigate('/')}
-              className="flex-1 bg-gray-100 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-200 transition font-medium"
-            >
+            {isP2PMode && rematchState === 'idle' && (
+              <button onClick={onRematch} className="flex-1 flex items-center justify-center gap-2 bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700 transition font-medium">
+                <RefreshCw size={18} /> Rematch
+              </button>
+            )}
+            <button onClick={() => navigate('/')} className="flex-1 bg-gray-100 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-200 transition font-medium">
               Main Menu
             </button>
           </div>

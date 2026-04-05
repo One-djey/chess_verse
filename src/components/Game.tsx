@@ -159,6 +159,8 @@ export default function Game() {
 
       // HOST receives rematch request from guest → offer on screen
       actions.onRematchRequest(() => setRematchState('offered'));
+      // HOST receives rematch decline from guest
+      actions.onRematchDecline(() => setRematchState('idle'));
     }
 
     if (role === 'guest') {
@@ -181,6 +183,8 @@ export default function Game() {
 
       // GUEST receives rematch request from host → offer on screen
       actions.onRematchRequest(() => setRematchState('offered'));
+      // GUEST receives rematch decline from host
+      actions.onRematchDecline(() => setRematchState('idle'));
 
       // GUEST receives authoritative board reset from host
       actions.onRematchStart((msg) => resetGame(msg.pieces));
@@ -372,6 +376,7 @@ export default function Game() {
   };
 
   const handleDeclineRematch = () => {
+    actions?.sendRematchDecline({ type: 'rematch_decline' });
     setRematchState('idle');
   };
 
@@ -423,6 +428,7 @@ export default function Game() {
           onMove={handleMove}
           gameMode={gameState.gameMode}
           lockedColor={lockedColor}
+          flipped={isP2PMode && playerColor === 'black'}
         />
       </div>
 

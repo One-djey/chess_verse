@@ -9,6 +9,7 @@ import type {
   ResignMessage,
   RematchRequestMessage,
   RematchAcceptMessage,
+  RematchDeclineMessage,
   RematchStartMessage,
 } from '../types/p2p';
 
@@ -33,6 +34,7 @@ export function makeRoomActions(room: Room) {
   const [sendResign, onResign]                   = room.makeAction<ResignMessage>('resign');
   const [sendRematchRequest, onRematchRequest]   = room.makeAction<RematchRequestMessage>('rematch_request');
   const [sendRematchAccept, onRematchAccept]     = room.makeAction<RematchAcceptMessage>('rematch_accept');
+  const [sendRematchDecline, onRematchDecline]   = room.makeAction<RematchDeclineMessage>('rematch_decline');
   const [sendRematchStart, onRematchStart]       = room.makeAction<RematchStartMessage>('rematch_start');
 
   return {
@@ -42,8 +44,9 @@ export function makeRoomActions(room: Room) {
     sendColorAssign,  onColorAssign,
     sendSyncState,    onSyncState,
     sendResign,       onResign,
-    sendRematchRequest, onRematchRequest,
-    sendRematchAccept,  onRematchAccept,
-    sendRematchStart,   onRematchStart,
+    sendRematchRequest,  onRematchRequest,
+    sendRematchAccept,   onRematchAccept,
+    sendRematchDecline,  onRematchDecline,
+    sendRematchStart,    onRematchStart,
   };
 }

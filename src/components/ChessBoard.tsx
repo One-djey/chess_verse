@@ -12,6 +12,7 @@ interface ChessBoardProps {
   onMove: (position: Position) => void;
   gameMode: GameMode;
   lockedColor?: PieceColor | null;
+  flipped?: boolean;
 }
 
 export default function ChessBoard({
@@ -24,7 +25,11 @@ export default function ChessBoard({
   onMove,
   gameMode,
   lockedColor = null,
+  flipped = false,
 }: ChessBoardProps) {
+  // Map internal board coords ↔ display coords
+  const toDisplay  = (x: number, y: number) => ({ x: flipped ? 7 - x : x, y: flipped ? 7 - y : y });
+  const fromDisplay = (dx: number, dy: number) => ({ x: flipped ? 7 - dx : dx, y: flipped ? 7 - dy : dy });
   const pieceRefs = useRef<Map<string, { x: number; y: number }>>(new Map());
   const [imagesLoaded, setImagesLoaded] = useState(false);
 
@@ -120,16 +125,17 @@ export default function ChessBoard({
         <div className="absolute inset-0 grid grid-cols-8 grid-rows-8 gap-1 z-0">
           {Array(8)
             .fill(null)
-            .map((_, y) =>
+            .map((_, dy) =>
               Array(8)
                 .fill(null)
-                .map((_, x) => {
+                .map((_, dx) => {
+                  const { x, y } = fromDisplay(dx, dy);
                   const isLight = (x + y) % 2 === 0;
                   const borderGlow = getBorderGlow(x, y);
-                  
+
                   return (
                     <div
-                      key={`${x}-${y}`}
+                      key={`${dx}-${dy}`}
                       className={`
                         w-full h-full relative
                         ${isLight ? 'bg-gray-200' : 'bg-gray-600'}
@@ -147,23 +153,24 @@ export default function ChessBoard({
         <div className="absolute inset-0 z-10">
           {Array(8)
             .fill(null)
-            .map((_, y) =>
+            .map((_, dy) =>
               Array(8)
                 .fill(null)
-                .map((_, x) => {
+                .map((_, dx) => {
+                  const { x, y } = fromDisplay(dx, dy);
                   const isValidMove = isValidMovePosition(x, y);
                   const isCastling = isCastlingMove(x, y);
                   if (!isValidMove && !isCastling) return null;
 
                   return (
                     <div
-                      key={`overlay-${x}-${y}`}
+                      key={`overlay-${dx}-${dy}`}
                       className={`absolute cursor-pointer ${
                         isCastling ? 'bg-purple-400' : 'bg-blue-400'
                       } bg-opacity-40`}
                       style={{
-                        left: `${x * 12.5}%`,
-                        top: `${y * 12.5}%`,
+                        left: `${dx * 12.5}%`,
+                        top: `${dy * 12.5}%`,
                         width: '12.5%',
                         height: '12.5%',
                       }}
@@ -175,9 +182,7 @@ export default function ChessBoard({
                           };
                           return normalized.x === x && normalized.y === y;
                         });
-                        if (originalMove) {
-                          onMove(originalMove);
-                        }
+                        if (originalMove) onMove(originalMove);
                       }}
                     />
                   );
@@ -189,17 +194,18 @@ export default function ChessBoard({
         <div className="absolute inset-0 grid grid-cols-8 grid-rows-8 gap-1 z-20">
           {Array(8)
             .fill(null)
-            .map((_, y) =>
+            .map((_, dy) =>
               Array(8)
                 .fill(null)
-                .map((_, x) => {
+                .map((_, dx) => {
+                  const { x, y } = fromDisplay(dx, dy);
                   const piece = pieces.find((p) => p.position.x === x && p.position.y === y);
                   const isValidMove = isValidMovePosition(x, y);
                   const isPlayable = piece?.color === currentTurn && (!lockedColor || piece.color === lockedColor);
-                  
+
                   return (
                     <div
-                      key={`interactive-${x}-${y}`}
+                      key={`interactive-${dx}-${dy}`}
                       className="w-full h-full"
                       onClick={() => {
                         if (piece && isPlayable) {
@@ -212,9 +218,7 @@ export default function ChessBoard({
                             };
                             return normalized.x === x && normalized.y === y;
                           });
-                          if (originalMove) {
-                            onMove(originalMove);
-                          }
+                          if (originalMove) onMove(originalMove);
                         }
                       }}
                     />
@@ -228,6 +232,7 @@ export default function ChessBoard({
           {pieces.map((piece) => {
             const isSelected = selectedPiece?.position.x === piece.position.x && selectedPiece?.position.y === piece.position.y;
             const isPlayable = piece.color === currentTurn && (!lockedColor || piece.color === lockedColor);
+            const dp = toDisplay(piece.position.x, piece.position.y);
 
             const pieceClasses = `
               select-none absolute
@@ -244,8 +249,8 @@ export default function ChessBoard({
                 key={piece.id}
                 className={pieceClasses}
                 style={{
-                  left: `${piece.position.x * 12.5}%`,
-                  top: `${piece.position.y * 12.5}%`,
+                  left: `${dp.x * 12.5}%`,
+                  top: `${dp.y * 12.5}%`,
                   width: '12.5%',
                   height: '12.5%',
                   display: 'flex',
@@ -253,10 +258,10 @@ export default function ChessBoard({
                   justifyContent: 'center',
                 }}
               >
-                <img 
-                  src={`/ressources/pieces/${piece.color}_${piece.type}.png`} 
-                  alt={`${piece.color} ${piece.type}`} 
-                  style={{ width: '80%', height: '80%' }} 
+                <img
+                  src={`/ressources/pieces/${piece.color}_${piece.type}.png`}
+                  alt={`${piece.color} ${piece.type}`}
+                  style={{ width: '80%', height: '80%' }}
                   onLoad={handleImageLoad}
                 />
               </div>
