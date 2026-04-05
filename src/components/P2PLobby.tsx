@@ -59,23 +59,22 @@ export default function P2PLobby() {
     if (!room || !actions) return;
 
     if (!isGuest) {
-      // HOST: wait for guest to join, then send color + initial pieces
+      // HOST: wait for guest to join, send color_assign + sync_state for ALL modes
       room.onPeerJoin(() => {
         setConnectionState('connected');
 
         const pieces = getInitialPieces(selectedMode);
+        setInitialPieces(pieces);
+
         const msg: ColorAssignMessage = {
           type: 'color_assign',
           hostColor: 'white',
           guestColor: 'black',
           gameMode: selectedMode,
         };
+        // Send sync_state first so guest has pieces before color_assign triggers navigation
+        actions.sendSyncState({ type: 'sync_state', pieces });
         actions.sendColorAssign(msg);
-
-        if (selectedMode.rules?.randomPieces) {
-          actions.sendSyncState({ type: 'sync_state', pieces });
-          setInitialPieces(pieces);
-        }
 
         if (!navigatedRef.current) {
           navigatedRef.current = true;
@@ -85,18 +84,27 @@ export default function P2PLobby() {
 
       room.onPeerLeave(() => setConnectionState('disconnected'));
     } else {
-      // GUEST: receive color assignment from host
-      actions.onColorAssign((msg) => {
-        setColorAssign(msg);
-        setConnectionState('connected');
-        if (!navigatedRef.current) {
+      // GUEST: wait for BOTH sync_state AND color_assign before navigating
+      const receivedRef = { color: false, sync: false };
+
+      const tryNavigate = () => {
+        if (receivedRef.color && receivedRef.sync && !navigatedRef.current) {
           navigatedRef.current = true;
           navigate('/game/p2p');
         }
+      };
+
+      actions.onColorAssign((msg) => {
+        setColorAssign(msg);
+        setConnectionState('connected');
+        receivedRef.color = true;
+        tryNavigate();
       });
 
       actions.onSyncState((msg) => {
         setInitialPieces(msg.pieces);
+        receivedRef.sync = true;
+        tryNavigate();
       });
 
       room.onPeerLeave(() => setConnectionState('disconnected'));
@@ -179,20 +187,23 @@ export default function P2PLobby() {
         {!roomId && (
           <>
             <h2 className="font-semibold text-lg mb-3">Choose a game mode</h2>
-            <div className="grid grid-cols-1 gap-3 mb-8">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
               {gameModes.map(mode => (
-                <button
+                <div
                   key={mode.id}
                   onClick={() => setSelectedMode(mode)}
-                  className={`p-4 rounded-lg border-2 text-left transition ${
+                  className={`rounded-lg overflow-hidden cursor-pointer border-2 transition shadow-sm hover:shadow-md ${
                     selectedMode.id === mode.id
-                      ? 'border-blue-500 bg-blue-50'
-                      : 'border-gray-200 hover:border-gray-300'
+                      ? 'border-blue-500'
+                      : 'border-transparent hover:border-gray-300'
                   }`}
                 >
-                  <div className="font-semibold">{mode.title}</div>
-                  <div className="text-sm text-gray-500">{mode.description}</div>
-                </button>
+                  <img src={mode.image} alt={mode.title} className="w-full h-28 object-cover" />
+                  <div className="p-3 bg-white">
+                    <div className="font-semibold text-sm">{mode.title}</div>
+                    <div className="text-xs text-gray-500 mt-0.5 line-clamp-2">{mode.description}</div>
+                  </div>
+                </div>
               ))}
             </div>
             <button
