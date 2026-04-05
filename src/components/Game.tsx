@@ -183,6 +183,25 @@ export default function Game() {
         });
       }
 
+      // Si le roi adverse a été capturé, fin de partie immédiate
+      if (capturedPiece?.type === 'king') {
+        setGameState(prev => ({
+          ...prev,
+          pieces: newPieces,
+          currentTurn: 'white',
+          selectedPiece: null,
+          validMoves: [],
+          isCheck: false,
+          moveCount: {
+            ...prev.moveCount,
+            black: prev.moveCount.black + 1,
+          },
+          gameOver: true,
+          winner: 'black',
+        }));
+        return;
+      }
+
       const nextTurn = 'white';
       const nextIsCheck = isInCheck(nextTurn, newPieces, gameState.gameMode);
       const nextHasLegalMoves = hasLegalMoves(nextTurn, newPieces, gameState.gameMode);
@@ -286,6 +305,25 @@ export default function Game() {
         }
         return p;
       });
+    }
+
+    // Si le roi adverse a été capturé, fin de partie immédiate
+    if (capturedPiece?.type === 'king') {
+      setGameState(prev => ({
+        ...prev,
+        pieces: newPieces,
+        currentTurn: gameState.currentTurn === 'white' ? 'black' : 'white',
+        selectedPiece: null,
+        validMoves: [],
+        isCheck: false,
+        moveCount: {
+          ...prev.moveCount,
+          [prev.currentTurn]: prev.moveCount[prev.currentTurn] + 1,
+        },
+        gameOver: true,
+        winner: gameState.currentTurn,
+      }));
+      return;
     }
 
     const nextTurn = gameState.currentTurn === 'white' ? 'black' : 'white';
