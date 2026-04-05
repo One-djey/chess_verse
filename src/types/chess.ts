@@ -36,6 +36,7 @@ export interface GameState {
   gameOver: boolean;
   winner: PieceColor | null;
   drawReason?: 'stalemate' | 'only-kings';
+  surrenderedBy?: PieceColor;
   gameMode: GameMode;
 }
 

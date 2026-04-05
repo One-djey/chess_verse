@@ -6,6 +6,7 @@ import GameOver from './GameOver';
 import GameSettings from './GameSettings';
 import P2PStatusBar from './P2PStatusBar';
 import { GameState, Piece, Position, GameMode, PieceColor } from '../types/chess';
+import { RematchState } from '../types/p2p';
 import {
   getInitialPieces,
   isInCheck,
@@ -45,12 +46,12 @@ export default function Game() {
   const gameMode = resolveGameMode(modeId, p2pGameMode);
 
   // Sequence tracking
-  // Host: increments on every confirmed move
-  // Guest: tracks last received seq to detect gaps
   const seqRef = useRef(0);
 
   // Ref to always have fresh gameState inside Trystero callbacks (avoids stale closure)
   const gameStateRef = useRef<GameState | null>(null);
+
+  const [rematchState, setRematchState] = useState<RematchState>('idle');
 
   const [settings, setSettings] = useState(() => {
     const saved = localStorage.getItem(STORAGE_KEY);
@@ -107,41 +108,61 @@ export default function Game() {
     }
   }, [gameState.currentTurn, aiEnabled, gameState.gameOver]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // ── Rematch helper ─────────────────────────────────────────────────────────
+  const resetGame = (pieces: Piece[]) => {
+    seqRef.current = 0;
+    setRematchState('idle');
+    setGameState({
+      pieces,
+      currentTurn: 'white',
+      selectedPiece: null,
+      validMoves: [],
+      isCheck: false,
+      startTime: Date.now(),
+      moveCount: { white: 0, black: 0 },
+      gameOver: false,
+      winner: null,
+      gameMode,
+    });
+  };
+
   // ── P2P message handlers ───────────────────────────────────────────────────
   useEffect(() => {
     if (!isP2PMode || !actions) return;
 
     if (role === 'host') {
-      // HOST receives move proposals from guest, validates, confirms or rejects
+      // HOST validates guest move proposals
       actions.onMoveProposal((msg) => {
         const state = gameStateRef.current;
         if (!state) return;
-
-        // Must be black's turn and piece must be black
         const piece = state.pieces.find(p => p.id === msg.pieceId && p.color === 'black');
         if (!piece || state.currentTurn !== 'black' || state.gameOver) {
           actions.sendMoveReject({ type: 'move_reject' });
           return;
         }
-
         const valid = getValidMoves(piece, state.pieces, state.gameMode)
           .some(v => v.x === msg.to.x && v.y === msg.to.y);
-
-        if (!valid) {
-          actions.sendMoveReject({ type: 'move_reject' });
-          return;
-        }
+        if (!valid) { actions.sendMoveReject({ type: 'move_reject' }); return; }
 
         seqRef.current++;
         const seq = seqRef.current;
-        // Confirm to guest before applying locally (so guest sees it immediately)
         actions.sendMoveConfirm({ type: 'move_confirm', pieceId: msg.pieceId, from: msg.from, to: msg.to, seq });
         setGameState(prev => applyMoveToState(prev, piece, msg.to));
       });
+
+      // HOST receives rematch accept from guest → start rematch
+      actions.onRematchAccept(() => {
+        const pieces = getInitialPieces(gameMode);
+        actions.sendRematchStart({ type: 'rematch_start', pieces });
+        resetGame(pieces);
+      });
+
+      // HOST receives rematch request from guest → offer on screen
+      actions.onRematchRequest(() => setRematchState('offered'));
     }
 
     if (role === 'guest') {
-      // GUEST receives authoritative move confirmations from host
+      // GUEST applies host-confirmed moves
       actions.onMoveConfirm((msg) => {
         if (msg.seq !== seqRef.current + 1) {
           console.warn(`P2P seq gap: expected ${seqRef.current + 1}, got ${msg.seq}`);
@@ -154,24 +175,29 @@ export default function Game() {
         });
       });
 
-      // GUEST receives rejection: just reset selection (move was already cleared optimistically)
       actions.onMoveReject(() => {
         setGameState(prev => ({ ...prev, selectedPiece: null, validMoves: [] }));
       });
+
+      // GUEST receives rematch request from host → offer on screen
+      actions.onRematchRequest(() => setRematchState('offered'));
+
+      // GUEST receives authoritative board reset from host
+      actions.onRematchStart((msg) => resetGame(msg.pieces));
     }
 
-    // Both sides handle resign
+    // Both sides: opponent resigned
     actions.onResign(() => {
+      const opponentColor: PieceColor = playerColor === 'white' ? 'black' : 'white';
       setGameState(prev => ({
         ...prev,
         gameOver: true,
         winner: playerColor ?? 'white',
+        surrenderedBy: opponentColor,
       }));
     });
 
-    room?.onPeerLeave(() => {
-      // P2PStatusBar shows the disconnect banner; game pauses
-    });
+    room?.onPeerLeave(() => { /* P2PStatusBar shows disconnect banner */ });
   }, [isP2PMode, actions, role, playerColor, room]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Pure state-transition helper ───────────────────────────────────────────
@@ -312,28 +338,41 @@ export default function Game() {
   };
 
   const handleResign = () => {
+    const myColor: PieceColor = isP2PMode ? (playerColor ?? 'white') : gameState.currentTurn;
     if (isP2PMode && actions) actions.sendResign({ type: 'resign' });
     setGameState(prev => ({
       ...prev,
       gameOver: true,
-      winner: prev.currentTurn === 'white' ? 'black' : 'white',
+      winner: myColor === 'white' ? 'black' : 'white',
+      surrenderedBy: myColor,
     }));
   };
 
   const handleReplay = () => {
-    seqRef.current = 0;
-    setGameState({
-      pieces: getInitialPieces(gameMode),
-      currentTurn: 'white',
-      selectedPiece: null,
-      validMoves: [],
-      isCheck: false,
-      startTime: Date.now(),
-      moveCount: { white: 0, black: 0 },
-      gameOver: false,
-      winner: null,
-      gameMode,
-    });
+    resetGame(getInitialPieces(gameMode));
+  };
+
+  // ── Rematch handlers (P2P) ─────────────────────────────────────────────────
+  const handleRematch = () => {
+    actions?.sendRematchRequest({ type: 'rematch_request' });
+    setRematchState('requested');
+  };
+
+  const handleAcceptRematch = () => {
+    if (role === 'host') {
+      // Host accepts guest's request: start immediately
+      const pieces = getInitialPieces(gameMode);
+      actions?.sendRematchStart({ type: 'rematch_start', pieces });
+      resetGame(pieces);
+    } else {
+      // Guest accepts host's request: ask host to start
+      actions?.sendRematchAccept({ type: 'rematch_accept' });
+      setRematchState('starting');
+    }
+  };
+
+  const handleDeclineRematch = () => {
+    setRematchState('idle');
   };
 
   const handleLeaveP2P = () => { leaveRoom(); navigate('/'); };
@@ -400,11 +439,18 @@ export default function Game() {
         <GameOver
           winner={gameState.winner}
           drawReason={gameState.drawReason}
+          surrenderedBy={gameState.surrenderedBy}
           duration={Date.now() - gameState.startTime}
           moveCount={gameState.winner ? gameState.moveCount[gameState.winner] : gameState.moveCount.white + gameState.moveCount.black}
-          onReplay={isP2PMode ? handleLeaveP2P : handleReplay}
+          onReplay={handleReplay}
           aiEnabled={aiEnabled}
           aiDifficulty={settings.aiDifficulty}
+          isP2PMode={isP2PMode}
+          playerColor={playerColor}
+          rematchState={rematchState}
+          onRematch={handleRematch}
+          onAcceptRematch={handleAcceptRematch}
+          onDeclineRematch={handleDeclineRematch}
         />
       )}
     </div>

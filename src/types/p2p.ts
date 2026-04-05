@@ -50,10 +50,22 @@ export type ResignMessage = {
   type: 'resign';
 };
 
+// Rematch negotiation (either player can request)
+export type RematchRequestMessage = { type: 'rematch_request' };
+// Guest → Host: "I accept, please start"
+export type RematchAcceptMessage  = { type: 'rematch_accept' };
+// Host → Guest: authoritative board reset
+export type RematchStartMessage   = { type: 'rematch_start'; pieces: Piece[] };
+
+export type RematchState = 'idle' | 'requested' | 'offered' | 'starting';
+
 export type P2PMessage =
   | MoveProposalMessage
   | MoveConfirmMessage
   | MoveRejectMessage
   | ColorAssignMessage
   | SyncStateMessage
-  | ResignMessage;
+  | ResignMessage
+  | RematchRequestMessage
+  | RematchAcceptMessage
+  | RematchStartMessage;

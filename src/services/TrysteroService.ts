@@ -7,6 +7,9 @@ import type {
   ColorAssignMessage,
   SyncStateMessage,
   ResignMessage,
+  RematchRequestMessage,
+  RematchAcceptMessage,
+  RematchStartMessage,
 } from '../types/p2p';
 
 const APP_ID = 'chess-verse-2024';
@@ -27,7 +30,10 @@ export function makeRoomActions(room: Room) {
   const [sendMoveReject, onMoveReject]     = room.makeAction<MoveRejectMessage>('move_reject');
   const [sendColorAssign, onColorAssign]   = room.makeAction<ColorAssignMessage>('color_assign');
   const [sendSyncState, onSyncState]       = room.makeAction<SyncStateMessage>('sync_state');
-  const [sendResign, onResign]             = room.makeAction<ResignMessage>('resign');
+  const [sendResign, onResign]                   = room.makeAction<ResignMessage>('resign');
+  const [sendRematchRequest, onRematchRequest]   = room.makeAction<RematchRequestMessage>('rematch_request');
+  const [sendRematchAccept, onRematchAccept]     = room.makeAction<RematchAcceptMessage>('rematch_accept');
+  const [sendRematchStart, onRematchStart]       = room.makeAction<RematchStartMessage>('rematch_start');
 
   return {
     sendMoveProposal, onMoveProposal,
@@ -36,5 +42,8 @@ export function makeRoomActions(room: Room) {
     sendColorAssign,  onColorAssign,
     sendSyncState,    onSyncState,
     sendResign,       onResign,
+    sendRematchRequest, onRematchRequest,
+    sendRematchAccept,  onRematchAccept,
+    sendRematchStart,   onRematchStart,
   };
 }
