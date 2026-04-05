@@ -4,7 +4,8 @@ import { Trophy, Clock, Hash, Brain } from 'lucide-react';
 import { getDifficultyDescription } from '../utils/chess';
 
 interface GameOverProps {
-  winner: 'white' | 'black';
+  winner: 'white' | 'black' | null;
+  drawReason?: 'stalemate' | 'only-kings';
   duration: number;
   moveCount: number;
   onReplay: () => void;
@@ -12,10 +13,11 @@ interface GameOverProps {
   aiDifficulty?: number;
 }
 
-export default function GameOver({ winner, duration, moveCount, onReplay, aiEnabled, aiDifficulty }: GameOverProps) {
+export default function GameOver({ winner, drawReason, duration, moveCount, onReplay, aiEnabled, aiDifficulty }: GameOverProps) {
   const navigate = useNavigate();
   const minutes = Math.floor(duration / 60000);
   const seconds = Math.floor((duration % 60000) / 1000);
+  const isDraw = winner === null;
 
   const stats = [
     {
@@ -42,17 +44,24 @@ export default function GameOver({ winner, duration, moveCount, onReplay, aiEnab
       <div className="bg-white rounded-lg p-8 max-w-md w-full mx-4 shadow-xl transform transition-all">
         <div className="text-center">
           <div className="mb-12 relative">
-            <Trophy className={`w-16 h-16 mx-auto ${isDefeat ? 'text-gray-400' : 'text-yellow-400'}`} />
-            <div className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 bg-white px-4 py-1 rounded-full border border-gray-200">
-              <span className="text-sm font-medium text-gray-600">
-                {winner === 'white' ? 'White' : 'Black'}
-              </span>
-            </div>
+            <Trophy className={`w-16 h-16 mx-auto ${isDraw ? 'text-blue-400' : isDefeat ? 'text-gray-400' : 'text-yellow-400'}`} />
+            {!isDraw && (
+              <div className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 bg-white px-4 py-1 rounded-full border border-gray-200">
+                <span className="text-sm font-medium text-gray-600">
+                  {winner === 'white' ? 'White' : 'Black'}
+                </span>
+              </div>
+            )}
           </div>
 
-          <h2 className="text-3xl font-bold mb-8">
-            {isDefeat ? 'Defeat!' : 'Victory!'}
+          <h2 className="text-3xl font-bold mb-2">
+            {isDraw ? 'Draw!' : isDefeat ? 'Defeat!' : 'Victory!'}
           </h2>
+          {isDraw && drawReason && (
+            <p className="text-sm text-gray-500 mb-6">
+              {drawReason === 'stalemate' ? 'Stalemate — no legal moves' : 'Only kings remain'}
+            </p>
+          )}
 
           <div className="grid grid-cols-1 gap-4 mb-8">
             {stats.map((stat, index) => (

@@ -183,9 +183,51 @@ export default function Game() {
         });
       }
 
+      // Si le roi adverse a été capturé, fin de partie immédiate
+      if (capturedPiece?.type === 'king') {
+        setGameState(prev => ({
+          ...prev,
+          pieces: newPieces,
+          currentTurn: 'white',
+          selectedPiece: null,
+          validMoves: [],
+          isCheck: false,
+          moveCount: {
+            ...prev.moveCount,
+            black: prev.moveCount.black + 1,
+          },
+          gameOver: true,
+          winner: 'black',
+        }));
+        return;
+      }
+
+      // Ex-aequo si seulement les 2 rois restent
+      const onlyKingsLeft = newPieces.every(p => p.type === 'king');
+      if (onlyKingsLeft) {
+        setGameState(prev => ({
+          ...prev,
+          pieces: newPieces,
+          currentTurn: 'white',
+          selectedPiece: null,
+          validMoves: [],
+          isCheck: false,
+          moveCount: {
+            ...prev.moveCount,
+            black: prev.moveCount.black + 1,
+          },
+          gameOver: true,
+          winner: null,
+          drawReason: 'only-kings',
+        }));
+        return;
+      }
+
       const nextTurn = 'white';
       const nextIsCheck = isInCheck(nextTurn, newPieces, gameState.gameMode);
       const nextHasLegalMoves = hasLegalMoves(nextTurn, newPieces, gameState.gameMode);
+      const isCheckmate = nextIsCheck && !nextHasLegalMoves;
+      const isStalemate = !nextIsCheck && !nextHasLegalMoves;
 
       setGameState(prev => ({
         ...prev,
@@ -198,8 +240,9 @@ export default function Game() {
           ...prev.moveCount,
           black: prev.moveCount.black + 1,
         },
-        gameOver: nextIsCheck && !nextHasLegalMoves,
-        winner: nextIsCheck && !nextHasLegalMoves ? 'black' : null,
+        gameOver: isCheckmate || isStalemate,
+        winner: isCheckmate ? 'black' : null,
+        drawReason: isStalemate ? 'stalemate' : undefined,
       }));
     } catch (error) {
       console.error("Erreur lors du mouvement de l'IA:", error);
@@ -288,9 +331,51 @@ export default function Game() {
       });
     }
 
+    // Si le roi adverse a été capturé, fin de partie immédiate
+    if (capturedPiece?.type === 'king') {
+      setGameState(prev => ({
+        ...prev,
+        pieces: newPieces,
+        currentTurn: gameState.currentTurn === 'white' ? 'black' : 'white',
+        selectedPiece: null,
+        validMoves: [],
+        isCheck: false,
+        moveCount: {
+          ...prev.moveCount,
+          [prev.currentTurn]: prev.moveCount[prev.currentTurn] + 1,
+        },
+        gameOver: true,
+        winner: gameState.currentTurn,
+      }));
+      return;
+    }
+
+    // Ex-aequo si seulement les 2 rois restent
+    const onlyKingsLeft = newPieces.every(p => p.type === 'king');
+    if (onlyKingsLeft) {
+      setGameState(prev => ({
+        ...prev,
+        pieces: newPieces,
+        currentTurn: gameState.currentTurn === 'white' ? 'black' : 'white',
+        selectedPiece: null,
+        validMoves: [],
+        isCheck: false,
+        moveCount: {
+          ...prev.moveCount,
+          [prev.currentTurn]: prev.moveCount[prev.currentTurn] + 1,
+        },
+        gameOver: true,
+        winner: null,
+        drawReason: 'only-kings',
+      }));
+      return;
+    }
+
     const nextTurn = gameState.currentTurn === 'white' ? 'black' : 'white';
     const nextIsCheck = isInCheck(nextTurn, newPieces, gameState.gameMode);
     const nextHasLegalMoves = hasLegalMoves(nextTurn, newPieces, gameState.gameMode);
+    const isCheckmate = nextIsCheck && !nextHasLegalMoves;
+    const isStalemate = !nextIsCheck && !nextHasLegalMoves;
 
     setGameState(prev => ({
       ...prev,
@@ -303,8 +388,9 @@ export default function Game() {
         ...prev.moveCount,
         [prev.currentTurn]: prev.moveCount[prev.currentTurn] + 1,
       },
-      gameOver: nextIsCheck && !nextHasLegalMoves,
-      winner: nextIsCheck && !nextHasLegalMoves ? prev.currentTurn : null,
+      gameOver: isCheckmate || isStalemate,
+      winner: isCheckmate ? prev.currentTurn : null,
+      drawReason: isStalemate ? 'stalemate' : undefined,
     }));
   };
 
@@ -374,11 +460,12 @@ export default function Game() {
         onSettingsChange={handleSettingsChange}
       />
 
-      {gameState.gameOver && gameState.winner && (
+      {gameState.gameOver && (
         <GameOver
           winner={gameState.winner}
+          drawReason={gameState.drawReason}
           duration={Date.now() - gameState.startTime}
-          moveCount={gameState.moveCount[gameState.winner]}
+          moveCount={gameState.winner ? gameState.moveCount[gameState.winner] : gameState.moveCount.white + gameState.moveCount.black}
           onReplay={handleReplay}
           aiEnabled={settings.aiEnabled}
           aiDifficulty={settings.aiDifficulty}

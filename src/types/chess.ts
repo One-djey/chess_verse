@@ -35,6 +35,7 @@ export interface GameState {
   moveCount: { white: number; black: number };
   gameOver: boolean;
   winner: PieceColor | null;
+  drawReason?: 'stalemate' | 'only-kings';
   gameMode: GameMode;
 }
 
