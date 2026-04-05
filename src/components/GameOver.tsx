@@ -5,6 +5,7 @@ import { getDifficultyDescription } from '../utils/chess';
 
 interface GameOverProps {
   winner: 'white' | 'black' | null;
+  drawReason?: 'stalemate' | 'only-kings';
   duration: number;
   moveCount: number;
   onReplay: () => void;
@@ -12,7 +13,7 @@ interface GameOverProps {
   aiDifficulty?: number;
 }
 
-export default function GameOver({ winner, duration, moveCount, onReplay, aiEnabled, aiDifficulty }: GameOverProps) {
+export default function GameOver({ winner, drawReason, duration, moveCount, onReplay, aiEnabled, aiDifficulty }: GameOverProps) {
   const navigate = useNavigate();
   const minutes = Math.floor(duration / 60000);
   const seconds = Math.floor((duration % 60000) / 1000);
@@ -53,9 +54,14 @@ export default function GameOver({ winner, duration, moveCount, onReplay, aiEnab
             )}
           </div>
 
-          <h2 className="text-3xl font-bold mb-8">
+          <h2 className="text-3xl font-bold mb-2">
             {isDraw ? 'Draw!' : isDefeat ? 'Defeat!' : 'Victory!'}
           </h2>
+          {isDraw && drawReason && (
+            <p className="text-sm text-gray-500 mb-6">
+              {drawReason === 'stalemate' ? 'Stalemate — no legal moves' : 'Only kings remain'}
+            </p>
+          )}
 
           <div className="grid grid-cols-1 gap-4 mb-8">
             {stats.map((stat, index) => (

@@ -218,6 +218,7 @@ export default function Game() {
           },
           gameOver: true,
           winner: null,
+          drawReason: 'only-kings',
         }));
         return;
       }
@@ -225,6 +226,8 @@ export default function Game() {
       const nextTurn = 'white';
       const nextIsCheck = isInCheck(nextTurn, newPieces, gameState.gameMode);
       const nextHasLegalMoves = hasLegalMoves(nextTurn, newPieces, gameState.gameMode);
+      const isCheckmate = nextIsCheck && !nextHasLegalMoves;
+      const isStalemate = !nextIsCheck && !nextHasLegalMoves;
 
       setGameState(prev => ({
         ...prev,
@@ -237,8 +240,9 @@ export default function Game() {
           ...prev.moveCount,
           black: prev.moveCount.black + 1,
         },
-        gameOver: nextIsCheck && !nextHasLegalMoves,
-        winner: nextIsCheck && !nextHasLegalMoves ? 'black' : null,
+        gameOver: isCheckmate || isStalemate,
+        winner: isCheckmate ? 'black' : null,
+        drawReason: isStalemate ? 'stalemate' : undefined,
       }));
     } catch (error) {
       console.error("Erreur lors du mouvement de l'IA:", error);
@@ -362,6 +366,7 @@ export default function Game() {
         },
         gameOver: true,
         winner: null,
+        drawReason: 'only-kings',
       }));
       return;
     }
@@ -369,6 +374,8 @@ export default function Game() {
     const nextTurn = gameState.currentTurn === 'white' ? 'black' : 'white';
     const nextIsCheck = isInCheck(nextTurn, newPieces, gameState.gameMode);
     const nextHasLegalMoves = hasLegalMoves(nextTurn, newPieces, gameState.gameMode);
+    const isCheckmate = nextIsCheck && !nextHasLegalMoves;
+    const isStalemate = !nextIsCheck && !nextHasLegalMoves;
 
     setGameState(prev => ({
       ...prev,
@@ -381,8 +388,9 @@ export default function Game() {
         ...prev.moveCount,
         [prev.currentTurn]: prev.moveCount[prev.currentTurn] + 1,
       },
-      gameOver: nextIsCheck && !nextHasLegalMoves,
-      winner: nextIsCheck && !nextHasLegalMoves ? prev.currentTurn : null,
+      gameOver: isCheckmate || isStalemate,
+      winner: isCheckmate ? prev.currentTurn : null,
+      drawReason: isStalemate ? 'stalemate' : undefined,
     }));
   };
 
@@ -455,6 +463,7 @@ export default function Game() {
       {gameState.gameOver && (
         <GameOver
           winner={gameState.winner}
+          drawReason={gameState.drawReason}
           duration={Date.now() - gameState.startTime}
           moveCount={gameState.winner ? gameState.moveCount[gameState.winner] : gameState.moveCount.white + gameState.moveCount.black}
           onReplay={handleReplay}
