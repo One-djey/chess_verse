@@ -1,5 +1,5 @@
-import React, { useRef, useEffect, useState } from 'react';
-import { Piece, Position, GameMode } from '../types/chess';
+import React, { useRef, useEffect, useState, useCallback } from 'react';
+import { Piece, Position, GameMode, PieceColor } from '../types/chess';
 import { UNICODE_PIECES, findCastlingMove } from '../utils/chess';
 
 interface ChessBoardProps {
@@ -11,7 +11,9 @@ interface ChessBoardProps {
   onPieceSelect: (piece: Piece) => void;
   onMove: (position: Position) => void;
   gameMode: GameMode;
-  aiEnabled?: boolean;
+  lockedColor?: PieceColor | null;
+  flipped?: boolean;
+  rotateBlackPieces?: boolean;
 }
 
 export default function ChessBoard({
@@ -23,12 +25,47 @@ export default function ChessBoard({
   onPieceSelect,
   onMove,
   gameMode,
-  aiEnabled = false,
+  lockedColor = null,
+  flipped = false,
+  rotateBlackPieces = false,
 }: ChessBoardProps) {
   const pieceRefs = useRef<Map<string, { x: number; y: number }>>(new Map());
   const [imagesLoaded, setImagesLoaded] = useState(false);
 
-  // Update piece positions with animation
+  // ── Flip animation ────────────────────────────────────────────────────────
+  // displayFlipped tracks the *rendered* orientation; it lags behind `flipped`
+  // by half the animation duration so the swap happens when the board is invisible.
+  const [displayFlipped, setDisplayFlipped] = useState(flipped);
+  const [squishing, setSquishing] = useState(false);
+  const prevFlipped = useRef(flipped);
+
+  useEffect(() => {
+    if (flipped === prevFlipped.current) return;
+    prevFlipped.current = flipped;
+    // Phase 1 — squish to zero
+    setSquishing(true);
+    const mid = setTimeout(() => {
+      // Board invisible at this point — swap orientation
+      setDisplayFlipped(flipped);
+      // Phase 2 — un-squish
+      setSquishing(false);
+    }, 220);
+    return () => clearTimeout(mid);
+  }, [flipped]);
+
+  // For static flips (P2P, solo default) keep displayFlipped in sync without animating
+  useEffect(() => { setDisplayFlipped(flipped); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Map internal board coords ↔ display coords (uses displayFlipped for smooth animation)
+  const toDisplay  = useCallback(
+    (x: number, y: number) => ({ x: displayFlipped ? 7 - x : x, y: displayFlipped ? 7 - y : y }),
+    [displayFlipped]
+  );
+  const fromDisplay = useCallback(
+    (dx: number, dy: number) => ({ x: displayFlipped ? 7 - dx : dx, y: displayFlipped ? 7 - dy : dy }),
+    [displayFlipped]
+  );
+
   useEffect(() => {
     pieces.forEach(piece => {
       const key = `${piece.color}-${piece.type}-${piece.position.x}-${piece.position.y}`;
@@ -38,9 +75,7 @@ export default function ChessBoard({
     });
   }, [pieces]);
 
-  const handleImageLoad = () => {
-    setImagesLoaded(true);
-  };
+  const handleImageLoad = () => { setImagesLoaded(true); };
 
   const isValidMovePosition = (x: number, y: number) => {
     return validMoves.some(move => {
@@ -115,21 +150,28 @@ export default function ChessBoard({
 
   return (
     <div className="aspect-square w-[80vh] max-w-[800px] bg-white shadow-xl rounded-lg p-4">
-      <div className="grid grid-cols-8 grid-rows-8 h-full gap-1 relative">
+      <div
+        className="grid grid-cols-8 grid-rows-8 h-full gap-1 relative"
+        style={{
+          transform: squishing ? 'scaleX(0)' : 'scaleX(1)',
+          transition: squishing ? 'transform 0.22s ease-in' : 'transform 0.22s ease-out',
+        }}
+      >
         {/* Board squares */}
         <div className="absolute inset-0 grid grid-cols-8 grid-rows-8 gap-1 z-0">
           {Array(8)
             .fill(null)
-            .map((_, y) =>
+            .map((_, dy) =>
               Array(8)
                 .fill(null)
-                .map((_, x) => {
+                .map((_, dx) => {
+                  const { x, y } = fromDisplay(dx, dy);
                   const isLight = (x + y) % 2 === 0;
                   const borderGlow = getBorderGlow(x, y);
-                  
+
                   return (
                     <div
-                      key={`${x}-${y}`}
+                      key={`${dx}-${dy}`}
                       className={`
                         w-full h-full relative
                         ${isLight ? 'bg-gray-200' : 'bg-gray-600'}
@@ -147,23 +189,24 @@ export default function ChessBoard({
         <div className="absolute inset-0 z-10">
           {Array(8)
             .fill(null)
-            .map((_, y) =>
+            .map((_, dy) =>
               Array(8)
                 .fill(null)
-                .map((_, x) => {
+                .map((_, dx) => {
+                  const { x, y } = fromDisplay(dx, dy);
                   const isValidMove = isValidMovePosition(x, y);
                   const isCastling = isCastlingMove(x, y);
                   if (!isValidMove && !isCastling) return null;
 
                   return (
                     <div
-                      key={`overlay-${x}-${y}`}
+                      key={`overlay-${dx}-${dy}`}
                       className={`absolute cursor-pointer ${
                         isCastling ? 'bg-purple-400' : 'bg-blue-400'
                       } bg-opacity-40`}
                       style={{
-                        left: `${x * 12.5}%`,
-                        top: `${y * 12.5}%`,
+                        left: `${dx * 12.5}%`,
+                        top: `${dy * 12.5}%`,
                         width: '12.5%',
                         height: '12.5%',
                       }}
@@ -175,9 +218,7 @@ export default function ChessBoard({
                           };
                           return normalized.x === x && normalized.y === y;
                         });
-                        if (originalMove) {
-                          onMove(originalMove);
-                        }
+                        if (originalMove) onMove(originalMove);
                       }}
                     />
                   );
@@ -189,17 +230,18 @@ export default function ChessBoard({
         <div className="absolute inset-0 grid grid-cols-8 grid-rows-8 gap-1 z-20">
           {Array(8)
             .fill(null)
-            .map((_, y) =>
+            .map((_, dy) =>
               Array(8)
                 .fill(null)
-                .map((_, x) => {
+                .map((_, dx) => {
+                  const { x, y } = fromDisplay(dx, dy);
                   const piece = pieces.find((p) => p.position.x === x && p.position.y === y);
                   const isValidMove = isValidMovePosition(x, y);
-                  const isPlayable = piece?.color === currentTurn && (!aiEnabled || piece.color === 'white');
-                  
+                  const isPlayable = piece?.color === currentTurn && (!lockedColor || piece.color === lockedColor);
+
                   return (
                     <div
-                      key={`interactive-${x}-${y}`}
+                      key={`interactive-${dx}-${dy}`}
                       className="w-full h-full"
                       onClick={() => {
                         if (piece && isPlayable) {
@@ -212,9 +254,7 @@ export default function ChessBoard({
                             };
                             return normalized.x === x && normalized.y === y;
                           });
-                          if (originalMove) {
-                            onMove(originalMove);
-                          }
+                          if (originalMove) onMove(originalMove);
                         }
                       }}
                     />
@@ -227,7 +267,8 @@ export default function ChessBoard({
         <div className="absolute inset-0 z-30 pointer-events-none">
           {pieces.map((piece) => {
             const isSelected = selectedPiece?.position.x === piece.position.x && selectedPiece?.position.y === piece.position.y;
-            const isPlayable = piece.color === currentTurn && (!aiEnabled || piece.color === 'white');
+            const isPlayable = piece.color === currentTurn && (!lockedColor || piece.color === lockedColor);
+            const dp = toDisplay(piece.position.x, piece.position.y);
 
             const pieceClasses = `
               select-none absolute
@@ -244,8 +285,8 @@ export default function ChessBoard({
                 key={piece.id}
                 className={pieceClasses}
                 style={{
-                  left: `${piece.position.x * 12.5}%`,
-                  top: `${piece.position.y * 12.5}%`,
+                  left: `${dp.x * 12.5}%`,
+                  top: `${dp.y * 12.5}%`,
                   width: '12.5%',
                   height: '12.5%',
                   display: 'flex',
@@ -253,10 +294,14 @@ export default function ChessBoard({
                   justifyContent: 'center',
                 }}
               >
-                <img 
-                  src={`/ressources/pieces/${piece.color}_${piece.type}.png`} 
-                  alt={`${piece.color} ${piece.type}`} 
-                  style={{ width: '80%', height: '80%' }} 
+                <img
+                  src={`/ressources/pieces/${piece.color}_${piece.type}.png`}
+                  alt={`${piece.color} ${piece.type}`}
+                  style={{
+                    width: '80%',
+                    height: '80%',
+                    transform: rotateBlackPieces && piece.color === 'black' ? 'rotate(180deg)' : undefined,
+                  }}
                   onLoad={handleImageLoad}
                 />
               </div>
