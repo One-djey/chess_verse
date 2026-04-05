@@ -7,8 +7,9 @@ interface GameSettingsProps {
   settings: {
     aiEnabled: boolean;
     aiDifficulty: number;
+    flipBoard: boolean;
   };
-  onSettingsChange: (settings: { aiEnabled: boolean; aiDifficulty: number }) => void;
+  onSettingsChange: (settings: { aiEnabled: boolean; aiDifficulty: number; flipBoard: boolean }) => void;
 }
 
 
@@ -52,6 +53,34 @@ export default function GameSettings({ isOpen, onClose, settings, onSettingsChan
                 onClick={() => onSettingsChange({ ...settings, aiEnabled: true })}
               >
                 vs AI
+              </button>
+            </div>
+          </div>
+
+          {/* Flip board on turn — solo only */}
+          <div
+            className={`transition-all duration-300 ease-in-out overflow-hidden ${
+              !settings.aiEnabled ? 'opacity-100 max-h-20' : 'opacity-0 max-h-0'
+            }`}
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-base font-medium text-gray-900">Flip board on turn</p>
+                <p className="text-xs text-gray-500 mt-0.5">Board rotates after each move</p>
+              </div>
+              <button
+                role="switch"
+                aria-checked={settings.flipBoard}
+                onClick={() => onSettingsChange({ ...settings, flipBoard: !settings.flipBoard })}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 focus:outline-none ${
+                  settings.flipBoard ? 'bg-blue-600' : 'bg-gray-200'
+                }`}
+              >
+                <span
+                  className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform duration-200 ${
+                    settings.flipBoard ? 'translate-x-6' : 'translate-x-1'
+                  }`}
+                />
               </button>
             </div>
           </div>

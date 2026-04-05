@@ -55,7 +55,7 @@ export default function Game() {
 
   const [settings, setSettings] = useState(() => {
     const saved = localStorage.getItem(STORAGE_KEY);
-    return saved ? JSON.parse(saved) : { aiEnabled: true, aiDifficulty: 5 };
+    return saved ? JSON.parse(saved) : { aiEnabled: true, aiDifficulty: 5, flipBoard: false };
   });
 
   const [gameState, setGameState] = useState<GameState>({
@@ -384,6 +384,19 @@ export default function Game() {
 
   const lockedColor = isP2PMode ? playerColor : (aiEnabled ? 'white' : null);
 
+  // Board orientation:
+  // P2P black player → always flipped
+  // vs AI            → never flipped
+  // Solo + flipBoard  → flips each turn (animated in ChessBoard)
+  // Solo default      → statically flipped (black at bottom, phone passed across)
+  const boardFlipped = isP2PMode
+    ? playerColor === 'black'
+    : aiEnabled
+      ? false
+      : settings.flipBoard
+        ? gameState.currentTurn === 'black'
+        : true;
+
   return (
     <div className="min-h-screen bg-gray-100">
       <nav className="bg-white shadow-md px-4 py-2 flex justify-between items-center">
@@ -428,7 +441,7 @@ export default function Game() {
           onMove={handleMove}
           gameMode={gameState.gameMode}
           lockedColor={lockedColor}
-          flipped={isP2PMode && playerColor === 'black'}
+          flipped={boardFlipped}
         />
       </div>
 

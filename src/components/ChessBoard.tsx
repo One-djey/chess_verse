@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useRef, useEffect, useState, useCallback } from 'react';
 import { Piece, Position, GameMode, PieceColor } from '../types/chess';
 import { UNICODE_PIECES, findCastlingMove } from '../utils/chess';
 
@@ -27,13 +27,43 @@ export default function ChessBoard({
   lockedColor = null,
   flipped = false,
 }: ChessBoardProps) {
-  // Map internal board coords ↔ display coords
-  const toDisplay  = (x: number, y: number) => ({ x: flipped ? 7 - x : x, y: flipped ? 7 - y : y });
-  const fromDisplay = (dx: number, dy: number) => ({ x: flipped ? 7 - dx : dx, y: flipped ? 7 - dy : dy });
   const pieceRefs = useRef<Map<string, { x: number; y: number }>>(new Map());
   const [imagesLoaded, setImagesLoaded] = useState(false);
 
-  // Update piece positions with animation
+  // ── Flip animation ────────────────────────────────────────────────────────
+  // displayFlipped tracks the *rendered* orientation; it lags behind `flipped`
+  // by half the animation duration so the swap happens when the board is invisible.
+  const [displayFlipped, setDisplayFlipped] = useState(flipped);
+  const [squishing, setSquishing] = useState(false);
+  const prevFlipped = useRef(flipped);
+
+  useEffect(() => {
+    if (flipped === prevFlipped.current) return;
+    prevFlipped.current = flipped;
+    // Phase 1 — squish to zero
+    setSquishing(true);
+    const mid = setTimeout(() => {
+      // Board invisible at this point — swap orientation
+      setDisplayFlipped(flipped);
+      // Phase 2 — un-squish
+      setSquishing(false);
+    }, 220);
+    return () => clearTimeout(mid);
+  }, [flipped]);
+
+  // For static flips (P2P, solo default) keep displayFlipped in sync without animating
+  useEffect(() => { setDisplayFlipped(flipped); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Map internal board coords ↔ display coords (uses displayFlipped for smooth animation)
+  const toDisplay  = useCallback(
+    (x: number, y: number) => ({ x: displayFlipped ? 7 - x : x, y: displayFlipped ? 7 - y : y }),
+    [displayFlipped]
+  );
+  const fromDisplay = useCallback(
+    (dx: number, dy: number) => ({ x: displayFlipped ? 7 - dx : dx, y: displayFlipped ? 7 - dy : dy }),
+    [displayFlipped]
+  );
+
   useEffect(() => {
     pieces.forEach(piece => {
       const key = `${piece.color}-${piece.type}-${piece.position.x}-${piece.position.y}`;
@@ -43,9 +73,7 @@ export default function ChessBoard({
     });
   }, [pieces]);
 
-  const handleImageLoad = () => {
-    setImagesLoaded(true);
-  };
+  const handleImageLoad = () => { setImagesLoaded(true); };
 
   const isValidMovePosition = (x: number, y: number) => {
     return validMoves.some(move => {
@@ -120,7 +148,13 @@ export default function ChessBoard({
 
   return (
     <div className="aspect-square w-[80vh] max-w-[800px] bg-white shadow-xl rounded-lg p-4">
-      <div className="grid grid-cols-8 grid-rows-8 h-full gap-1 relative">
+      <div
+        className="grid grid-cols-8 grid-rows-8 h-full gap-1 relative"
+        style={{
+          transform: squishing ? 'scaleX(0)' : 'scaleX(1)',
+          transition: squishing ? 'transform 0.22s ease-in' : 'transform 0.22s ease-out',
+        }}
+      >
         {/* Board squares */}
         <div className="absolute inset-0 grid grid-cols-8 grid-rows-8 gap-1 z-0">
           {Array(8)
