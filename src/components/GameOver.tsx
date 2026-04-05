@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Trophy, Clock, Hash, Brain, RefreshCw, Loader2, Flag } from 'lucide-react';
+import { Trophy, Clock, Hash, Brain, RefreshCw, Loader2, Flag, LogOut } from 'lucide-react';
 import { getDifficultyDescription } from '../utils/chess';
 import { PieceColor } from '../types/chess';
 import { RematchState } from '../types/p2p';
@@ -18,17 +18,21 @@ interface GameOverProps {
   isP2PMode?: boolean;
   playerColor?: PieceColor | null;
   rematchState?: RematchState;
+  peerLeft?: boolean;
   onRematch?: () => void;
   onAcceptRematch?: () => void;
   onDeclineRematch?: () => void;
+  onMainMenu?: () => void;
 }
 
 export default function GameOver({
   winner, drawReason, surrenderedBy, duration, moveCount,
   onReplay, aiEnabled, aiDifficulty,
-  isP2PMode, playerColor, rematchState, onRematch, onAcceptRematch, onDeclineRematch,
+  isP2PMode, playerColor, rematchState, peerLeft,
+  onRematch, onAcceptRematch, onDeclineRematch, onMainMenu,
 }: GameOverProps) {
   const navigate = useNavigate();
+  const goMainMenu = () => { onMainMenu?.(); navigate('/'); };
   const minutes = Math.floor(duration / 60000);
   const seconds = Math.floor((duration % 60000) / 1000);
   const isDraw = winner === null;
@@ -61,6 +65,15 @@ export default function GameOver({
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100]">
       <div className="bg-white rounded-lg p-8 max-w-md w-full mx-4 shadow-xl">
+
+        {/* Peer left banner */}
+        {isP2PMode && peerLeft && (
+          <div className="flex items-center gap-2 mb-4 px-4 py-3 bg-amber-50 border border-amber-200 rounded-lg text-amber-800 text-sm">
+            <LogOut size={16} className="shrink-0" />
+            Opponent returned to the main menu.
+          </div>
+        )}
+
         <div className="text-center">
           <div className="mb-12 relative">
             {surrenderedBy ? (
@@ -130,7 +143,7 @@ export default function GameOver({
                 <RefreshCw size={18} /> Rematch
               </button>
             )}
-            <button onClick={() => navigate('/')} className="flex-1 bg-gray-100 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-200 transition font-medium">
+            <button onClick={goMainMenu} className="flex-1 bg-gray-100 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-200 transition font-medium">
               Main Menu
             </button>
           </div>

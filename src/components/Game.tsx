@@ -52,6 +52,7 @@ export default function Game() {
   const gameStateRef = useRef<GameState | null>(null);
 
   const [rematchState, setRematchState] = useState<RematchState>('idle');
+  const [peerLeft, setPeerLeft] = useState(false);
 
   const [settings, setSettings] = useState(() => {
     const saved = localStorage.getItem(STORAGE_KEY);
@@ -112,6 +113,7 @@ export default function Game() {
   const resetGame = (pieces: Piece[]) => {
     seqRef.current = 0;
     setRematchState('idle');
+    setPeerLeft(false);
     setGameState({
       pieces,
       currentTurn: 'white',
@@ -201,7 +203,7 @@ export default function Game() {
       }));
     });
 
-    room?.onPeerLeave(() => { /* P2PStatusBar shows disconnect banner */ });
+    room?.onPeerLeave(() => { setPeerLeft(true); });
   }, [isP2PMode, actions, role, playerColor, room]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Pure state-transition helper ───────────────────────────────────────────
@@ -469,9 +471,11 @@ export default function Game() {
           isP2PMode={isP2PMode}
           playerColor={playerColor}
           rematchState={rematchState}
+          peerLeft={peerLeft}
           onRematch={handleRematch}
           onAcceptRematch={handleAcceptRematch}
           onDeclineRematch={handleDeclineRematch}
+          onMainMenu={isP2PMode ? handleLeaveP2P : undefined}
         />
       )}
     </div>
