@@ -1,6 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { GameMode } from '../types/chess';
+import { Users } from 'lucide-react';
 
 export const gameModes: GameMode[] = [
   {
@@ -59,6 +60,22 @@ export default function GameModes() {
             </div>
           </div>
         ))}
+
+        {/* P2P Multiplayer card */}
+        <div
+          className="bg-white rounded-lg shadow-lg overflow-hidden cursor-pointer transform transition hover:scale-105"
+          onClick={() => navigate('/p2p')}
+        >
+          <div className="w-full h-48 bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center">
+            <Users size={72} className="text-white opacity-80" />
+          </div>
+          <div className="p-6">
+            <h2 className="text-2xl font-bold mb-2">P2P Multijoueur</h2>
+            <p className="text-gray-600">
+              Joue contre un ami à distance, sans serveur. Partage un lien ou un QR code pour démarrer une partie directe.
+            </p>
+          </div>
+        </div>
       </div>
     </div>
   );

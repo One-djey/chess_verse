@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState } from 'react';
-import { Piece, Position, GameMode } from '../types/chess';
+import { Piece, Position, GameMode, PieceColor } from '../types/chess';
 import { UNICODE_PIECES, findCastlingMove } from '../utils/chess';
 
 interface ChessBoardProps {
@@ -11,7 +11,7 @@ interface ChessBoardProps {
   onPieceSelect: (piece: Piece) => void;
   onMove: (position: Position) => void;
   gameMode: GameMode;
-  aiEnabled?: boolean;
+  lockedColor?: PieceColor | null;
 }
 
 export default function ChessBoard({
@@ -23,7 +23,7 @@ export default function ChessBoard({
   onPieceSelect,
   onMove,
   gameMode,
-  aiEnabled = false,
+  lockedColor = null,
 }: ChessBoardProps) {
   const pieceRefs = useRef<Map<string, { x: number; y: number }>>(new Map());
   const [imagesLoaded, setImagesLoaded] = useState(false);
@@ -195,7 +195,7 @@ export default function ChessBoard({
                 .map((_, x) => {
                   const piece = pieces.find((p) => p.position.x === x && p.position.y === y);
                   const isValidMove = isValidMovePosition(x, y);
-                  const isPlayable = piece?.color === currentTurn && (!aiEnabled || piece.color === 'white');
+                  const isPlayable = piece?.color === currentTurn && (!lockedColor || piece.color === lockedColor);
                   
                   return (
                     <div
@@ -227,7 +227,7 @@ export default function ChessBoard({
         <div className="absolute inset-0 z-30 pointer-events-none">
           {pieces.map((piece) => {
             const isSelected = selectedPiece?.position.x === piece.position.x && selectedPiece?.position.y === piece.position.y;
-            const isPlayable = piece.color === currentTurn && (!aiEnabled || piece.color === 'white');
+            const isPlayable = piece.color === currentTurn && (!lockedColor || piece.color === lockedColor);
 
             const pieceClasses = `
               select-none absolute
