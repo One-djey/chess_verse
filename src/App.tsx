@@ -1,5 +1,6 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import ModeSelect from './components/ModeSelect';
 import GameModes from './components/GameModes';
 import Game from './components/Game';
 import P2PLobby from './components/P2PLobby';
@@ -10,7 +11,8 @@ function App() {
     <P2PProvider>
       <Router>
         <Routes>
-          <Route path="/" element={<GameModes />} />
+          <Route path="/" element={<ModeSelect />} />
+          <Route path="/local" element={<GameModes />} />
           <Route path="/p2p" element={<P2PLobby />} />
           <Route path="/game/:modeId" element={<Game />} />
         </Routes>

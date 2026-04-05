@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { GameMode } from '../types/chess';
-import { Users } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 
 export const gameModes: GameMode[] = [
   {
@@ -41,40 +41,33 @@ export default function GameModes() {
 
   return (
     <div className="min-h-screen bg-gray-100 p-8">
-      <h1 className="text-4xl font-bold text-center mb-12">Choose your game mode</h1>
-      <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {gameModes.map((mode) => (
-          <div
-            key={mode.id}
-            className="bg-white rounded-lg shadow-lg overflow-hidden cursor-pointer transform transition hover:scale-105"
-            onClick={() => navigate(`/game/${mode.id}`)}
-          >
-            <img
-              src={mode.image}
-              alt={mode.title}
-              className="w-full h-48 object-cover"
-            />
-            <div className="p-6">
-              <h2 className="text-2xl font-bold mb-2">{mode.title}</h2>
-              <p className="text-gray-600">{mode.description}</p>
-            </div>
-          </div>
-        ))}
-
-        {/* P2P Multiplayer card */}
-        <div
-          className="bg-white rounded-lg shadow-lg overflow-hidden cursor-pointer transform transition hover:scale-105"
-          onClick={() => navigate('/p2p')}
+      <div className="max-w-7xl mx-auto">
+        <button
+          onClick={() => navigate('/')}
+          className="flex items-center gap-2 text-gray-500 hover:text-gray-800 mb-8 transition"
         >
-          <div className="w-full h-48 bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center">
-            <Users size={72} className="text-white opacity-80" />
-          </div>
-          <div className="p-6">
-            <h2 className="text-2xl font-bold mb-2">P2P Multiplayer</h2>
-            <p className="text-gray-600">
-              Play against a friend remotely, no server needed. Share a link or QR code to start a direct game.
-            </p>
-          </div>
+          <ArrowLeft size={18} />
+          Back
+        </button>
+        <h1 className="text-4xl font-bold text-center mb-12">Choose your game mode</h1>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {gameModes.map((mode) => (
+            <div
+              key={mode.id}
+              className="bg-white rounded-lg shadow-lg overflow-hidden cursor-pointer transform transition hover:scale-105"
+              onClick={() => navigate(`/game/${mode.id}`)}
+            >
+              <img
+                src={mode.image}
+                alt={mode.title}
+                className="w-full h-48 object-cover"
+              />
+              <div className="p-6">
+                <h2 className="text-2xl font-bold mb-2">{mode.title}</h2>
+                <p className="text-gray-600">{mode.description}</p>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     </div>
