@@ -3,6 +3,7 @@ import { Piece, Position } from '../types/chess';
 export class ChessAI {
   private stockfish: Worker | null = null;
   private difficulty: number = 10;
+  private movetime: number = 1000;
   private isReady: boolean = false;
   private moveResolver: ((move: { from: Position; to: Position }) => void) | null = null;
 
@@ -54,11 +55,12 @@ export class ChessAI {
 
   public setDifficulty(level: number) {
     this.difficulty = level;
+    // Stockfish Skill Level: 0 (le plus faible) à 20 (le plus fort)
+    const skillLevel = Math.round(((level - 1) / 19) * 20);
+    // Temps de réflexion: 100ms (niveau 1) à 3000ms (niveau 20)
+    this.movetime = Math.round(((level - 1) / 19) * 2900) + 100;
     if (this.stockfish) {
-      // Convertir le niveau (1-20) en profondeur de recherche (1-15)
-      const depth = Math.floor((level / 20) * 15) + 1;
-      this.stockfish.postMessage(`setoption name Skill Level value ${level}`);
-      this.stockfish.postMessage(`setoption name Maximum Thinking Time value ${depth * 1000}`);
+      this.stockfish.postMessage(`setoption name Skill Level value ${skillLevel}`);
     }
   }
 
@@ -70,7 +72,7 @@ export class ChessAI {
     const fen = this.piecesToFEN(pieces);
     
     this.stockfish.postMessage(`position fen ${fen}`);
-    this.stockfish.postMessage('go movetime 1000');
+    this.stockfish.postMessage(`go movetime ${this.movetime}`);
 
     return new Promise((resolve) => {
       this.moveResolver = resolve;
