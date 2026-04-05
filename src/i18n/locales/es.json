@@ -1,0 +1,104 @@
+{
+  "nav": {
+    "settings": "Ajustes",
+    "surrender": "Rendirse",
+    "back": "Volver"
+  },
+  "modeSelect": {
+    "subtitle": "¿Cómo quieres jugar?",
+    "local": "Local",
+    "localDesc": "Juega contra la IA o pasa el dispositivo a tu amigo.",
+    "multiplayer": "Multijugador",
+    "multiplayerDesc": "Desafía a un amigo remotamente — sin servidor."
+  },
+  "gameModeSelect": {
+    "title": "Elige tu modo de juego",
+    "localBadge": "Local",
+    "multiplayerBadge": "Multijugador"
+  },
+  "modes": {
+    "classic": {
+      "title": "Clásico",
+      "description": "El juego de ajedrez tradicional con todas sus reglas clásicas."
+    },
+    "borderless": {
+      "title": "Sin fronteras",
+      "description": "Las piezas pueden cruzar los bordes del tablero, creando posibilidades estratégicas únicas."
+    },
+    "all-random": {
+      "title": "Todo aleatorio",
+      "description": "Las piezas se colocan aleatoriamente al inicio, creando una experiencia única cada vez."
+    }
+  },
+  "p2p": {
+    "joinGame": "Unirse a la partida",
+    "connectingViaP2P": "Conectando vía P2P…",
+    "waitingForHost": "Esperando al anfitrión…",
+    "connectedStarting": "¡Conectado! Iniciando…",
+    "connectionLost": "Conexión perdida",
+    "backToMenu": "Volver al menú",
+    "cancel": "Cancelar",
+    "inviteOpponent": "Invita a tu oponente",
+    "shareQrOrLink": "Comparte este código QR o enlace",
+    "inviteQrAlt": "Código QR de invitación",
+    "shareLink": "Compartir enlace",
+    "copyLink": "Copiar enlace",
+    "copied": "¡Copiado!",
+    "waitingForOpponent": "Esperando al oponente…",
+    "opponentConnected": "¡Oponente conectado!",
+    "startingGame": "Iniciando partida…"
+  },
+  "p2pStatus": {
+    "opponentDisconnected": "Oponente desconectado",
+    "youPlayAs": "Juegas con las",
+    "white": "Blancas",
+    "black": "Negras",
+    "yourTurn": "Tu turno",
+    "opponentTurn": "Turno del oponente",
+    "establishing": "Estableciendo conexión P2P…"
+  },
+  "gameOver": {
+    "opponentLeft": "El oponente volvió al menú principal.",
+    "draw": "¡Empate!",
+    "whiteSurrendered": "Las Blancas se rindieron",
+    "blackSurrendered": "Las Negras se rindieron",
+    "whiteWins": "¡Ganan las Blancas!",
+    "blackWins": "¡Ganan las Negras!",
+    "defeat": "¡Derrota!",
+    "victory": "¡Victoria!",
+    "white": "Blancas",
+    "black": "Negras",
+    "stalemate": "Ahogado — sin movimientos legales",
+    "onlyKings": "Solo quedan los reyes",
+    "duration": "Duración",
+    "movesPlayed": "Movimientos jugados",
+    "aiLevel": "Nivel IA",
+    "opponentWantsRematch": "¡El oponente quiere la revancha!",
+    "accept": "Aceptar",
+    "decline": "Rechazar",
+    "waitingForOpponent": "Esperando al oponente…",
+    "playAgain": "Jugar de nuevo",
+    "rematch": "Revancha",
+    "mainMenu": "Menú principal"
+  },
+  "gameSettings": {
+    "title": "Ajustes del juego",
+    "gameType": "Tipo de juego",
+    "soloPlay": "Solo",
+    "vsAI": "vs IA",
+    "flipBoard": "Girar tablero en cada turno",
+    "flipBoardDesc": "El tablero rota después de cada movimiento",
+    "aiDifficulty": "Dificultad de la IA",
+    "beginner": "Principiante",
+    "superhuman": "Sobrehumano",
+    "language": "Idioma"
+  },
+  "languages": {
+    "en": "English",
+    "fr": "Français",
+    "es": "Español",
+    "ja": "日本語",
+    "zh": "中文",
+    "ko": "한국어"
+  }
+}

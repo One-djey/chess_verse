@@ -1,0 +1,104 @@
+{
+  "nav": {
+    "settings": "设置",
+    "surrender": "认输",
+    "back": "返回"
+  },
+  "modeSelect": {
+    "subtitle": "您想如何游戏？",
+    "local": "本地",
+    "localDesc": "与AI对战，或在同一设备上与朋友轮流游戏。",
+    "multiplayer": "多人游戏",
+    "multiplayerDesc": "远程挑战朋友，无需服务器。"
+  },
+  "gameModeSelect": {
+    "title": "选择游戏模式",
+    "localBadge": "本地",
+    "multiplayerBadge": "多人游戏"
+  },
+  "modes": {
+    "classic": {
+      "title": "经典",
+      "description": "传统国际象棋，遵循所有经典规则。"
+    },
+    "borderless": {
+      "title": "无边界",
+      "description": "棋子可以越过棋盘边缘，创造独特的战略可能性。"
+    },
+    "all-random": {
+      "title": "全随机",
+      "description": "游戏开始时棋子随机放置，每次都带来独特体验。"
+    }
+  },
+  "p2p": {
+    "joinGame": "加入游戏",
+    "connectingViaP2P": "P2P连接中…",
+    "waitingForHost": "等待主机…",
+    "connectedStarting": "已连接！正在启动…",
+    "connectionLost": "连接断开",
+    "backToMenu": "返回菜单",
+    "cancel": "取消",
+    "inviteOpponent": "邀请对手",
+    "shareQrOrLink": "分享此二维码或链接",
+    "inviteQrAlt": "邀请二维码",
+    "shareLink": "分享链接",
+    "copyLink": "复制链接",
+    "copied": "已复制！",
+    "waitingForOpponent": "等待对手…",
+    "opponentConnected": "对手已连接！",
+    "startingGame": "游戏启动中…"
+  },
+  "p2pStatus": {
+    "opponentDisconnected": "对手已断线",
+    "youPlayAs": "您执",
+    "white": "白棋",
+    "black": "黑棋",
+    "yourTurn": "您的回合",
+    "opponentTurn": "对手回合",
+    "establishing": "正在建立P2P连接…"
+  },
+  "gameOver": {
+    "opponentLeft": "对手已返回主菜单。",
+    "draw": "平局！",
+    "whiteSurrendered": "白方认输",
+    "blackSurrendered": "黑方认输",
+    "whiteWins": "白方获胜！",
+    "blackWins": "黑方获胜！",
+    "defeat": "失败！",
+    "victory": "胜利！",
+    "white": "白方",
+    "black": "黑方",
+    "stalemate": "逼和 — 无合法移动",
+    "onlyKings": "仅剩国王",
+    "duration": "时长",
+    "movesPlayed": "走棋数",
+    "aiLevel": "AI等级",
+    "opponentWantsRematch": "对手想要再战！",
+    "accept": "接受",
+    "decline": "拒绝",
+    "waitingForOpponent": "等待对手…",
+    "playAgain": "再玩一次",
+    "rematch": "再战",
+    "mainMenu": "主菜单"
+  },
+  "gameSettings": {
+    "title": "游戏设置",
+    "gameType": "游戏类型",
+    "soloPlay": "单人",
+    "vsAI": "对战AI",
+    "flipBoard": "每回合翻转棋盘",
+    "flipBoardDesc": "每次移动后棋盘旋转",
+    "aiDifficulty": "AI难度",
+    "beginner": "初学者",
+    "superhuman": "超人",
+    "language": "语言"
+  },
+  "languages": {
+    "en": "English",
+    "fr": "Français",
+    "es": "Español",
+    "ja": "日本語",
+    "zh": "中文",
+    "ko": "한국어"
+  }
+}

@@ -5,6 +5,7 @@ import GameModes from './components/GameModes';
 import Game from './components/Game';
 import P2PLobby from './components/P2PLobby';
 import { P2PProvider } from './context/P2PContext';
+import './i18n';
 
 function App() {
   return (

@@ -1,37 +1,44 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Monitor, Globe } from 'lucide-react';
-
-const OPTIONS = [
-  {
-    id: 'local',
-    label: 'Local',
-    description: 'Play vs AI or pass-and-play with a friend on the same device.',
-    Icon: Monitor,
-    iconBg: 'bg-blue-50',
-    iconColor: 'text-blue-600',
-    ring: 'hover:ring-blue-400',
-    path: '/local',
-  },
-  {
-    id: 'multiplayer',
-    label: 'Multiplayer',
-    description: 'Challenge a friend remotely — no server needed.',
-    Icon: Globe,
-    iconBg: 'bg-indigo-50',
-    iconColor: 'text-indigo-600',
-    ring: 'hover:ring-indigo-400',
-    path: '/p2p',
-  },
-] as const;
+import { useTranslation } from 'react-i18next';
+import { SUPPORTED_LANGUAGES, SupportedLanguage } from '../i18n';
 
 export default function ModeSelect() {
   const navigate = useNavigate();
+  const { t, i18n } = useTranslation();
+
+  const OPTIONS = [
+    {
+      id: 'local',
+      label: t('modeSelect.local'),
+      description: t('modeSelect.localDesc'),
+      Icon: Monitor,
+      iconBg: 'bg-blue-50',
+      iconColor: 'text-blue-600',
+      ring: 'hover:ring-blue-400',
+      path: '/local',
+    },
+    {
+      id: 'multiplayer',
+      label: t('modeSelect.multiplayer'),
+      description: t('modeSelect.multiplayerDesc'),
+      Icon: Globe,
+      iconBg: 'bg-indigo-50',
+      iconColor: 'text-indigo-600',
+      ring: 'hover:ring-indigo-400',
+      path: '/p2p',
+    },
+  ] as const;
+
+  const handleLanguageChange = (lng: SupportedLanguage) => {
+    i18n.changeLanguage(lng);
+  };
 
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-center p-8">
       <h1 className="text-4xl font-bold text-center mb-2 text-gray-900">ChessVerse</h1>
-      <p className="text-gray-500 text-center mb-12">How do you want to play?</p>
+      <p className="text-gray-500 text-center mb-12">{t('modeSelect.subtitle')}</p>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-2xl w-full">
         {OPTIONS.map(({ id, label, description, Icon, iconBg, iconColor, ring, path }) => (
@@ -49,6 +56,23 @@ export default function ModeSelect() {
               <h2 className="text-xl font-bold text-gray-900 mb-1">{label}</h2>
               <p className="text-gray-500 text-sm leading-relaxed">{description}</p>
             </div>
+          </button>
+        ))}
+      </div>
+
+      {/* Language selector */}
+      <div className="mt-10 flex items-center gap-2 flex-wrap justify-center">
+        {SUPPORTED_LANGUAGES.map((lng) => (
+          <button
+            key={lng}
+            onClick={() => handleLanguageChange(lng)}
+            className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
+              i18n.resolvedLanguage === lng
+                ? 'bg-blue-600 text-white'
+                : 'bg-white text-gray-600 hover:bg-gray-200 shadow-sm'
+            }`}
+          >
+            {t(`languages.${lng}`)}
           </button>
         ))}
       </div>

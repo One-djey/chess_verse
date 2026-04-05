@@ -1,0 +1,104 @@
+{
+  "nav": {
+    "settings": "設定",
+    "surrender": "投了",
+    "back": "戻る"
+  },
+  "modeSelect": {
+    "subtitle": "どのようにプレイしますか？",
+    "local": "ローカル",
+    "localDesc": "AIと対戦、または同じ端末で友達とプレイ。",
+    "multiplayer": "マルチプレイヤー",
+    "multiplayerDesc": "サーバー不要でリモートの友達に挑戦。"
+  },
+  "gameModeSelect": {
+    "title": "ゲームモードを選択",
+    "localBadge": "ローカル",
+    "multiplayerBadge": "マルチプレイヤー"
+  },
+  "modes": {
+    "classic": {
+      "title": "クラシック",
+      "description": "すべてのクラシックルールで行う伝統的なチェスゲーム。"
+    },
+    "borderless": {
+      "title": "ボーダーレス",
+      "description": "駒がボードの端を越えて移動でき、ユニークな戦略的可能性を生み出します。"
+    },
+    "all-random": {
+      "title": "オールランダム",
+      "description": "開始時に駒がランダムに配置され、毎回ユニークな体験が生まれます。"
+    }
+  },
+  "p2p": {
+    "joinGame": "ゲームに参加",
+    "connectingViaP2P": "P2P接続中…",
+    "waitingForHost": "ホストを待機中…",
+    "connectedStarting": "接続完了！開始中…",
+    "connectionLost": "接続が切れました",
+    "backToMenu": "メニューに戻る",
+    "cancel": "キャンセル",
+    "inviteOpponent": "対戦相手を招待",
+    "shareQrOrLink": "QRコードまたはリンクを共有",
+    "inviteQrAlt": "招待QRコード",
+    "shareLink": "リンクを共有",
+    "copyLink": "リンクをコピー",
+    "copied": "コピーしました！",
+    "waitingForOpponent": "対戦相手を待機中…",
+    "opponentConnected": "対戦相手が接続しました！",
+    "startingGame": "ゲーム開始中…"
+  },
+  "p2pStatus": {
+    "opponentDisconnected": "対戦相手が切断されました",
+    "youPlayAs": "あなたは",
+    "white": "白",
+    "black": "黒",
+    "yourTurn": "あなたのターン",
+    "opponentTurn": "相手のターン",
+    "establishing": "P2P接続を確立中…"
+  },
+  "gameOver": {
+    "opponentLeft": "対戦相手がメインメニューに戻りました。",
+    "draw": "引き分け！",
+    "whiteSurrendered": "白が投了しました",
+    "blackSurrendered": "黒が投了しました",
+    "whiteWins": "白の勝利！",
+    "blackWins": "黒の勝利！",
+    "defeat": "敗北！",
+    "victory": "勝利！",
+    "white": "白",
+    "black": "黒",
+    "stalemate": "ステールメート — 合法手なし",
+    "onlyKings": "キングのみ残っています",
+    "duration": "対局時間",
+    "movesPlayed": "手数",
+    "aiLevel": "AIレベル",
+    "opponentWantsRematch": "対戦相手が再戦を希望しています！",
+    "accept": "承諾",
+    "decline": "拒否",
+    "waitingForOpponent": "対戦相手を待機中…",
+    "playAgain": "もう一度プレイ",
+    "rematch": "再戦",
+    "mainMenu": "メインメニュー"
+  },
+  "gameSettings": {
+    "title": "ゲーム設定",
+    "gameType": "ゲームタイプ",
+    "soloPlay": "ソロ",
+    "vsAI": "AI対戦",
+    "flipBoard": "ターンごとにボードを反転",
+    "flipBoardDesc": "各手の後にボードが回転します",
+    "aiDifficulty": "AI難易度",
+    "beginner": "初心者",
+    "superhuman": "超人",
+    "language": "言語"
+  },
+  "languages": {
+    "en": "English",
+    "fr": "Français",
+    "es": "Español",
+    "ja": "日本語",
+    "zh": "中文",
+    "ko": "한국어"
+  }
+}

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Flag, Settings } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import ChessBoard from './ChessBoard';
 import GameOver from './GameOver';
 import GameSettings from './GameSettings';
@@ -28,6 +29,7 @@ function resolveGameMode(modeId: string | undefined, p2pGameMode: GameMode | nul
 export default function Game() {
   const { modeId } = useParams();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const aiRef = useRef<ChessAI | null>(null);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
@@ -382,7 +384,8 @@ export default function Game() {
     setRematchState('idle');
   };
 
-  const handleLeaveP2P = () => { leaveRoom(); navigate('/'); };
+  const returnPath = isP2PMode ? '/p2p' : '/local';
+  const handleLeaveP2P = () => { leaveRoom(); navigate(returnPath); };
 
   const lockedColor = isP2PMode ? playerColor : (aiEnabled ? 'white' : null);
 
@@ -403,7 +406,7 @@ export default function Game() {
   return (
     <div className="min-h-screen bg-gray-100">
       <nav className="bg-white shadow-md px-4 py-2 flex justify-between items-center">
-        <h1 className="text-xl font-bold">{gameState.gameMode.title}</h1>
+        <h1 className="text-xl font-bold">{t(`modes.${gameState.gameMode.id}.title`)}</h1>
         <div className="flex items-center gap-4">
           {!isP2PMode && (
             <button
@@ -411,7 +414,7 @@ export default function Game() {
               className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
             >
               <Settings size={20} />
-              Settings
+              {t('nav.settings')}
             </button>
           )}
           <button
@@ -419,7 +422,7 @@ export default function Game() {
             className="flex items-center gap-2 px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
           >
             <Flag size={20} />
-            Surrender
+            {t('nav.surrender')}
           </button>
         </div>
       </nav>
@@ -476,6 +479,7 @@ export default function Game() {
           onAcceptRematch={handleAcceptRematch}
           onDeclineRematch={handleDeclineRematch}
           onMainMenu={isP2PMode ? handleLeaveP2P : undefined}
+          returnPath={returnPath}
         />
       )}
     </div>
