@@ -118,7 +118,7 @@ export default function P2PLobby() {
   const handleShare = async () => {
     if (navigator.share) {
       try {
-        await navigator.share({ title: 'ChessVerse – Rejoins ma partie !', url: shareUrl });
+        await navigator.share({ title: 'ChessVerse – Join my game!', url: shareUrl });
       } catch {
         // user cancelled
       }
@@ -138,29 +138,29 @@ export default function P2PLobby() {
       <div className="min-h-screen bg-gray-100 flex items-center justify-center p-8">
         <div className="bg-white rounded-xl shadow-lg p-10 max-w-md w-full text-center">
           <Users size={48} className="mx-auto mb-4 text-blue-500" />
-          <h1 className="text-3xl font-bold mb-2">Rejoindre la partie</h1>
-          <p className="text-gray-500 mb-8">Connexion en cours via Nostr P2P…</p>
+          <h1 className="text-3xl font-bold mb-2">Join game</h1>
+          <p className="text-gray-500 mb-8">Connecting via P2P…</p>
 
           {connectionState === 'connecting' && (
             <div className="flex flex-col items-center gap-4">
               <Loader2 size={40} className="animate-spin text-blue-500" />
-              <p className="text-gray-600">En attente de l'hôte…</p>
+              <p className="text-gray-600">Waiting for host…</p>
             </div>
           )}
 
           {connectionState === 'disconnected' && (
             <div className="flex flex-col items-center gap-4">
               <WifiOff size={40} className="text-red-500" />
-              <p className="text-red-600 font-semibold">Connexion perdue</p>
+              <p className="text-red-600 font-semibold">Connection lost</p>
               <button onClick={handleBack} className="px-6 py-2 bg-gray-200 rounded-lg hover:bg-gray-300">
-                Retour au menu
+                Back to menu
               </button>
             </div>
           )}
 
           {connectionState !== 'disconnected' && (
             <button onClick={handleBack} className="mt-8 text-sm text-gray-400 hover:text-gray-600 underline">
-              Annuler
+              Cancel
             </button>
           )}
         </div>
@@ -172,13 +172,13 @@ export default function P2PLobby() {
   return (
     <div className="min-h-screen bg-gray-100 flex items-center justify-center p-8">
       <div className="bg-white rounded-xl shadow-lg p-10 max-w-lg w-full">
-        <h1 className="text-3xl font-bold text-center mb-2">Partie P2P</h1>
-        <p className="text-gray-500 text-center mb-8">Invite un adversaire directement, sans serveur</p>
+        <h1 className="text-3xl font-bold text-center mb-2">P2P Game</h1>
+        <p className="text-gray-500 text-center mb-8">Challenge a friend directly, no server needed</p>
 
         {/* Step 1 – Mode selection */}
         {!roomId && (
           <>
-            <h2 className="font-semibold text-lg mb-3">Choisis un mode de jeu</h2>
+            <h2 className="font-semibold text-lg mb-3">Choose a game mode</h2>
             <div className="grid grid-cols-1 gap-3 mb-8">
               {gameModes.map(mode => (
                 <button
@@ -199,10 +199,10 @@ export default function P2PLobby() {
               onClick={handleCreateGame}
               className="w-full py-3 bg-blue-500 text-white font-semibold rounded-lg hover:bg-blue-600 transition"
             >
-              Créer la partie
+              Create game
             </button>
             <button onClick={handleBack} className="w-full mt-3 py-2 text-sm text-gray-400 hover:text-gray-600 underline">
-              Retour au menu
+              Back to menu
             </button>
           </>
         )}
@@ -211,9 +211,9 @@ export default function P2PLobby() {
         {roomId && connectionState === 'waiting' && (
           <>
             <div className="text-center mb-6">
-              <p className="text-gray-600 mb-4">Partage ce QR code ou ce lien avec ton adversaire</p>
+              <p className="text-gray-600 mb-4">Share this QR code or link with your opponent</p>
               {qrDataUrl ? (
-                <img src={qrDataUrl} alt="QR Code invitation" className="mx-auto rounded-lg border border-gray-200" />
+                <img src={qrDataUrl} alt="Invite QR code" className="mx-auto rounded-lg border border-gray-200" />
               ) : (
                 <div className="w-[220px] h-[220px] mx-auto flex items-center justify-center bg-gray-100 rounded-lg">
                   <Loader2 size={32} className="animate-spin text-gray-400" />
@@ -227,24 +227,24 @@ export default function P2PLobby() {
                 className="flex-1 flex items-center justify-center gap-2 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition text-sm font-medium"
               >
                 <Share2 size={16} />
-                Partager le lien
+                Share link
               </button>
               <button
                 onClick={handleCopy}
                 className="flex-1 flex items-center justify-center gap-2 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition text-sm font-medium"
               >
                 {copied ? <CheckCircle size={16} className="text-green-500" /> : <Copy size={16} />}
-                {copied ? 'Copié !' : 'Copier le lien'}
+                {copied ? 'Copied!' : 'Copy link'}
               </button>
             </div>
 
             <div className="flex items-center gap-3 py-4 bg-gray-50 rounded-lg px-4">
               <Loader2 size={20} className="animate-spin text-blue-500 shrink-0" />
-              <p className="text-gray-600 text-sm">En attente de l'adversaire…</p>
+              <p className="text-gray-600 text-sm">Waiting for opponent…</p>
             </div>
 
             <button onClick={handleBack} className="w-full mt-4 text-sm text-gray-400 hover:text-gray-600 underline">
-              Annuler
+              Cancel
             </button>
           </>
         )}
@@ -253,8 +253,8 @@ export default function P2PLobby() {
         {connectionState === 'connected' && (
           <div className="text-center py-8">
             <CheckCircle size={48} className="mx-auto mb-4 text-green-500" />
-            <p className="text-lg font-semibold">Adversaire connecté !</p>
-            <p className="text-gray-500 text-sm mt-1">Lancement de la partie…</p>
+            <p className="text-lg font-semibold">Opponent connected!</p>
+            <p className="text-gray-500 text-sm mt-1">Starting game…</p>
           </div>
         )}
       </div>

@@ -70,9 +70,9 @@ export default function GameModes() {
             <Users size={72} className="text-white opacity-80" />
           </div>
           <div className="p-6">
-            <h2 className="text-2xl font-bold mb-2">P2P Multijoueur</h2>
+            <h2 className="text-2xl font-bold mb-2">P2P Multiplayer</h2>
             <p className="text-gray-600">
-              Joue contre un ami à distance, sans serveur. Partage un lien ou un QR code pour démarrer une partie directe.
+              Play against a friend remotely, no server needed. Share a link or QR code to start a direct game.
             </p>
           </div>
         </div>
