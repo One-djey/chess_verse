@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useRef, useCallback } from 'react';
 import type { Room } from '@trystero-p2p/core';
-import { P2PConnectionState, P2PRole, MoveMessage, ColorAssignMessage, SyncStateMessage } from '../types/p2p';
+import { P2PConnectionState, P2PRole, ColorAssignMessage } from '../types/p2p';
 import { PieceColor, GameMode, Piece } from '../types/chess';
 import { joinRoom, makeRoomActions } from '../services/TrysteroService';
 
@@ -18,7 +18,7 @@ interface P2PContextValue {
   actions: ReturnType<typeof makeRoomActions> | null;
 
   // Actions
-  startRoom: (roomId: string) => void;
+  startRoom: (roomId: string, mode: GameMode) => void;
   joinExistingRoom: (roomId: string) => void;
   setColorAssign: (msg: ColorAssignMessage) => void;
   setConnectionState: (state: P2PConnectionState) => void;
@@ -39,12 +39,14 @@ export function P2PProvider({ children }: { children: React.ReactNode }) {
   const actionsRef = useRef<ReturnType<typeof makeRoomActions> | null>(null);
   const [, forceUpdate] = useState(0);
 
-  const startRoom = useCallback((roomId: string) => {
+  // Host passes its chosen gameMode at room creation so Game.tsx can init
+  const startRoom = useCallback((roomId: string, mode: GameMode) => {
     const room = joinRoom(roomId);
     roomRef.current = room;
     actionsRef.current = makeRoomActions(room);
     setRole('host');
     setPlayerColor('white');
+    setGameMode(mode);
     setIsP2PMode(true);
     setConnectionState('waiting');
     forceUpdate(n => n + 1);
@@ -55,7 +57,7 @@ export function P2PProvider({ children }: { children: React.ReactNode }) {
     roomRef.current = room;
     actionsRef.current = makeRoomActions(room);
     setRole('guest');
-    setPlayerColor(null); // set when color_assign received
+    setPlayerColor(null);
     setIsP2PMode(true);
     setConnectionState('connecting');
     forceUpdate(n => n + 1);

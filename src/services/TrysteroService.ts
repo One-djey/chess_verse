@@ -1,6 +1,13 @@
 import { joinRoom as trysteroJoinRoom } from 'trystero';
 import type { Room } from '@trystero-p2p/core';
-import type { MoveMessage, ColorAssignMessage, SyncStateMessage, ResignMessage } from '../types/p2p';
+import type {
+  MoveProposalMessage,
+  MoveConfirmMessage,
+  MoveRejectMessage,
+  ColorAssignMessage,
+  SyncStateMessage,
+  ResignMessage,
+} from '../types/p2p';
 
 const APP_ID = 'chess-verse-2024';
 
@@ -15,19 +22,19 @@ export function generateRoomId(): string {
 }
 
 export function makeRoomActions(room: Room) {
-  const [sendMove, onMove] = room.makeAction<MoveMessage>('move');
-  const [sendColorAssign, onColorAssign] = room.makeAction<ColorAssignMessage>('color_assign');
-  const [sendSyncState, onSyncState] = room.makeAction<SyncStateMessage>('sync_state');
-  const [sendResign, onResign] = room.makeAction<ResignMessage>('resign');
+  const [sendMoveProposal, onMoveProposal] = room.makeAction<MoveProposalMessage>('move_proposal');
+  const [sendMoveConfirm, onMoveConfirm]   = room.makeAction<MoveConfirmMessage>('move_confirm');
+  const [sendMoveReject, onMoveReject]     = room.makeAction<MoveRejectMessage>('move_reject');
+  const [sendColorAssign, onColorAssign]   = room.makeAction<ColorAssignMessage>('color_assign');
+  const [sendSyncState, onSyncState]       = room.makeAction<SyncStateMessage>('sync_state');
+  const [sendResign, onResign]             = room.makeAction<ResignMessage>('resign');
 
   return {
-    sendMove,
-    onMove,
-    sendColorAssign,
-    onColorAssign,
-    sendSyncState,
-    onSyncState,
-    sendResign,
-    onResign,
+    sendMoveProposal, onMoveProposal,
+    sendMoveConfirm,  onMoveConfirm,
+    sendMoveReject,   onMoveReject,
+    sendColorAssign,  onColorAssign,
+    sendSyncState,    onSyncState,
+    sendResign,       onResign,
   };
 }

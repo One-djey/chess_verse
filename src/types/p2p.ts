@@ -11,11 +11,26 @@ export interface P2PState {
   peerId: string | null;
 }
 
-export type MoveMessage = {
-  type: 'move';
+// Guest → Host: propose a move (not yet applied)
+export type MoveProposalMessage = {
+  type: 'move_proposal';
   pieceId: string;
   from: Position;
   to: Position;
+};
+
+// Host → Guest: authoritative confirmed move with sequence number
+export type MoveConfirmMessage = {
+  type: 'move_confirm';
+  pieceId: string;
+  from: Position;
+  to: Position;
+  seq: number;
+};
+
+// Host → Guest: proposed move was invalid
+export type MoveRejectMessage = {
+  type: 'move_reject';
 };
 
 export type ColorAssignMessage = {
@@ -28,6 +43,7 @@ export type ColorAssignMessage = {
 export type SyncStateMessage = {
   type: 'sync_state';
   pieces: Piece[];
+  seq: number; // initial sequence (always 0)
 };
 
 export type ResignMessage = {
@@ -35,7 +51,9 @@ export type ResignMessage = {
 };
 
 export type P2PMessage =
-  | MoveMessage
+  | MoveProposalMessage
+  | MoveConfirmMessage
+  | MoveRejectMessage
   | ColorAssignMessage
   | SyncStateMessage
   | ResignMessage;

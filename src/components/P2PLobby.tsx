@@ -114,7 +114,7 @@ export default function P2PLobby() {
   const handleCreateGame = () => {
     const id = generateRoomId();
     setRoomId(id);
-    startRoom(id);
+    startRoom(id, selectedMode);
   };
 
   const handleCopy = async () => {

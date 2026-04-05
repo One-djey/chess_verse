@@ -8,10 +8,8 @@ import P2PStatusBar from './P2PStatusBar';
 import { GameState, Piece, Position, GameMode, PieceColor } from '../types/chess';
 import {
   getInitialPieces,
-  isValidMove,
   isInCheck,
   hasLegalMoves,
-  wouldBeInCheck,
   getValidMoves,
   findCastlingMove
 } from '../utils/chess';
@@ -21,7 +19,6 @@ import { useP2P } from '../context/P2PContext';
 
 const STORAGE_KEY = 'chess_settings';
 
-// Resolve game mode for the P2P route (modeId === 'p2p')
 function resolveGameMode(modeId: string | undefined, p2pGameMode: GameMode | null): GameMode {
   if (modeId === 'p2p' && p2pGameMode) return p2pGameMode;
   return gameModes.find(m => m.id === modeId) ?? gameModes[0];
@@ -35,6 +32,7 @@ export default function Game() {
 
   const {
     isP2PMode,
+    role,
     playerColor,
     connectionState,
     gameMode: p2pGameMode,
@@ -46,13 +44,17 @@ export default function Game() {
 
   const gameMode = resolveGameMode(modeId, p2pGameMode);
 
-  // Charger les settings depuis le localStorage
+  // Sequence tracking
+  // Host: increments on every confirmed move
+  // Guest: tracks last received seq to detect gaps
+  const seqRef = useRef(0);
+
+  // Ref to always have fresh gameState inside Trystero callbacks (avoids stale closure)
+  const gameStateRef = useRef<GameState | null>(null);
+
   const [settings, setSettings] = useState(() => {
-    const savedSettings = localStorage.getItem(STORAGE_KEY);
-    return savedSettings ? JSON.parse(savedSettings) : {
-      aiEnabled: true,
-      aiDifficulty: 5
-    };
+    const saved = localStorage.getItem(STORAGE_KEY);
+    return saved ? JSON.parse(saved) : { aiEnabled: true, aiDifficulty: 5 };
   });
 
   const [gameState, setGameState] = useState<GameState>({
@@ -68,45 +70,31 @@ export default function Game() {
     gameMode,
   });
 
-  // Sauvegarder les settings dans le localStorage quand ils changent
+  // Keep ref in sync
+  gameStateRef.current = gameState;
+
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
   }, [settings]);
 
   useEffect(() => {
-    if (!modeId) {
-      navigate('/');
-      return;
-    }
-
-    // In P2P mode, wait for gameMode to arrive from host before initialising
+    if (!modeId) { navigate('/'); return; }
     if (modeId === 'p2p' && !p2pGameMode) return;
 
     const pieces = (modeId === 'p2p' && p2pInitialPieces)
       ? p2pInitialPieces
       : getInitialPieces(gameMode);
 
-    setGameState(prev => ({ ...prev, pieces, gameMode }));
+    setGameState(prev => ({ ...prev, pieces, gameMode, startTime: Date.now() }));
 
-    // Only initialise AI for non-P2P games
     if (!isP2PMode) {
-      const initAI = () => {
-        if (!aiRef.current) {
-          try {
-            aiRef.current = new ChessAI();
-          } catch (error) {
-            console.error('Erreur lors de l\'initialisation de l\'IA:', error);
-          }
-        }
-      };
-      initAI();
+      if (!aiRef.current) {
+        try { aiRef.current = new ChessAI(); } catch (e) { console.error(e); }
+      }
     }
 
     return () => {
-      if (aiRef.current) {
-        aiRef.current.destroy();
-        aiRef.current = null;
-      }
+      if (aiRef.current) { aiRef.current.destroy(); aiRef.current = null; }
     };
   }, [modeId, navigate, p2pGameMode, p2pInitialPieces]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -119,18 +107,60 @@ export default function Game() {
     }
   }, [gameState.currentTurn, aiEnabled, gameState.gameOver]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // ── P2P: receive remote moves ──────────────────────────────────────────────
+  // ── P2P message handlers ───────────────────────────────────────────────────
   useEffect(() => {
     if (!isP2PMode || !actions) return;
 
-    actions.onMove((msg) => {
-      setGameState(prev => {
-        const piece = prev.pieces.find(p => p.id === msg.pieceId);
-        if (!piece) return prev;
-        return applyMoveToState(prev, piece, msg.to);
-      });
-    });
+    if (role === 'host') {
+      // HOST receives move proposals from guest, validates, confirms or rejects
+      actions.onMoveProposal((msg) => {
+        const state = gameStateRef.current;
+        if (!state) return;
 
+        // Must be black's turn and piece must be black
+        const piece = state.pieces.find(p => p.id === msg.pieceId && p.color === 'black');
+        if (!piece || state.currentTurn !== 'black' || state.gameOver) {
+          actions.sendMoveReject({ type: 'move_reject' });
+          return;
+        }
+
+        const valid = getValidMoves(piece, state.pieces, state.gameMode)
+          .some(v => v.x === msg.to.x && v.y === msg.to.y);
+
+        if (!valid) {
+          actions.sendMoveReject({ type: 'move_reject' });
+          return;
+        }
+
+        seqRef.current++;
+        const seq = seqRef.current;
+        // Confirm to guest before applying locally (so guest sees it immediately)
+        actions.sendMoveConfirm({ type: 'move_confirm', pieceId: msg.pieceId, from: msg.from, to: msg.to, seq });
+        setGameState(prev => applyMoveToState(prev, piece, msg.to));
+      });
+    }
+
+    if (role === 'guest') {
+      // GUEST receives authoritative move confirmations from host
+      actions.onMoveConfirm((msg) => {
+        if (msg.seq !== seqRef.current + 1) {
+          console.warn(`P2P seq gap: expected ${seqRef.current + 1}, got ${msg.seq}`);
+        }
+        seqRef.current = msg.seq;
+        setGameState(prev => {
+          const piece = prev.pieces.find(p => p.id === msg.pieceId);
+          if (!piece) return prev;
+          return applyMoveToState(prev, piece, msg.to);
+        });
+      });
+
+      // GUEST receives rejection: just reset selection (move was already cleared optimistically)
+      actions.onMoveReject(() => {
+        setGameState(prev => ({ ...prev, selectedPiece: null, validMoves: [] }));
+      });
+    }
+
+    // Both sides handle resign
     actions.onResign(() => {
       setGameState(prev => ({
         ...prev,
@@ -138,14 +168,11 @@ export default function Game() {
         winner: playerColor ?? 'white',
       }));
     });
-  }, [isP2PMode, actions, playerColor]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // ── P2P: handle disconnection mid-game ────────────────────────────────────
-  useEffect(() => {
-    if (isP2PMode && connectionState === 'disconnected' && !gameState.gameOver) {
-      // keep game visible; P2PStatusBar shows the banner
-    }
-  }, [isP2PMode, connectionState, gameState.gameOver]);
+    room?.onPeerLeave(() => {
+      // P2PStatusBar shows the disconnect banner; game pauses
+    });
+  }, [isP2PMode, actions, role, playerColor, room]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Pure state-transition helper ───────────────────────────────────────────
   function applyMoveToState(prev: GameState, piece: Piece, target: Position): GameState {
@@ -157,8 +184,7 @@ export default function Game() {
     const castlingMove = findCastlingMove(piece, normalizedTarget, prev.pieces, prev.gameMode);
 
     const capturedPiece = prev.pieces.find(p =>
-      p.position.x === normalizedTarget.x &&
-      p.position.y === normalizedTarget.y
+      p.position.x === normalizedTarget.x && p.position.y === normalizedTarget.y
     );
 
     let newPieces = capturedPiece
@@ -177,94 +203,66 @@ export default function Game() {
     });
 
     if (castlingMove) {
-      newPieces = newPieces.map(p => {
-        if (p.id === castlingMove.rook.id) {
-          return { ...p, position: castlingMove.rookTarget, hasMoved: true };
-        }
-        return p;
-      });
+      newPieces = newPieces.map(p =>
+        p.id === castlingMove.rook.id
+          ? { ...p, position: castlingMove.rookTarget, hasMoved: true }
+          : p
+      );
     }
 
     if (capturedPiece?.type === 'king') {
       return {
-        ...prev,
-        pieces: newPieces,
+        ...prev, pieces: newPieces,
         currentTurn: prev.currentTurn === 'white' ? 'black' : 'white',
-        selectedPiece: null,
-        validMoves: [],
-        isCheck: false,
+        selectedPiece: null, validMoves: [], isCheck: false,
         moveCount: { ...prev.moveCount, [prev.currentTurn]: prev.moveCount[prev.currentTurn] + 1 },
-        gameOver: true,
-        winner: prev.currentTurn,
+        gameOver: true, winner: prev.currentTurn,
       };
     }
 
     const onlyKingsLeft = newPieces.every(p => p.type === 'king');
     if (onlyKingsLeft) {
       return {
-        ...prev,
-        pieces: newPieces,
+        ...prev, pieces: newPieces,
         currentTurn: prev.currentTurn === 'white' ? 'black' : 'white',
-        selectedPiece: null,
-        validMoves: [],
-        isCheck: false,
+        selectedPiece: null, validMoves: [], isCheck: false,
         moveCount: { ...prev.moveCount, [prev.currentTurn]: prev.moveCount[prev.currentTurn] + 1 },
-        gameOver: true,
-        winner: null,
-        drawReason: 'only-kings',
+        gameOver: true, winner: null, drawReason: 'only-kings',
       };
     }
 
     const nextTurn: PieceColor = prev.currentTurn === 'white' ? 'black' : 'white';
     const nextIsCheck = isInCheck(nextTurn, newPieces, prev.gameMode);
-    const nextHasLegalMoves = hasLegalMoves(nextTurn, newPieces, prev.gameMode);
-    const isCheckmate = nextIsCheck && !nextHasLegalMoves;
-    const isStalemate = !nextIsCheck && !nextHasLegalMoves;
+    const nextHasLegal = hasLegalMoves(nextTurn, newPieces, prev.gameMode);
 
     return {
-      ...prev,
-      pieces: newPieces,
-      currentTurn: nextTurn,
-      selectedPiece: null,
-      validMoves: [],
-      isCheck: nextIsCheck,
+      ...prev, pieces: newPieces, currentTurn: nextTurn,
+      selectedPiece: null, validMoves: [], isCheck: nextIsCheck,
       moveCount: { ...prev.moveCount, [prev.currentTurn]: prev.moveCount[prev.currentTurn] + 1 },
-      gameOver: isCheckmate || isStalemate,
-      winner: isCheckmate ? prev.currentTurn : null,
-      drawReason: isStalemate ? 'stalemate' : undefined,
+      gameOver: !nextHasLegal,
+      winner: nextIsCheck && !nextHasLegal ? prev.currentTurn : null,
+      drawReason: !nextIsCheck && !nextHasLegal ? 'stalemate' : undefined,
     };
   }
 
   const handleAIMove = async () => {
-    if (!aiRef.current) {
-      setTimeout(() => handleAIMove(), 1000);
-      return;
-    }
-
+    if (!aiRef.current) { setTimeout(() => handleAIMove(), 1000); return; }
     try {
       const move = await aiRef.current.getNextMove(gameState.pieces);
-
       const piece = gameState.pieces.find(
         p => p.position.x === move.from.x && p.position.y === move.from.y && p.color === 'black'
       );
-
       if (!piece) return;
-
-      const validMoves = getValidMoves(piece, gameState.pieces, gameState.gameMode);
-      const isValid = validMoves.some(v => v.x === move.to.x && v.y === move.to.y);
-      if (!isValid) return;
-
+      const valid = getValidMoves(piece, gameState.pieces, gameState.gameMode)
+        .some(v => v.x === move.to.x && v.y === move.to.y);
+      if (!valid) return;
       setGameState(prev => applyMoveToState(prev, piece, move.to));
-    } catch (error) {
-      console.error("Erreur lors du mouvement de l'IA:", error);
-    }
+    } catch (e) { console.error(e); }
   };
 
   const handleSettingsChange = (newSettings: typeof settings) => {
     setSettings(newSettings);
-    if (aiRef.current) {
-      aiRef.current.setDifficulty(newSettings.aiDifficulty);
-    }
+    if (aiRef.current) aiRef.current.setDifficulty(newSettings.aiDifficulty);
   };
 
   const handlePieceSelect = (piece: Piece) => {
@@ -273,30 +271,40 @@ export default function Game() {
     } else {
       if (aiEnabled && piece.color === 'black') return;
     }
-
     if (piece.color !== gameState.currentTurn) return;
-
     const validMoves = getValidMoves(piece, gameState.pieces, gameState.gameMode);
     setGameState(prev => ({ ...prev, selectedPiece: piece, validMoves }));
   };
 
   const handleMove = (target: Position) => {
     if (!gameState.selectedPiece) return;
-
+    const piece = gameState.selectedPiece;
     const normalizedTarget = {
       x: ((target.x % 8) + 8) % 8,
       y: ((target.y % 8) + 8) % 8,
     };
 
-    const piece = gameState.selectedPiece;
-
-    // Send move to peer before applying locally
-    if (isP2PMode && actions) {
-      actions.sendMove({
-        type: 'move',
+    if (isP2PMode && role === 'guest') {
+      // Guest: propose to host, clear selection but don't apply board change
+      actions?.sendMoveProposal({
+        type: 'move_proposal',
         pieceId: piece.id,
         from: piece.position,
         to: normalizedTarget,
+      });
+      setGameState(prev => ({ ...prev, selectedPiece: null, validMoves: [] }));
+      return;
+    }
+
+    // Host or local: apply immediately
+    if (isP2PMode && role === 'host') {
+      seqRef.current++;
+      actions?.sendMoveConfirm({
+        type: 'move_confirm',
+        pieceId: piece.id,
+        from: piece.position,
+        to: normalizedTarget,
+        seq: seqRef.current,
       });
     }
 
@@ -304,9 +312,7 @@ export default function Game() {
   };
 
   const handleResign = () => {
-    if (isP2PMode && actions) {
-      actions.sendResign({ type: 'resign' });
-    }
+    if (isP2PMode && actions) actions.sendResign({ type: 'resign' });
     setGameState(prev => ({
       ...prev,
       gameOver: true,
@@ -315,6 +321,7 @@ export default function Game() {
   };
 
   const handleReplay = () => {
+    seqRef.current = 0;
     setGameState({
       pieces: getInitialPieces(gameMode),
       currentTurn: 'white',
@@ -329,12 +336,8 @@ export default function Game() {
     });
   };
 
-  const handleLeaveP2P = () => {
-    leaveRoom();
-    navigate('/');
-  };
+  const handleLeaveP2P = () => { leaveRoom(); navigate('/'); };
 
-  // Locked color for ChessBoard: in P2P mode lock to the local player's color
   const lockedColor = isP2PMode ? playerColor : (aiEnabled ? 'white' : null);
 
   return (
