@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <rect width="100" height="100" rx="18" fill="#1D4ED8"/>
+  <!-- 4×4 chess board centred in the icon -->
+  <g>
+    <rect x="12" y="12" width="19" height="19" fill="#F2F4F8"/>
+    <rect x="31" y="12" width="19" height="19" fill="#3B82F6"/>
+    <rect x="50" y="12" width="19" height="19" fill="#F2F4F8"/>
+    <rect x="69" y="12" width="19" height="19" fill="#3B82F6"/>
+
+    <rect x="12" y="31" width="19" height="19" fill="#3B82F6"/>
+    <rect x="31" y="31" width="19" height="19" fill="#F2F4F8"/>
+    <rect x="50" y="31" width="19" height="19" fill="#3B82F6"/>
+    <rect x="69" y="31" width="19" height="19" fill="#F2F4F8"/>
+
+    <rect x="12" y="50" width="19" height="19" fill="#F2F4F8"/>
+    <rect x="31" y="50" width="19" height="19" fill="#3B82F6"/>
+    <rect x="50" y="50" width="19" height="19" fill="#F2F4F8"/>
+    <rect x="69" y="50" width="19" height="19" fill="#3B82F6"/>
+
+    <rect x="12" y="69" width="19" height="19" fill="#3B82F6"/>
+    <rect x="31" y="69" width="19" height="19" fill="#F2F4F8"/>
+    <rect x="50" y="69" width="19" height="19" fill="#3B82F6"/>
+    <rect x="69" y="69" width="19" height="19" fill="#F2F4F8"/>
+  </g>
+</svg>

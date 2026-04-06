@@ -103,5 +103,9 @@
     "ko": "한국어",
     "it": "Italiano",
     "ar": "العربية"
+  },
+  "install": {
+    "message": "Installez ChessVerse pour un accès rapide",
+    "cta": "Installer"
   }
 }

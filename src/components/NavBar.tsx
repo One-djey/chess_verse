@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Settings, Flag, ChevronRight } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import GameSettings from './GameSettings';
+import InstallBanner from './InstallBanner';
 
 export interface Crumb {
   label: string;
@@ -26,6 +27,7 @@ export default function NavBar({ breadcrumbs = [], onSurrender, gameSettings, on
 
   return (
     <>
+      <InstallBanner />
       <nav className="bg-white border-b border-gray-200 shadow-sm px-4 py-2.5 flex items-center justify-between gap-4">
         {/* ── Left: ChessVerse brand + breadcrumb ── */}
         <div className="flex items-center gap-1.5 min-w-0 flex-1">
