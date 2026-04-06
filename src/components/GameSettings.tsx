@@ -1,7 +1,8 @@
-import { X } from 'lucide-react';
+import { X, Download } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { getDifficultyDescription } from '../utils/chess';
 import { SUPPORTED_LANGUAGES, SupportedLanguage } from '../i18n';
+import { useInstall } from '../context/InstallContext';
 
 type GameSettingsState = { aiEnabled: boolean; aiDifficulty: number; flipBoard: boolean };
 
@@ -15,6 +16,7 @@ interface GameSettingsProps {
 
 export default function GameSettings({ isOpen, onClose, settings, onSettingsChange }: GameSettingsProps) {
   const { t, i18n } = useTranslation();
+  const { canInstall, triggerInstall } = useInstall();
 
   if (!isOpen) return null;
 
@@ -136,6 +138,19 @@ export default function GameSettings({ isOpen, onClose, settings, onSettingsChan
               ))}
             </div>
           </div>
+
+          {/* ── Install app (only when installable and not already PWA) ── */}
+          {canInstall && (
+            <div className="pt-2 border-t border-gray-100">
+              <button
+                onClick={triggerInstall}
+                className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 active:bg-blue-800 transition"
+              >
+                <Download size={16} />
+                {t('install.cta')} ChessVerse
+              </button>
+            </div>
+          )}
 
         </div>
       </div>
