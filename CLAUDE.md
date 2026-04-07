@@ -14,7 +14,11 @@ React 18 + TypeScript + Vite + Tailwind CSS. No backend. P2P via Trystero (WebRT
 | Game (main logic) | `src/components/Game.tsx` |
 | Game end modal | `src/components/GameOver.tsx` |
 | Settings modal | `src/components/GameSettings.tsx` |
-| Chess rules/utils | `src/utils/chess.ts` |
+| Chess board/pieces | `src/utils/chess/board.ts` |
+| Chess move logic | `src/utils/chess/moves.ts` |
+| Chess barrel export | `src/utils/chess.ts` (re-exports both above) |
+| Game state hook | `src/hooks/useChessGame.ts` |
+| P2P game hook | `src/hooks/useP2PGame.ts` |
 | P2P context | `src/context/P2PContext.tsx` |
 | AI service | `src/services/ChessAI.ts` |
 
