@@ -1,0 +1,112 @@
+{
+  "nav": {
+    "settings": "설정",
+    "surrender": "항복",
+    "back": "뒤로",
+    "invite": "초대"
+  },
+  "modeSelect": {
+    "subtitle": "어떻게 플레이하시겠습니까?",
+    "local": "로컬",
+    "localDesc": "AI와 대결하거나 같은 기기에서 친구와 번갈아 플레이하세요.",
+    "multiplayer": "멀티플레이어",
+    "multiplayerDesc": "서버 없이 원격으로 친구에게 도전하세요.",
+    "offline": "오프라인 — 멀티플레이어 사용 불가"
+  },
+  "gameModeSelect": {
+    "title": "게임 모드 선택",
+    "localBadge": "로컬",
+    "multiplayerBadge": "멀티플레이어"
+  },
+  "modes": {
+    "classic": {
+      "title": "클래식",
+      "description": "모든 클래식 규칙이 적용되는 전통 체스 게임."
+    },
+    "borderless": {
+      "title": "경계 없음",
+      "description": "말이 보드 가장자리를 넘어 이동할 수 있어 독특한 전략적 가능성을 만들어냅니다."
+    },
+    "all-random": {
+      "title": "완전 랜덤",
+      "description": "게임 시작 시 말이 무작위로 배치되어 매번 독특한 경험을 제공합니다."
+    }
+  },
+  "p2p": {
+    "joinGame": "게임 참가",
+    "connectingViaP2P": "P2P 연결 중…",
+    "waitingForHost": "호스트 대기 중…",
+    "connectedStarting": "연결됨! 시작 중…",
+    "connectionLost": "연결 끊김",
+    "backToMenu": "메뉴로 돌아가기",
+    "cancel": "취소",
+    "inviteOpponent": "상대방 초대",
+    "shareQrOrLink": "QR 코드 또는 링크 공유",
+    "inviteQrAlt": "초대 QR 코드",
+    "shareLink": "링크 공유",
+    "copyLink": "링크 복사",
+    "copied": "복사됨!",
+    "waitingForOpponent": "상대방 대기 중…",
+    "opponentConnected": "상대방 연결됨!",
+    "startingGame": "게임 시작 중…"
+  },
+  "p2pStatus": {
+    "opponentDisconnected": "상대방 연결 끊김",
+    "youPlayAs": "당신은",
+    "white": "백",
+    "black": "흑",
+    "yourTurn": "당신의 차례",
+    "opponentTurn": "상대방 차례",
+    "establishing": "P2P 연결 설정 중…"
+  },
+  "gameOver": {
+    "opponentLeft": "상대방이 메인 메뉴로 돌아갔습니다.",
+    "draw": "무승부!",
+    "whiteSurrendered": "백이 항복했습니다",
+    "blackSurrendered": "흑이 항복했습니다",
+    "whiteWins": "백 승리!",
+    "blackWins": "흑 승리!",
+    "defeat": "패배!",
+    "victory": "승리!",
+    "white": "백",
+    "black": "흑",
+    "stalemate": "스테일메이트 — 합법적인 이동 없음",
+    "onlyKings": "킹만 남아 있습니다",
+    "duration": "시간",
+    "movesPlayed": "진행한 수",
+    "aiLevel": "AI 레벨",
+    "opponentWantsRematch": "상대방이 재대결을 원합니다!",
+    "accept": "수락",
+    "decline": "거절",
+    "waitingForOpponent": "상대방 대기 중…",
+    "playAgain": "다시 플레이",
+    "rematch": "재대결",
+    "mainMenu": "메인 메뉴"
+  },
+  "gameSettings": {
+    "title": "게임 설정",
+    "gameType": "게임 유형",
+    "soloPlay": "솔로",
+    "vsAI": "AI 대전",
+    "flipBoard": "차례마다 보드 뒤집기",
+    "flipBoardDesc": "각 이동 후 보드가 회전합니다",
+    "aiDifficulty": "AI 난이도",
+    "beginner": "초보",
+    "superhuman": "초인",
+    "language": "언어"
+  },
+  "languages": {
+    "en": "English",
+    "fr": "Français",
+    "es": "Español",
+    "ja": "日本語",
+    "zh": "中文",
+    "ko": "한국어",
+    "it": "Italiano",
+    "ar": "العربية"
+  },
+  "install": {
+    "message": "빠른 접근을 위해 ChessVerse를 설치하세요",
+    "cta": "설치"
+  }
+}

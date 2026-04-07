@@ -1,0 +1,112 @@
+{
+  "nav": {
+    "settings": "Settings",
+    "surrender": "Surrender",
+    "back": "Back",
+    "invite": "Invite"
+  },
+  "modeSelect": {
+    "subtitle": "How do you want to play?",
+    "local": "Local",
+    "localDesc": "Play vs AI or pass-and-play with a friend on the same device.",
+    "multiplayer": "Multiplayer",
+    "multiplayerDesc": "Challenge a friend remotely — no server needed.",
+    "offline": "Offline — multiplayer unavailable"
+  },
+  "gameModeSelect": {
+    "title": "Choose your game mode",
+    "localBadge": "Local",
+    "multiplayerBadge": "Multiplayer"
+  },
+  "modes": {
+    "classic": {
+      "title": "Classic",
+      "description": "The traditional chess game with all its classic rules."
+    },
+    "borderless": {
+      "title": "Borderless",
+      "description": "Pieces can cross the edges of the board, creating unique strategic possibilities."
+    },
+    "all-random": {
+      "title": "All Random",
+      "description": "Pieces are randomly placed at the start, creating a unique experience every time."
+    }
+  },
+  "p2p": {
+    "joinGame": "Join game",
+    "connectingViaP2P": "Connecting via P2P…",
+    "waitingForHost": "Waiting for host…",
+    "connectedStarting": "Connected! Starting…",
+    "connectionLost": "Connection lost",
+    "backToMenu": "Back to menu",
+    "cancel": "Cancel",
+    "inviteOpponent": "Invite your opponent",
+    "shareQrOrLink": "Share this QR code or link",
+    "inviteQrAlt": "Invite QR code",
+    "shareLink": "Share link",
+    "copyLink": "Copy link",
+    "copied": "Copied!",
+    "waitingForOpponent": "Waiting for opponent…",
+    "opponentConnected": "Opponent connected!",
+    "startingGame": "Starting game…"
+  },
+  "p2pStatus": {
+    "opponentDisconnected": "Opponent disconnected",
+    "youPlayAs": "You play as",
+    "white": "White",
+    "black": "Black",
+    "yourTurn": "Your turn",
+    "opponentTurn": "Opponent's turn",
+    "establishing": "Establishing P2P connection…"
+  },
+  "gameOver": {
+    "opponentLeft": "Opponent returned to the main menu.",
+    "draw": "Draw!",
+    "whiteSurrendered": "White surrendered",
+    "blackSurrendered": "Black surrendered",
+    "whiteWins": "White wins!",
+    "blackWins": "Black wins!",
+    "defeat": "Defeat!",
+    "victory": "Victory!",
+    "white": "White",
+    "black": "Black",
+    "stalemate": "Stalemate — no legal moves",
+    "onlyKings": "Only kings remain",
+    "duration": "Duration",
+    "movesPlayed": "Moves played",
+    "aiLevel": "AI Level",
+    "opponentWantsRematch": "Opponent wants a rematch!",
+    "accept": "Accept",
+    "decline": "Decline",
+    "waitingForOpponent": "Waiting for opponent…",
+    "playAgain": "Play Again",
+    "rematch": "Rematch",
+    "mainMenu": "Main Menu"
+  },
+  "gameSettings": {
+    "title": "Game Settings",
+    "gameType": "Game Type",
+    "soloPlay": "Solo Play",
+    "vsAI": "vs AI",
+    "flipBoard": "Flip board on turn",
+    "flipBoardDesc": "Board rotates after each move",
+    "aiDifficulty": "AI Difficulty",
+    "beginner": "Beginner",
+    "superhuman": "Superhuman",
+    "language": "Language"
+  },
+  "languages": {
+    "en": "English",
+    "fr": "Français",
+    "es": "Español",
+    "ja": "日本語",
+    "zh": "中文",
+    "ko": "한국어",
+    "it": "Italiano",
+    "ar": "العربية"
+  },
+  "install": {
+    "message": "Install ChessVerse for quick access",
+    "cta": "Install"
+  }
+}

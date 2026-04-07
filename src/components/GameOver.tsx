@@ -1,5 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Trophy, Clock, Hash, Brain, RefreshCw, Loader2, Flag, LogOut } from 'lucide-react';
 import { getDifficultyDescription } from '../utils/chess';
 import { PieceColor } from '../types/chess';
@@ -23,6 +24,8 @@ interface GameOverProps {
   onAcceptRematch?: () => void;
   onDeclineRematch?: () => void;
   onMainMenu?: () => void;
+  /** Path to return to on "Main Menu" — defaults to '/' */
+  returnPath?: string;
 }
 
 export default function GameOver({
@@ -30,35 +33,37 @@ export default function GameOver({
   onReplay, aiEnabled, aiDifficulty,
   isP2PMode, playerColor, rematchState, peerLeft,
   onRematch, onAcceptRematch, onDeclineRematch, onMainMenu,
+  returnPath = '/',
 }: GameOverProps) {
   const navigate = useNavigate();
-  const goMainMenu = () => { onMainMenu?.(); navigate('/'); };
+  const { t } = useTranslation();
+
+  const goMainMenu = () => { onMainMenu?.(); navigate(returnPath); };
   const minutes = Math.floor(duration / 60000);
   const seconds = Math.floor((duration % 60000) / 1000);
   const isDraw = winner === null;
 
   // ── Title logic ────────────────────────────────────────────────────────────
   const getTitle = () => {
-    if (isDraw) return 'Draw!';
+    if (isDraw) return t('gameOver.draw');
     if (surrenderedBy) {
-      return `${surrenderedBy === 'white' ? 'White' : 'Black'} surrendered`;
+      return surrenderedBy === 'white' ? t('gameOver.whiteSurrendered') : t('gameOver.blackSurrendered');
     }
     if (isP2PMode) {
-      return winner === 'white' ? 'White wins!' : 'Black wins!';
+      return winner === 'white' ? t('gameOver.whiteWins') : t('gameOver.blackWins');
     }
-    return aiEnabled && winner === 'black' ? 'Defeat!' : 'Victory!';
+    return aiEnabled && winner === 'black' ? t('gameOver.defeat') : t('gameOver.victory');
   };
 
-  // Trophy styled from viewer's perspective only (colour, not text)
   const isDefeat = isP2PMode
     ? winner !== null && winner !== playerColor
     : !isP2PMode && aiEnabled && winner === 'black';
 
   const stats = [
-    { icon: <Clock className="w-5 h-5" />, label: 'Duration', value: `${minutes}m ${seconds}s` },
-    { icon: <Hash className="w-5 h-5" />, label: 'Moves played', value: moveCount.toString() },
+    { icon: <Clock className="w-5 h-5" />, label: t('gameOver.duration'), value: `${minutes}m ${seconds}s` },
+    { icon: <Hash className="w-5 h-5" />, label: t('gameOver.movesPlayed'), value: moveCount.toString() },
     ...(aiEnabled && aiDifficulty ? [{
-      icon: <Brain className="w-5 h-5" />, label: 'AI Level', value: getDifficultyDescription(aiDifficulty)
+      icon: <Brain className="w-5 h-5" />, label: t('gameOver.aiLevel'), value: getDifficultyDescription(aiDifficulty)
     }] : []),
   ];
 
@@ -70,7 +75,7 @@ export default function GameOver({
         {isP2PMode && peerLeft && (
           <div className="flex items-center gap-2 mb-4 px-4 py-3 bg-amber-50 border border-amber-200 rounded-lg text-amber-800 text-sm">
             <LogOut size={16} className="shrink-0" />
-            Opponent returned to the main menu.
+            {t('gameOver.opponentLeft')}
           </div>
         )}
 
@@ -84,7 +89,7 @@ export default function GameOver({
             {!isDraw && (
               <div className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 bg-white px-4 py-1 rounded-full border border-gray-200">
                 <span className="text-sm font-medium text-gray-600">
-                  {winner === 'white' ? 'White' : 'Black'}
+                  {winner === 'white' ? t('gameOver.white') : t('gameOver.black')}
                 </span>
               </div>
             )}
@@ -93,7 +98,7 @@ export default function GameOver({
           <h2 className="text-3xl font-bold mb-2">{getTitle()}</h2>
           {isDraw && drawReason && (
             <p className="text-sm text-gray-500 mb-6">
-              {drawReason === 'stalemate' ? 'Stalemate — no legal moves' : 'Only kings remain'}
+              {drawReason === 'stalemate' ? t('gameOver.stalemate') : t('gameOver.onlyKings')}
             </p>
           )}
 
@@ -115,10 +120,10 @@ export default function GameOver({
           {/* Rematch offered by opponent */}
           {isP2PMode && rematchState === 'offered' && (
             <div className="mb-4 p-4 bg-indigo-50 border border-indigo-200 rounded-lg text-center">
-              <p className="font-semibold text-indigo-800 mb-3">Opponent wants a rematch!</p>
+              <p className="font-semibold text-indigo-800 mb-3">{t('gameOver.opponentWantsRematch')}</p>
               <div className="flex gap-3">
-                <button onClick={onAcceptRematch} className="flex-1 bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 font-medium transition">Accept</button>
-                <button onClick={onDeclineRematch} className="flex-1 bg-gray-100 text-gray-700 py-2 rounded-lg hover:bg-gray-200 font-medium transition">Decline</button>
+                <button onClick={onAcceptRematch} className="flex-1 bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 font-medium transition">{t('gameOver.accept')}</button>
+                <button onClick={onDeclineRematch} className="flex-1 bg-gray-100 text-gray-700 py-2 rounded-lg hover:bg-gray-200 font-medium transition">{t('gameOver.decline')}</button>
               </div>
             </div>
           )}
@@ -127,24 +132,24 @@ export default function GameOver({
           {isP2PMode && (rematchState === 'requested' || rematchState === 'starting') && (
             <div className="mb-4 flex items-center justify-center gap-2 p-3 bg-gray-50 rounded-lg text-gray-500 text-sm">
               <Loader2 size={16} className="animate-spin" />
-              Waiting for opponent…
+              {t('gameOver.waitingForOpponent')}
             </div>
           )}
 
-          {/* Bottom buttons — always on the same row */}
+          {/* Bottom buttons */}
           <div className="flex gap-4 justify-center mt-2">
             {!isP2PMode && (
               <button onClick={onReplay} className="flex-1 bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition font-medium">
-                Play Again
+                {t('gameOver.playAgain')}
               </button>
             )}
             {isP2PMode && rematchState === 'idle' && (
               <button onClick={onRematch} className="flex-1 flex items-center justify-center gap-2 bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700 transition font-medium">
-                <RefreshCw size={18} /> Rematch
+                <RefreshCw size={18} /> {t('gameOver.rematch')}
               </button>
             )}
             <button onClick={goMainMenu} className="flex-1 bg-gray-100 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-200 transition font-medium">
-              Main Menu
+              {t('gameOver.mainMenu')}
             </button>
           </div>
         </div>

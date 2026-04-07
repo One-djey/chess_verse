@@ -5,9 +5,12 @@ import GameModes from './components/GameModes';
 import Game from './components/Game';
 import P2PLobby from './components/P2PLobby';
 import { P2PProvider } from './context/P2PContext';
+import { InstallProvider } from './context/InstallContext';
+import './i18n';
 
 function App() {
   return (
+    <InstallProvider>
     <P2PProvider>
       <Router>
         <Routes>
@@ -18,6 +21,7 @@ function App() {
         </Routes>
       </Router>
     </P2PProvider>
+    </InstallProvider>
   );
 }
 

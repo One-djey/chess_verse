@@ -1,0 +1,112 @@
+{
+  "nav": {
+    "settings": "Impostazioni",
+    "surrender": "Arrendersi",
+    "back": "Indietro",
+    "invite": "Invita"
+  },
+  "modeSelect": {
+    "subtitle": "Come vuoi giocare?",
+    "local": "Locale",
+    "localDesc": "Gioca contro l'IA o a turni con un amico sullo stesso dispositivo.",
+    "multiplayer": "Multigiocatore",
+    "multiplayerDesc": "Sfida un amico da remoto — nessun server necessario.",
+    "offline": "Offline — multigiocatore non disponibile"
+  },
+  "gameModeSelect": {
+    "title": "Scegli la modalità di gioco",
+    "localBadge": "Locale",
+    "multiplayerBadge": "Multigiocatore"
+  },
+  "modes": {
+    "classic": {
+      "title": "Classico",
+      "description": "Il gioco degli scacchi tradizionale con tutte le sue regole classiche."
+    },
+    "borderless": {
+      "title": "Senza confini",
+      "description": "I pezzi possono attraversare i bordi della scacchiera, creando possibilità strategiche uniche."
+    },
+    "all-random": {
+      "title": "Tutto casuale",
+      "description": "I pezzi vengono posizionati casualmente all'inizio, creando un'esperienza unica ogni volta."
+    }
+  },
+  "p2p": {
+    "joinGame": "Unisciti alla partita",
+    "connectingViaP2P": "Connessione P2P in corso…",
+    "waitingForHost": "In attesa dell'host…",
+    "connectedStarting": "Connesso! Avvio in corso…",
+    "connectionLost": "Connessione persa",
+    "backToMenu": "Torna al menu",
+    "cancel": "Annulla",
+    "inviteOpponent": "Invita il tuo avversario",
+    "shareQrOrLink": "Condividi questo QR code o link",
+    "inviteQrAlt": "QR code di invito",
+    "shareLink": "Condividi link",
+    "copyLink": "Copia link",
+    "copied": "Copiato!",
+    "waitingForOpponent": "In attesa dell'avversario…",
+    "opponentConnected": "Avversario connesso!",
+    "startingGame": "Avvio partita…"
+  },
+  "p2pStatus": {
+    "opponentDisconnected": "Avversario disconnesso",
+    "youPlayAs": "Giochi con i",
+    "white": "Bianchi",
+    "black": "Neri",
+    "yourTurn": "Il tuo turno",
+    "opponentTurn": "Turno dell'avversario",
+    "establishing": "Stabilimento connessione P2P…"
+  },
+  "gameOver": {
+    "opponentLeft": "L'avversario è tornato al menu principale.",
+    "draw": "Patta!",
+    "whiteSurrendered": "Il Bianco si è arreso",
+    "blackSurrendered": "Il Nero si è arreso",
+    "whiteWins": "Vince il Bianco!",
+    "blackWins": "Vince il Nero!",
+    "defeat": "Sconfitta!",
+    "victory": "Vittoria!",
+    "white": "Bianco",
+    "black": "Nero",
+    "stalemate": "Stallo — nessuna mossa legale",
+    "onlyKings": "Rimangono solo i re",
+    "duration": "Durata",
+    "movesPlayed": "Mosse giocate",
+    "aiLevel": "Livello IA",
+    "opponentWantsRematch": "L'avversario vuole la rivincita!",
+    "accept": "Accetta",
+    "decline": "Rifiuta",
+    "waitingForOpponent": "In attesa dell'avversario…",
+    "playAgain": "Gioca ancora",
+    "rematch": "Rivincita",
+    "mainMenu": "Menu principale"
+  },
+  "gameSettings": {
+    "title": "Impostazioni di gioco",
+    "gameType": "Tipo di gioco",
+    "soloPlay": "Solo",
+    "vsAI": "vs IA",
+    "flipBoard": "Ruota scacchiera a ogni turno",
+    "flipBoardDesc": "La scacchiera ruota dopo ogni mossa",
+    "aiDifficulty": "Difficoltà IA",
+    "beginner": "Principiante",
+    "superhuman": "Sovrumano",
+    "language": "Lingua"
+  },
+  "languages": {
+    "en": "English",
+    "fr": "Français",
+    "es": "Español",
+    "ja": "日本語",
+    "zh": "中文",
+    "ko": "한국어",
+    "it": "Italiano",
+    "ar": "العربية"
+  },
+  "install": {
+    "message": "Installa ChessVerse per un accesso rapido",
+    "cta": "Installa"
+  }
+}
