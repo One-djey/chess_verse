@@ -10,7 +10,8 @@
     "local": "ローカル",
     "localDesc": "AIと対戦、または同じ端末で友達とプレイ。",
     "multiplayer": "マルチプレイヤー",
-    "multiplayerDesc": "サーバー不要でリモートの友達に挑戦。"
+    "multiplayerDesc": "サーバー不要でリモートの友達に挑戦。",
+    "offline": "オフライン — マルチプレイヤー利用不可"
   },
   "gameModeSelect": {
     "title": "ゲームモードを選択",

@@ -10,7 +10,8 @@
     "local": "Local",
     "localDesc": "Juega contra la IA o pasa el dispositivo a tu amigo.",
     "multiplayer": "Multijugador",
-    "multiplayerDesc": "Desafía a un amigo remotamente — sin servidor."
+    "multiplayerDesc": "Desafía a un amigo remotamente — sin servidor.",
+    "offline": "Sin conexión — multijugador no disponible"
   },
   "gameModeSelect": {
     "title": "Elige tu modo de juego",

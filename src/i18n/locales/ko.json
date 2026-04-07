@@ -10,7 +10,8 @@
     "local": "로컬",
     "localDesc": "AI와 대결하거나 같은 기기에서 친구와 번갈아 플레이하세요.",
     "multiplayer": "멀티플레이어",
-    "multiplayerDesc": "서버 없이 원격으로 친구에게 도전하세요."
+    "multiplayerDesc": "서버 없이 원격으로 친구에게 도전하세요.",
+    "offline": "오프라인 — 멀티플레이어 사용 불가"
   },
   "gameModeSelect": {
     "title": "게임 모드 선택",

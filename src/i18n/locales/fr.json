@@ -10,7 +10,8 @@
     "local": "Local",
     "localDesc": "Jouez contre l'IA ou en passant l'appareil à votre adversaire.",
     "multiplayer": "Multijoueur",
-    "multiplayerDesc": "Défiez un ami à distance — sans serveur."
+    "multiplayerDesc": "Défiez un ami à distance — sans serveur.",
+    "offline": "Hors ligne — multijoueur indisponible"
   },
   "gameModeSelect": {
     "title": "Choisissez votre mode de jeu",

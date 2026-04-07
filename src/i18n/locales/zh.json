@@ -10,7 +10,8 @@
     "local": "本地",
     "localDesc": "与AI对战，或在同一设备上与朋友轮流游戏。",
     "multiplayer": "多人游戏",
-    "multiplayerDesc": "远程挑战朋友，无需服务器。"
+    "multiplayerDesc": "远程挑战朋友，无需服务器。",
+    "offline": "离线 — 多人游戏不可用"
   },
   "gameModeSelect": {
     "title": "选择游戏模式",
