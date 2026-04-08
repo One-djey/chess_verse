@@ -7,20 +7,21 @@ export const UNICODE_PIECES: Record<PieceColor, Record<PieceType, string>> = {
   black: { king: '♚', queen: '♛', rook: '♜', bishop: '♝', knight: '♞', pawn: '♟' },
 };
 
+/** Returns the i18n key index (0-9) for a difficulty level (1-20). */
+export const getDifficultyIndex = (level: number): number => Math.ceil(level / 2) - 1;
+
+/** Returns the i18n key for the difficulty label, e.g. "gameSettings.difficultyLevels.3" */
+export const getDifficultyKey = (level: number): string =>
+  `gameSettings.difficultyLevels.${getDifficultyIndex(level)}`;
+
+/** @deprecated Use getDifficultyKey(level) with t() instead. Kept for fallback. */
 export const getDifficultyDescription = (level: number, withElo = false): string => {
   const labels = [
-    'Beginner', 'Beginner',
-    'Club Beginner', 'Club Beginner',
-    'Intermediate Club Player', 'Intermediate Club Player',
-    'Advanced Club Player', 'Advanced Club Player',
-    'Candidate Master', 'Candidate Master',
-    'FIDE Master', 'FIDE Master',
-    'International Master', 'International Master',
-    'Grandmaster', 'Grandmaster',
-    'Super Grandmaster', 'Super Grandmaster',
-    'Superhuman', 'Superhuman',
+    'Beginner', 'Club Beginner', 'Intermediate Club Player', 'Advanced Club Player',
+    'Candidate Master', 'FIDE Master', 'International Master',
+    'Grandmaster', 'Super Grandmaster', 'Superhuman',
   ];
-  const description = labels[level - 1];
+  const description = labels[getDifficultyIndex(level)];
   return withElo ? `${description} (Elo ~${1000 + level * 100})` : description;
 };
 

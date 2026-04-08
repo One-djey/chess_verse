@@ -93,6 +93,18 @@
     "aiDifficulty": "AI难度",
     "beginner": "初学者",
     "superhuman": "超人",
+    "difficultyLevels": [
+      "初学者",
+      "俱乐部初学者",
+      "俱乐部中级",
+      "俱乐部高级",
+      "候选大师",
+      "FIDE大师",
+      "国际大师",
+      "特级大师",
+      "超级特级大师",
+      "超人"
+    ],
     "language": "语言"
   },
   "languages": {

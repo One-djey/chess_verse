@@ -93,6 +93,18 @@
     "aiDifficulty": "AI 난이도",
     "beginner": "초보",
     "superhuman": "초인",
+    "difficultyLevels": [
+      "초보자",
+      "클럽 초보자",
+      "클럽 중급자",
+      "클럽 고급자",
+      "후보 마스터",
+      "FIDE 마스터",
+      "국제 마스터",
+      "그랜드마스터",
+      "슈퍼 그랜드마스터",
+      "초인"
+    ],
     "language": "언어"
   },
   "languages": {

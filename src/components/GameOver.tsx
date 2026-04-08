@@ -2,7 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Trophy, Clock, Hash, Brain, RefreshCw, Loader2, Flag, LogOut } from 'lucide-react';
-import { getDifficultyDescription } from '../utils/chess';
+import { getDifficultyKey } from '../utils/chess';
 import { PieceColor } from '../types/chess';
 import { RematchState } from '../types/p2p';
 
@@ -63,7 +63,7 @@ export default function GameOver({
     { icon: <Clock className="w-5 h-5" />, label: t('gameOver.duration'), value: `${minutes}m ${seconds}s` },
     { icon: <Hash className="w-5 h-5" />, label: t('gameOver.movesPlayed'), value: moveCount.toString() },
     ...(aiEnabled && aiDifficulty ? [{
-      icon: <Brain className="w-5 h-5" />, label: t('gameOver.aiLevel'), value: getDifficultyDescription(aiDifficulty)
+      icon: <Brain className="w-5 h-5" />, label: t('gameOver.aiLevel'), value: t(getDifficultyKey(aiDifficulty))
     }] : []),
   ];
 

@@ -75,6 +75,21 @@ export default function Game() {
     return () => clearTimeout(id);
   }, [chess.gameState.currentTurn, chess.aiEnabled, chess.gameState.gameOver]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // ── Movable pieces (for check highlight) ──────────────────────────────────
+  // When in check, only pieces that have at least one valid move should glow.
+  const movablePieceIds = React.useMemo<Set<string> | null>(() => {
+    if (!chess.gameState.isCheck) return null;
+    const ids = new Set<string>();
+    chess.gameState.pieces
+      .filter(p => p.color === chess.gameState.currentTurn)
+      .forEach(p => {
+        if (getValidMoves(p, chess.gameState.pieces, chess.gameState.gameMode).length > 0) {
+          ids.add(p.id);
+        }
+      });
+    return ids;
+  }, [chess.gameState.isCheck, chess.gameState.pieces, chess.gameState.currentTurn, chess.gameState.gameMode]); // eslint-disable-line react-hooks/exhaustive-deps
+
   // ── Analytics ─────────────────────────────────────────────────────────────
   const playType = p2p.isP2PMode ? 'multiplayer' : 'local';
 
@@ -193,6 +208,7 @@ export default function Game() {
           lockedColor={lockedColor}
           flipped={boardFlipped}
           rotateBlackPieces={rotatePieces}
+          movablePieceIds={movablePieceIds}
         />
       </div>
 

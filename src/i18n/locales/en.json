@@ -93,7 +93,19 @@
     "aiDifficulty": "AI Difficulty",
     "beginner": "Beginner",
     "superhuman": "Superhuman",
-    "language": "Language"
+    "language": "Language",
+    "difficultyLevels": [
+      "Beginner",
+      "Club Beginner",
+      "Intermediate Club Player",
+      "Advanced Club Player",
+      "Candidate Master",
+      "FIDE Master",
+      "International Master",
+      "Grandmaster",
+      "Super Grandmaster",
+      "Superhuman"
+    ]
   },
   "languages": {
     "en": "English",

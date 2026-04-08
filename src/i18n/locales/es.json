@@ -93,6 +93,18 @@
     "aiDifficulty": "Dificultad de la IA",
     "beginner": "Principiante",
     "superhuman": "Sobrehumano",
+    "difficultyLevels": [
+      "Principiante",
+      "Principiante de club",
+      "Jugador de club intermedio",
+      "Jugador de club avanzado",
+      "Maestro candidato",
+      "Maestro FIDE",
+      "Maestro internacional",
+      "Gran maestro",
+      "Super gran maestro",
+      "Sobrehumano"
+    ],
     "language": "Idioma"
   },
   "languages": {
