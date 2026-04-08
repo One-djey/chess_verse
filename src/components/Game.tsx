@@ -23,6 +23,15 @@ export default function Game() {
   const { t } = useTranslation();
 
   const p2p = useP2P();
+
+  // If we enter a non-P2P game while P2P state is still active (e.g. user navigated
+  // away via the NavBar without going through handleLeaveP2P), clean up the stale state.
+  React.useEffect(() => {
+    if (modeId !== 'p2p' && p2p.isP2PMode) {
+      p2p.leaveRoom();
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
   const gameMode = resolveGameMode(modeId, p2p.gameMode);
 
   const chess = useChessGame({
