@@ -75,6 +75,36 @@ export default function Game() {
     return () => clearTimeout(id);
   }, [chess.gameState.currentTurn, chess.aiEnabled, chess.gameState.gameOver]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // ── Analytics ─────────────────────────────────────────────────────────────
+  const playType = p2p.isP2PMode ? 'multiplayer' : 'local';
+
+  React.useEffect(() => {
+    if (chess.gameState.pieces.length === 0) return;
+    window.dataLayer = window.dataLayer || [];
+    window.dataLayer.push({
+      event: 'game_start',
+      game_mode: chess.gameState.gameMode.id,
+      play_type: playType,
+      ai_enabled: chess.aiEnabled,
+      ...(chess.aiEnabled && { ai_difficulty: chess.settings.aiDifficulty }),
+    });
+  }, [chess.gameState.startTime]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  React.useEffect(() => {
+    if (!chess.gameState.gameOver) return;
+    const { winner, surrenderedBy, drawReason, moveCount, startTime, gameMode } = chess.gameState;
+    window.dataLayer = window.dataLayer || [];
+    window.dataLayer.push({
+      event: 'game_end',
+      game_mode: gameMode.id,
+      play_type: playType,
+      result: winner ? `${winner}_wins` : 'draw',
+      end_reason: surrenderedBy ? 'surrender' : (drawReason ?? 'checkmate'),
+      duration_seconds: Math.round((Date.now() - startTime) / 1000),
+      move_count: moveCount.white + moveCount.black,
+    });
+  }, [chess.gameState.gameOver]); // eslint-disable-line react-hooks/exhaustive-deps
+
   // ── User action handlers ───────────────────────────────────────────────────
   const handlePieceSelect = (piece: Piece) => {
     if (p2p.isP2PMode ? piece.color !== p2p.playerColor : chess.aiEnabled && piece.color === 'black') return;
