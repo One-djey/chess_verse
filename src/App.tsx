@@ -1,5 +1,6 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { Analytics } from '@vercel/analytics/react';
 import ModeSelect from './components/ModeSelect';
 import GameModes from './components/GameModes';
 import Game from './components/Game';
@@ -20,6 +21,7 @@ function App() {
           <Route path="/game/:modeId" element={<Game />} />
         </Routes>
       </Router>
+      <Analytics />
     </P2PProvider>
     </InstallProvider>
   );
