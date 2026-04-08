@@ -14,6 +14,8 @@ interface ChessBoardProps {
   lockedColor?: PieceColor | null;
   flipped?: boolean;
   rotateBlackPieces?: boolean;
+  /** When set (typically during check), only these piece IDs receive the blue glow. */
+  movablePieceIds?: Set<string> | null;
 }
 
 export default function ChessBoard({
@@ -28,6 +30,7 @@ export default function ChessBoard({
   lockedColor = null,
   flipped = false,
   rotateBlackPieces = false,
+  movablePieceIds = null,
 }: ChessBoardProps) {
   const pieceRefs = useRef<Map<string, { x: number; y: number }>>(new Map());
   const [imagesLoaded, setImagesLoaded] = useState(false);
@@ -268,15 +271,16 @@ export default function ChessBoard({
           {pieces.map((piece) => {
             const isSelected = selectedPiece?.position.x === piece.position.x && selectedPiece?.position.y === piece.position.y;
             const isPlayable = piece.color === currentTurn && (!lockedColor || piece.color === lockedColor);
+            const hasGlow = isPlayable && (movablePieceIds ? movablePieceIds.has(piece.id) : true);
             const dp = toDisplay(piece.position.x, piece.position.y);
 
             const pieceClasses = `
               select-none absolute
               transform transition-all duration-300 ease-in-out
               ${isPlayable ? 'hover:scale-110' : 'opacity-80'}
-              ${isPlayable && !isSelected ? 'drop-shadow-[0_0_4px_rgba(59,130,246,1)]' : ''}
-              ${piece.color === currentTurn && isCheck && piece.type === 'king' ? 'drop-shadow-[0_0_6px rgba(249,115,22,1)]' : ''}
-              ${isSelected ? 'scale-110 drop-shadow-[0_0_6px rgba(59,130,246,1)]' : ''}
+              ${hasGlow && !isSelected ? 'drop-shadow-[0_0_4px_rgba(59,130,246,1)]' : ''}
+              ${piece.color === currentTurn && isCheck && piece.type === 'king' ? 'drop-shadow-[0_0_6px_rgba(249,115,22,1)]' : ''}
+              ${isSelected ? 'scale-110 drop-shadow-[0_0_6px_rgba(59,130,246,1)]' : ''}
               ${imagesLoaded ? 'opacity-100' : 'opacity-0'}
             `;
 

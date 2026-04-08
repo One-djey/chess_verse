@@ -1,6 +1,6 @@
 import { X, Download } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { getDifficultyDescription } from '../utils/chess';
+import { getDifficultyKey } from '../utils/chess';
 import { SUPPORTED_LANGUAGES, SupportedLanguage } from '../i18n';
 import { useInstall } from '../context/InstallContext';
 
@@ -102,7 +102,7 @@ export default function GameSettings({ isOpen, onClose, settings, onSettingsChan
             >
               <label className="text-base font-medium text-gray-900">{t('gameSettings.aiDifficulty')}</label>
               <div className="space-y-2">
-                <span className="text-sm text-gray-500">{getDifficultyDescription(settings!.aiDifficulty, true)}</span>
+                <span className="text-sm text-gray-500">{t(getDifficultyKey(settings!.aiDifficulty))} (Elo ~{1000 + settings!.aiDifficulty * 100})</span>
                 <input
                   type="range"
                   min="1"

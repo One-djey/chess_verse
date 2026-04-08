@@ -93,6 +93,18 @@
     "aiDifficulty": "AI 난이도",
     "beginner": "초보",
     "superhuman": "초인",
+    "difficultyLevels": [
+      "초보자",
+      "클럽 초보자",
+      "클럽 중급자",
+      "클럽 고급자",
+      "후보 마스터",
+      "FIDE 마스터",
+      "국제 마스터",
+      "그랜드마스터",
+      "슈퍼 그랜드마스터",
+      "초인"
+    ],
     "language": "언어"
   },
   "languages": {
@@ -108,5 +120,109 @@
   "install": {
     "message": "빠른 접근을 위해 ChessVerse를 설치하세요",
     "cta": "설치"
+  },
+  "legal": {
+    "footer": {
+      "mentions": "법적 고지",
+      "privacy": "개인정보처리방침",
+      "terms": "이용약관"
+    },
+    "updatedAt": "최종 업데이트: 2026년 4월",
+    "mentions": {
+      "title": "법적 고지",
+      "breadcrumb": "법적 고지",
+      "editorTitle": "사이트 게시자",
+      "editorIntro": "ChessVerse는 다음에 의해 게시됩니다:",
+      "editorName": "Jérémy Maisse, 개인사업자",
+      "editorSiret": "SIRET: 928 825 322 00011",
+      "editorAddress": "71 rue de Roquebillière, 06300 니스, 프랑스",
+      "editorEmail": "이메일:",
+      "directorTitle": "발행 책임자",
+      "hostingTitle": "호스팅",
+      "hostingIntro": "이 사이트는 다음에 의해 호스팅됩니다:",
+      "hostingName": "Vercel Inc.",
+      "hostingAddress": "340 Pine Street, Suite 701",
+      "hostingCity": "San Francisco, California 94104, 미국",
+      "ipTitle": "지적 재산권",
+      "ipBody1": "이 사이트의 모든 콘텐츠(소스 코드, 디자인, 텍스트, 그래픽)는 명시적으로 언급된 제3자 요소를 제외하고 Jérémy Maisse의 독점 재산입니다. 사전 서면 승인 없이 복제, 배포 또는 사용하는 것은 금지됩니다.",
+      "ipBody2": "사용된 체스 엔진은 GPLv3 라이선스에 따라 배포되는 Stockfish입니다. 피어투피어 연결 라이브러리는 MIT 라이선스에 따른 Trystero입니다.",
+      "liabilityTitle": "책임 제한",
+      "liabilityBody": "ChessVerse는 무료로 제공되며 지속적인 가용성을 보장하지 않습니다. 게시자는 사이트 사용과 관련된 서비스 중단, 버그 또는 데이터 손실에 대해 책임을 지지 않습니다.",
+      "lawTitle": "적용 법률",
+      "lawBody": "이 사이트는 프랑스 법률의 적용을 받습니다. 사용과 관련된 모든 분쟁은 프랑스 니스 법원의 전속 관할에 속합니다."
+    },
+    "privacy": {
+      "title": "개인정보처리방침",
+      "breadcrumb": "개인정보처리방침",
+      "intro": "ChessVerse 게시자 Jérémy Maisse는 귀하의 개인정보 보호에 최선을 다합니다. 이 방침은 일반 데이터 보호 규정(GDPR – EU 2016/679) 및 프랑스 데이터 보호법에 따라 수집되는 데이터, 목적 및 귀하의 권리를 설명합니다.",
+      "controllerTitle": "1. 데이터 관리자",
+      "dataTitle": "2. 수집하는 데이터",
+      "dataBody1": "ChessVerse는 개인 식별 데이터를 수집하지 않습니다: 계정 없음, 등록 없음, 이름 없음, 이메일 주소 없음.",
+      "dataBody2": "처리되는 유일한 데이터는 Google Tag Manager를 통해 통합된 Google Analytics 4(GA4)의 익명 사용 통계입니다:",
+      "dataItems": [
+        "시작된 게임의 유형 및 모드",
+        "게임 결과(승리, 패배, 무승부)",
+        "게임 시간 및 수",
+        "집계된 기술 데이터: 기기 유형, 브라우저, 국가(지역/국가 수준만)"
+      ],
+      "dataBody3": "이 데이터는 개인을 식별하는 것을 허용하지 않습니다. 어떤 데이터도 광고 정보나 제3자 프로필과 교차되지 않습니다.",
+      "purposeTitle": "3. 처리 목적",
+      "purposeBody": "수집된 통계는 게임 경험 개선에만 사용됩니다: 가장 많이 사용되는 모드 파악, 잠재적 기술 문제 감지, 서비스의 미래 개발 방향 설정.",
+      "basisTitle": "4. 법적 근거",
+      "basisBody": "처리는 게시자의 정당한 이익(서비스 개선)을 기반으로 하며, 데이터는 엄격히 익명이고 광고 또는 상업적 목적으로 사용되지 않습니다. Google의 동의 모드는 analytics_storage: granted로 구성되어 있으며 모든 광고 신호가 비활성화되어 있습니다(ad_storage: denied).",
+      "cookiesTitle": "5. 쿠키",
+      "cookiesBody1": "ChessVerse는 브라우저 로컬 스토리지(localStorage)를 사용하여 게임 설정(AI 난이도, 보드 방향, 인터페이스 언어)을 기억합니다. 이 데이터는 브라우저에 남아 있으며 서버로 전송되지 않습니다.",
+      "cookiesBody2": "Google Analytics 4는 익명 청중 측정을 위한 기술적 쿠키를 설정할 수 있습니다. 광고 또는 개인화 쿠키는 사용되지 않습니다.",
+      "p2pTitle": "6. 멀티플레이어 모드(P2P)",
+      "p2pBody": "멀티플레이어 모드에서 플레이어 간 연결은 WebRTC(Trystero 라이브러리)를 통해 피어투피어 방식으로 설정됩니다. 게임 데이터는 서버를 거치지 않고 플레이어의 브라우저 간에 직접 전송됩니다. 게임은 기록되지 않습니다.",
+      "processorsTitle": "7. 하위 처리자",
+      "processorsHosting": "호스팅",
+      "processorsAnalytics": "분석",
+      "processorsPrivacyLink": "개인정보처리방침",
+      "processorsBody": "이 하위 처리자들은 유럽연합 외부에 위치합니다. 전송은 유럽위원회 표준 계약 조항에 의해 규정됩니다.",
+      "retentionTitle": "8. 데이터 보존",
+      "retentionBody": "분석 데이터는 플랫폼 기본 설정에 따라 Google Analytics에서 14개월간 보존됩니다. localStorage에 저장된 설정은 브라우저에서 수동으로 삭제할 때까지 유지됩니다.",
+      "rightsTitle": "9. 귀하의 권리",
+      "rightsBody1": "GDPR에 따라 귀하는 개인 데이터에 대해 다음 권리를 갖습니다: 접근, 정정, 삭제, 제한, 이동성, 이의 제기.",
+      "rightsBody2": "ChessVerse는 귀하를 식별할 수 있는 데이터를 수집하지 않으므로 분석 데이터를 귀하의 개인과 연결하는 것이 불가능합니다.",
+      "rightsBody3": "개인정보 관련 문의사항은 다음으로 연락하십시오:",
+      "rightsCnil": "다음 기관에 불만을 제기할 수도 있습니다:",
+      "rightsCnilSuffix": "(프랑스 데이터 보호 기관)."
+    },
+    "terms": {
+      "title": "이용약관",
+      "breadcrumb": "이용약관",
+      "intro": "본 이용약관은 개인사업자 Jérémy Maisse(SIRET: 928 825 322 00011)가 게시하는 ChessVerse 서비스에 대한 접근 및 사용을 규정합니다.",
+      "accessTitle": "1. 서비스 접근",
+      "accessBody1": "ChessVerse는 등록이나 계정 없이 접근할 수 있는 무료 체스 웹 애플리케이션입니다. AI와의 로컬 게임 모드와 피어투피어 멀티플레이어를 제공합니다. 서비스 접근은 무료입니다.",
+      "accessBody2": "게시자는 사전 통지나 보상 없이 언제든지 서비스를 수정, 중단 또는 종료할 권리를 보유합니다.",
+      "useTitle": "2. 서비스 이용",
+      "useIntro": "사용자는 성실하게 본 이용약관에 따라 ChessVerse를 사용하는 데 동의합니다.",
+      "useProhibited": "특히 다음 사항은 금지됩니다:",
+      "useItems": [
+        "서비스를 우회, 역컴파일 또는 남용하려는 모든 시도;",
+        "불법적이거나 공공질서에 반하는 목적으로 서비스 사용;",
+        "서비스 또는 피어투피어 연결의 정상적인 기능을 방해할 수 있는 모든 행위;",
+        "게임을 조작하기 위한 봇 또는 자동화 프로그램 사용."
+      ],
+      "p2pTitle": "3. 멀티플레이어 모드",
+      "p2pBody1": "멀티플레이어 모드는 브라우저 간 직접 연결(WebRTC / 피어투피어)에 의존합니다. 게시자는 플레이어 간의 교환에 참여하지 않으며 사용자 간의 행동에 대한 어떠한 책임도 지지 않습니다.",
+      "p2pBody2": "어떠한 대화, 메시지 또는 게임 데이터도 게시자 서버를 통과하지 않습니다.",
+      "ipTitle": "4. 지적 재산권",
+      "ipBody": "ChessVerse의 모든 구성 요소(소스 코드, 디자인, 그래픽, 명칭)는 적절히 식별된 제3자 요소(GPLv3 하의 Stockfish, MIT 하의 Trystero)를 제외하고 Jérémy Maisse의 독점 재산입니다. 무단 복제, 표현, 수정 또는 이용은 금지되며 프랑스 지적 재산권법에 따른 침해를 구성합니다.",
+      "liabilityTitle": "5. 책임 제한",
+      "liabilityIntro": "ChessVerse는 정확성, 연속성 또는 버그 부재에 대한 어떠한 보장 없이 \"있는 그대로\" 제공됩니다. 게시자는 다음에 대해 책임을 지지 않습니다:",
+      "liabilityItems": [
+        "서비스 중단 또는 사용 불가;",
+        "게임 또는 게임 데이터 손실;",
+        "사용자 네트워크 인프라와 관련된 피어투피어 연결 문제;",
+        "서비스 사용과 관련된 간접적 손해."
+      ],
+      "changesTitle": "6. 약관 변경",
+      "changesBody": "게시자는 언제든지 본 약관을 수정할 권리를 보유합니다. 변경 사항은 사이트에 게시된 후 효력이 발생합니다. 변경 후 서비스를 계속 사용하면 새로운 약관에 동의하는 것으로 간주됩니다.",
+      "lawTitle": "7. 적용 법률 및 관할권",
+      "lawBody": "본 약관은 프랑스 법률의 적용을 받습니다. 분쟁이 발생하고 우호적인 해결이 이루어지지 않는 경우 니스 관할 법원이 전속 관할권을 갖습니다.",
+      "contactTitle": "8. 문의"
+    }
   }
 }
