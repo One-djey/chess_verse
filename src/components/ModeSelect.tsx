@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Monitor, Globe, WifiOff } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import NavBar from './NavBar';
+import Footer from './Footer';
 import { useOnlineStatus } from '../hooks/useOnlineStatus';
 
 export default function ModeSelect() {
@@ -74,6 +75,8 @@ export default function ModeSelect() {
           })}
         </div>
       </div>
+
+      <Footer />
     </div>
   );
 }
