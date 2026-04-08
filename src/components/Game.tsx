@@ -26,10 +26,13 @@ export default function Game() {
 
   // If we enter a non-P2P game while P2P state is still active (e.g. user navigated
   // away via the NavBar without going through handleLeaveP2P), clean up the stale state.
+  // Also clean up on unmount so the WebRTC room is closed immediately when leaving,
+  // even via NavBar/browser-back, without waiting for the next game to mount.
   React.useEffect(() => {
     if (modeId !== 'p2p' && p2p.isP2PMode) {
       p2p.leaveRoom();
     }
+    return () => { if (p2p.isP2PMode) p2p.leaveRoom(); };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const gameMode = resolveGameMode(modeId, p2p.gameMode);

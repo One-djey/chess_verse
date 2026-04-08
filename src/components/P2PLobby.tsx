@@ -16,13 +16,18 @@ export default function P2PLobby() {
   const roomParam = searchParams.get('room');
   const isGuest = Boolean(roomParam);
 
-  const { startRoom, joinExistingRoom, leaveRoom, connectionState } = useP2P();
+  const { startRoom, joinExistingRoom, leaveRoom, connectionState, isP2PMode } = useP2P();
 
   const [roomId, setRoomId] = useState('');
   const [shareUrl, setShareUrl] = useState('');
   const [qrDataUrl, setQrDataUrl] = useState('');
   const [copied, setCopied] = useState(false);
   const joinedRef = useRef(false);
+
+  // ── Cleanup on unmount (NavBar click / browser back) ─────────────────────
+  useEffect(() => {
+    return () => { leaveRoom(); };
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── GUEST: auto-join on mount ──────────────────────────────────────────────
   useEffect(() => {
@@ -43,6 +48,7 @@ export default function P2PLobby() {
   }, [roomId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleCreateGame = (mode: GameMode) => {
+    if (isP2PMode) leaveRoom();
     const id = generateRoomId();
     setRoomId(id);
     startRoom(id, mode, () => navigate('/game/p2p'));
