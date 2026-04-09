@@ -298,14 +298,15 @@ export default function ChessBoard({
           //   middle     (2-5): center bubble on piece
           let posStyle: React.CSSProperties;
           if (dp.x <= 1) {
-            posStyle = { left: `${dp.x * 12.5}%`, top: `${topPct}%`, transform: transformY };
+            posStyle = { left: `${dp.x * 12.5}%`, top: `${topPct}%`, transform: transformY, width: 'max-content' };
           } else if (dp.x >= 6) {
-            posStyle = { right: `${(7 - dp.x) * 12.5}%`, top: `${topPct}%`, transform: transformY };
+            posStyle = { right: `${(7 - dp.x) * 12.5}%`, top: `${topPct}%`, transform: transformY, width: 'max-content' };
           } else {
             posStyle = {
               left: `${(dp.x + 0.5) * 12.5}%`,
               top: `${topPct}%`,
               transform: ['translateX(-50%)', transformY].filter(Boolean).join(' '),
+              width: 'max-content',
             };
           }
 
