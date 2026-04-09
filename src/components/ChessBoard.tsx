@@ -83,6 +83,9 @@ export default function ChessBoard({
   // ── Assimilation tooltip ─────────────────────────────────────────────────────
   const [hoveredSquare, setHoveredSquare] = useState<{ x: number; y: number } | null>(null);
 
+  // Reset hover when the turn changes so the tooltip doesn't linger after a move
+  useEffect(() => { setHoveredSquare(null); }, [currentTurn]);
+
   const hoveredPiece = hoveredSquare
     ? pieces.find(p => p.position.x === hoveredSquare.x && p.position.y === hoveredSquare.y) ?? null
     : null;
@@ -286,22 +289,35 @@ export default function ChessBoard({
         {tooltipPiece && (() => {
           const dp = toDisplay(tooltipPiece.position.x, tooltipPiece.position.y);
           const showBelow = dp.y <= 1;
-          // Center of the piece cell, clamped so the bubble stays inside the board
-          const centerPct = Math.max(8, Math.min(92, (dp.x + 0.5) * 12.5));
+
+          // Horizontal: center on piece for middle columns; anchor to the inner
+          // edge of the piece cell for columns near the board edges so the bubble
+          // never overflows regardless of how many icons it contains.
+          let left: string;
+          let transformX: string;
+          if (dp.x <= 1) {
+            left = `${dp.x * 12.5}%`;       // anchor left of bubble to left of piece
+            transformX = 'translateX(0)';
+          } else if (dp.x >= 6) {
+            left = `${(dp.x + 1) * 12.5}%`; // anchor right of bubble to right of piece
+            transformX = 'translateX(-100%)';
+          } else {
+            left = `${(dp.x + 0.5) * 12.5}%`; // center on piece
+            transformX = 'translateX(-50%)';
+          }
+          const transformY = showBelow ? '' : 'translateY(-100%)';
+          const transform = [transformX, transformY].filter(Boolean).join(' ');
 
           return (
             <div
               className="absolute z-40 pointer-events-none flex flex-col items-center"
               style={{
-                left: `${centerPct}%`,
-                // Above: anchor to piece top, pull the whole column upward so arrow tip touches piece
-                // Below: anchor to piece bottom, column grows downward naturally
+                left,
                 top: showBelow ? `${(dp.y + 1) * 12.5}%` : `${dp.y * 12.5}%`,
-                transform: showBelow ? 'translateX(-50%)' : 'translateX(-50%) translateY(-100%)',
+                transform,
               }}
             >
-              {/* Above: bubble first, then arrow pointing down */}
-              {/* Below: arrow pointing up first, then bubble */}
+              {/* Below: arrow (▲) then bubble */}
               {showBelow && (
                 <div className="w-0 h-0" style={{ borderLeft: '6px solid transparent', borderRight: '6px solid transparent', borderBottom: '6px solid white' }} />
               )}
@@ -315,6 +331,7 @@ export default function ChessBoard({
                   />
                 ))}
               </div>
+              {/* Above: bubble then arrow (▼) */}
               {!showBelow && (
                 <div className="w-0 h-0" style={{ borderLeft: '6px solid transparent', borderRight: '6px solid transparent', borderTop: '6px solid white' }} />
               )}
