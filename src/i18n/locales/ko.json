@@ -30,6 +30,10 @@
     "all-random": {
       "title": "완전 랜덤",
       "description": "게임 시작 시 말이 무작위로 배치되어 매번 독특한 경험을 제공합니다."
+    },
+    "assimilation": {
+      "title": "동화",
+      "description": "말이 상대 말을 잡으면 그 말의 이동 능력을 영구적으로 습득합니다."
     }
   },
   "p2p": {

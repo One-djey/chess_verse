@@ -7,6 +7,8 @@ export interface Piece {
   color: PieceColor;
   position: Position;
   hasMoved?: boolean;
+  /** Movement types acquired by capturing in Assimilation mode. */
+  acquiredTypes?: PieceType[];
 }
 
 export interface Position {
@@ -22,6 +24,7 @@ export interface GameMode {
   rules?: {
     borderless?: boolean;
     randomPieces?: boolean;
+    assimilation?: boolean;
   };
 }
 

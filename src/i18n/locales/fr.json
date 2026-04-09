@@ -30,6 +30,10 @@
     "all-random": {
       "title": "Tout aléatoire",
       "description": "Les pièces sont placées aléatoirement au départ, pour une expérience unique à chaque partie."
+    },
+    "assimilation": {
+      "title": "Assimilation",
+      "description": "Quand une pièce en capture une autre, elle acquiert définitivement ses capacités de déplacement."
     }
   },
   "p2p": {

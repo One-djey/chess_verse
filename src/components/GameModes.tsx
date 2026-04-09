@@ -25,6 +25,13 @@ export const gameModes: GameMode[] = [
     image: 'https://images.unsplash.com/photo-1580541832626-2a7131ee809f?auto=format&fit=crop&q=80&w=800',
     rules: { borderless: false, randomPieces: true },
   },
+  {
+    id: 'assimilation',
+    title: 'Assimilation',
+    description: 'When a piece captures another, it permanently acquires its movement abilities.',
+    image: 'https://images.unsplash.com/photo-1560174038-da43ac74f01b?auto=format&fit=crop&q=80&w=800',
+    rules: { borderless: false, randomPieces: false, assimilation: true },
+  },
 ];
 
 export default function GameModes() {

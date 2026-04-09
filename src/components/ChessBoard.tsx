@@ -80,6 +80,21 @@ export default function ChessBoard({
 
   const handleImageLoad = () => { setImagesLoaded(true); };
 
+  // ── Assimilation tooltip ─────────────────────────────────────────────────────
+  const [hoveredSquare, setHoveredSquare] = useState<{ x: number; y: number } | null>(null);
+
+  // Reset hover when the turn changes so the tooltip doesn't linger after a move
+  useEffect(() => { setHoveredSquare(null); }, [currentTurn]);
+
+  const hoveredPiece = hoveredSquare
+    ? pieces.find(p => p.position.x === hoveredSquare.x && p.position.y === hoveredSquare.y) ?? null
+    : null;
+
+  // Show acquired-types tooltip only when actively hovering a piece with acquiredTypes
+  const tooltipPiece: Piece | null = gameMode.rules?.assimilation
+    ? ((hoveredPiece?.acquiredTypes?.length ?? 0) > 0 ? hoveredPiece : null)
+    : null;
+
   const isValidMovePosition = (x: number, y: number) => {
     return validMoves.some(move => {
       const normalizedMove = {
@@ -230,7 +245,10 @@ export default function ChessBoard({
         </div>
         
         {/* Interactive squares layer */}
-        <div className="absolute inset-0 grid grid-cols-8 grid-rows-8 gap-1 z-20">
+        <div
+          className="absolute inset-0 grid grid-cols-8 grid-rows-8 gap-1 z-20"
+          onMouseLeave={() => setHoveredSquare(null)}
+        >
           {Array(8)
             .fill(null)
             .map((_, dy) =>
@@ -246,6 +264,7 @@ export default function ChessBoard({
                     <div
                       key={`interactive-${dx}-${dy}`}
                       className="w-full h-full"
+                      onMouseEnter={() => setHoveredSquare({ x, y })}
                       onClick={() => {
                         if (piece && isPlayable) {
                           onPieceSelect(piece);
@@ -266,21 +285,83 @@ export default function ChessBoard({
             )}
         </div>
 
+        {/* Assimilation tooltip */}
+        {tooltipPiece && (() => {
+          const dp = toDisplay(tooltipPiece.position.x, tooltipPiece.position.y);
+          const showBelow = dp.y <= 1;
+
+          // Arrow: always pinned to the piece's column center (percentages resolve vs the grid)
+          const arrowLeftPct = (dp.x + 0.5) * 12.5;
+          const arrowTopPct  = showBelow ? (dp.y + 1) * 12.5 : dp.y * 12.5;
+          const arrowTransform = showBelow ? 'translateX(-50%)' : 'translateX(-50%) translateY(-100%)';
+          const arrowBorder: React.CSSProperties = showBelow
+            ? { borderLeft: '6px solid transparent', borderRight: '6px solid transparent', borderBottom: '6px solid white' }
+            : { borderLeft: '6px solid transparent', borderRight: '6px solid transparent', borderTop: '6px solid white' };
+
+          // Bubble: edge-anchored horizontally to avoid overflow
+          const bubbleTopPct    = showBelow ? (dp.y + 1) * 12.5 : dp.y * 12.5;
+          const bubbleTransformY = showBelow ? 'translateY(6px)' : 'translateY(calc(-100% - 6px))';
+          let bubbleStyle: React.CSSProperties;
+          if (dp.x <= 1) {
+            bubbleStyle = { left: `${dp.x * 12.5}%`, top: `${bubbleTopPct}%`, transform: bubbleTransformY, width: 'max-content' };
+          } else if (dp.x >= 6) {
+            bubbleStyle = { right: `${(7 - dp.x) * 12.5}%`, top: `${bubbleTopPct}%`, transform: bubbleTransformY, width: 'max-content' };
+          } else {
+            bubbleStyle = { left: `${(dp.x + 0.5) * 12.5}%`, top: `${bubbleTopPct}%`, transform: `translateX(-50%) ${bubbleTransformY}`, width: 'max-content' };
+          }
+
+          return (
+            <>
+              <div
+                className="absolute z-40 pointer-events-none w-0 h-0"
+                style={{ left: `${arrowLeftPct}%`, top: `${arrowTopPct}%`, transform: arrowTransform, ...arrowBorder }}
+              />
+              <div
+                className="absolute z-40 pointer-events-none bg-white rounded-xl shadow-xl border border-gray-100 px-2.5 py-2 flex gap-2 items-center"
+                style={bubbleStyle}
+              >
+                {tooltipPiece.acquiredTypes!.map(type => (
+                  <img
+                    key={type}
+                    src={`/ressources/pieces/${tooltipPiece.color}_${type}.png`}
+                    alt={type}
+                    className="w-7 h-7"
+                  />
+                ))}
+              </div>
+            </>
+          );
+        })()}
+
         {/* Pieces layer */}
         <div className="absolute inset-0 z-30 pointer-events-none">
           {pieces.map((piece) => {
             const isSelected = selectedPiece?.position.x === piece.position.x && selectedPiece?.position.y === piece.position.y;
             const isPlayable = piece.color === currentTurn && (!lockedColor || piece.color === lockedColor);
             const hasGlow = isPlayable && (movablePieceIds ? movablePieceIds.has(piece.id) : true);
+            const isAssimilated = gameMode.rules?.assimilation && (piece.acquiredTypes?.length ?? 0) > 0;
             const dp = toDisplay(piece.position.x, piece.position.y);
+
+            // Single drop-shadow with explicit priority:
+            //   orange › blue (selected) › green (assimilated) › blue (playable)
+            const shadowClass = (() => {
+              if (piece.color === currentTurn && isCheck && piece.type === 'king')
+                return 'drop-shadow-[0_0_6px_rgba(249,115,22,1)]';
+              if (isSelected)
+                return 'drop-shadow-[0_0_6px_rgba(59,130,246,1)]';
+              if (isAssimilated)
+                return 'drop-shadow-[0_0_4px_rgba(74,222,128,1)]';
+              if (hasGlow)
+                return 'drop-shadow-[0_0_4px_rgba(59,130,246,1)]';
+              return '';
+            })();
 
             const pieceClasses = `
               select-none absolute
               transform transition-all duration-300 ease-in-out
               ${isPlayable ? 'hover:scale-110' : 'opacity-80'}
-              ${hasGlow && !isSelected ? 'drop-shadow-[0_0_4px_rgba(59,130,246,1)]' : ''}
-              ${piece.color === currentTurn && isCheck && piece.type === 'king' ? 'drop-shadow-[0_0_6px_rgba(249,115,22,1)]' : ''}
-              ${isSelected ? 'scale-110 drop-shadow-[0_0_6px_rgba(59,130,246,1)]' : ''}
+              ${isSelected ? 'scale-110' : ''}
+              ${shadowClass}
               ${imagesLoaded ? 'opacity-100' : 'opacity-0'}
             `;
 

@@ -30,6 +30,10 @@
     "all-random": {
       "title": "全随机",
       "description": "游戏开始时棋子随机放置，每次都带来独特体验。"
+    },
+    "assimilation": {
+      "title": "同化",
+      "description": "棋子吃掉对方棋子后，将永久获得其移动能力。"
     }
   },
   "p2p": {
