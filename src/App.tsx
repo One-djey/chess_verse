@@ -1,5 +1,5 @@
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { Analytics } from '@vercel/analytics/react';
 import ModeSelect from './components/ModeSelect';
 import GameModes from './components/GameModes';
@@ -12,11 +12,18 @@ import { P2PProvider } from './context/P2PContext';
 import { InstallProvider } from './context/InstallContext';
 import './i18n';
 
+function ScrollToTop() {
+  const { pathname } = useLocation();
+  useEffect(() => { window.scrollTo(0, 0); }, [pathname]);
+  return null;
+}
+
 function App() {
   return (
     <InstallProvider>
     <P2PProvider>
       <Router>
+        <ScrollToTop />
         <Routes>
           <Route path="/" element={<ModeSelect />} />
           <Route path="/local" element={<GameModes />} />

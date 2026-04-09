@@ -289,35 +289,31 @@ export default function ChessBoard({
         {tooltipPiece && (() => {
           const dp = toDisplay(tooltipPiece.position.x, tooltipPiece.position.y);
           const showBelow = dp.y <= 1;
+          const topPct = showBelow ? (dp.y + 1) * 12.5 : dp.y * 12.5;
+          const transformY = showBelow ? undefined : 'translateY(-100%)';
 
-          // Horizontal: center on piece for middle columns; anchor to the inner
-          // edge of the piece cell for columns near the board edges so the bubble
-          // never overflows regardless of how many icons it contains.
-          let left: string;
-          let transformX: string;
+          // Horizontal positioning — avoid overflow at board edges:
+          //   left cols  (0-1): anchor bubble's LEFT  to piece's left  edge
+          //   right cols (6-7): use CSS `right` to anchor bubble's RIGHT to piece's right edge
+          //   middle     (2-5): center bubble on piece
+          let posStyle: React.CSSProperties;
           if (dp.x <= 1) {
-            left = `${dp.x * 12.5}%`;       // anchor left of bubble to left of piece
-            transformX = 'translateX(0)';
+            posStyle = { left: `${dp.x * 12.5}%`, top: `${topPct}%`, transform: transformY };
           } else if (dp.x >= 6) {
-            left = `${(dp.x + 1) * 12.5}%`; // anchor right of bubble to right of piece
-            transformX = 'translateX(-100%)';
+            posStyle = { right: `${(7 - dp.x) * 12.5}%`, top: `${topPct}%`, transform: transformY };
           } else {
-            left = `${(dp.x + 0.5) * 12.5}%`; // center on piece
-            transformX = 'translateX(-50%)';
+            posStyle = {
+              left: `${(dp.x + 0.5) * 12.5}%`,
+              top: `${topPct}%`,
+              transform: ['translateX(-50%)', transformY].filter(Boolean).join(' '),
+            };
           }
-          const transformY = showBelow ? '' : 'translateY(-100%)';
-          const transform = [transformX, transformY].filter(Boolean).join(' ');
 
           return (
             <div
               className="absolute z-40 pointer-events-none flex flex-col items-center"
-              style={{
-                left,
-                top: showBelow ? `${(dp.y + 1) * 12.5}%` : `${dp.y * 12.5}%`,
-                transform,
-              }}
+              style={posStyle}
             >
-              {/* Below: arrow (▲) then bubble */}
               {showBelow && (
                 <div className="w-0 h-0" style={{ borderLeft: '6px solid transparent', borderRight: '6px solid transparent', borderBottom: '6px solid white' }} />
               )}
@@ -331,7 +327,6 @@ export default function ChessBoard({
                   />
                 ))}
               </div>
-              {/* Above: bubble then arrow (▼) */}
               {!showBelow && (
                 <div className="w-0 h-0" style={{ borderLeft: '6px solid transparent', borderRight: '6px solid transparent', borderTop: '6px solid white' }} />
               )}
@@ -345,20 +340,29 @@ export default function ChessBoard({
             const isSelected = selectedPiece?.position.x === piece.position.x && selectedPiece?.position.y === piece.position.y;
             const isPlayable = piece.color === currentTurn && (!lockedColor || piece.color === lockedColor);
             const hasGlow = isPlayable && (movablePieceIds ? movablePieceIds.has(piece.id) : true);
-            const isAssimilatedEnemy =
-              gameMode.rules?.assimilation &&
-              piece.color !== currentTurn &&
-              (piece.acquiredTypes?.length ?? 0) > 0;
+            const isAssimilated = gameMode.rules?.assimilation && (piece.acquiredTypes?.length ?? 0) > 0;
             const dp = toDisplay(piece.position.x, piece.position.y);
+
+            // Single drop-shadow with explicit priority:
+            //   orange › blue (selected) › blue (playable) › green (assimilated)
+            const shadowClass = (() => {
+              if (piece.color === currentTurn && isCheck && piece.type === 'king')
+                return 'drop-shadow-[0_0_6px_rgba(249,115,22,1)]';
+              if (isSelected)
+                return 'drop-shadow-[0_0_6px_rgba(59,130,246,1)]';
+              if (hasGlow)
+                return 'drop-shadow-[0_0_4px_rgba(59,130,246,1)]';
+              if (isAssimilated)
+                return 'drop-shadow-[0_0_4px_rgba(74,222,128,1)]';
+              return '';
+            })();
 
             const pieceClasses = `
               select-none absolute
               transform transition-all duration-300 ease-in-out
               ${isPlayable ? 'hover:scale-110' : 'opacity-80'}
-              ${hasGlow && !isSelected ? 'drop-shadow-[0_0_4px_rgba(59,130,246,1)]' : ''}
-              ${piece.color === currentTurn && isCheck && piece.type === 'king' ? 'drop-shadow-[0_0_6px_rgba(249,115,22,1)]' : ''}
-              ${isSelected ? 'scale-110 drop-shadow-[0_0_6px_rgba(59,130,246,1)]' : ''}
-              ${isAssimilatedEnemy ? 'drop-shadow-[0_0_4px_rgba(74,222,128,1)]' : ''}
+              ${isSelected ? 'scale-110' : ''}
+              ${shadowClass}
               ${imagesLoaded ? 'opacity-100' : 'opacity-0'}
             `;
 
