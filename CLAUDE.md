@@ -16,7 +16,8 @@ React 18 + TypeScript + Vite + Tailwind CSS. No backend. P2P via Trystero (WebRT
 | Settings modal | `src/components/GameSettings.tsx` |
 | Chess board/pieces | `src/utils/chess/board.ts` |
 | Chess move logic | `src/utils/chess/moves.ts` |
-| Chess barrel export | `src/utils/chess.ts` (re-exports both above) |
+| Assimilation logic | `src/utils/chess/assimilation.ts` |
+| Chess barrel export | `src/utils/chess.ts` (re-exports board, moves, and assimilation) |
 | Game state hook | `src/hooks/useChessGame.ts` |
 | P2P game hook | `src/hooks/useP2PGame.ts` |
 | P2P context | `src/context/P2PContext.tsx` |
@@ -26,7 +27,7 @@ React 18 + TypeScript + Vite + Tailwind CSS. No backend. P2P via Trystero (WebRT
 - `/` → ModeSelect (home)
 - `/local` → GameModes (local mode lobby)
 - `/p2p` → P2PLobby (host/guest P2P lobby)
-- `/game/:modeId` → Game (`classic`, `borderless`, `all-random`, or `p2p`)
+- `/game/:modeId` → Game (`classic`, `borderless`, `all-random`, `assimilation`, or `p2p`)
 
 ## NavBar
 `NavBar` is used on every page. Props:
@@ -49,6 +50,7 @@ Breadcrumb map:
 - "Main Menu" from a P2P game → `/p2p`
 - Controlled by `returnPath` prop on `GameOver`, computed in `Game.tsx`
 - In-game breadcrumb items have no `path` (non-clickable) to prevent accidental quit
+- `ScrollToTop` component in `App.tsx` scrolls to top on every route change
 
 ## i18n
 - Library: `react-i18next` + `i18next-browser-languagedetector`
@@ -60,7 +62,21 @@ Breadcrumb map:
 - Arabic (`ar`) translations are present but RTL CSS layout is not yet applied.
 
 ## Game modes
-Defined in `src/components/GameModes.tsx` as `gameModes[]`. Each has `id`, `image`, `rules`. Titles/descriptions come from translations: `t('modes.<id>.title')`.
+Defined in `src/components/GameModes.tsx` as `gameModes[]`. Each entry has `id`, `image`, `rules`. Titles/descriptions come from translations: `t('modes.<id>.title')`.
+
+| id | Key rules |
+|---|---|
+| `classic` | Standard chess |
+| `borderless` | `rules.borderless: true` — pieces wrap around board edges |
+| `all-random` | `rules.randomPieces: true` — pieces placed randomly at start |
+| `assimilation` | `rules.assimilation: true` — capturing piece permanently acquires the captured piece's movement abilities |
+
+### Assimilation mode details
+- `Piece.acquiredTypes?: PieceType[]` stores accumulated movement types (separate from `piece.type`, which remains the visual identity).
+- `getPieceCapabilities(piece)` — returns `[piece.type, ...piece.acquiredTypes]`; used in `isValidMove` to iterate over all capabilities.
+- `applyAssimilationCapture(capturingPiece, capturedPiece)` — merges types, called in `applyMoveToState` after each capture.
+- Pieces with `acquiredTypes` receive a **green glow** (`rgba(74,222,128,1)`) — priority: orange (check) > blue (selected) > green (assimilation) > blue (playable).
+- Hovering a piece with `acquiredTypes` shows a **tooltip bubble** with icons of the acquired piece types.
 
 ## P2P protocol
 Host generates room, validates all moves, sends `sync_state` + `color_assign` to guest. Message types in `src/types/p2p.ts`.
