@@ -87,13 +87,9 @@ export default function ChessBoard({
     ? pieces.find(p => p.position.x === hoveredSquare.x && p.position.y === hoveredSquare.y) ?? null
     : null;
 
-  // Show acquired-types tooltip when:
-  //  • hovering a piece that has acquiredTypes (assimilation mode)
-  //  • or, when the mouse has left the board, for the currently selected piece
+  // Show acquired-types tooltip only when actively hovering a piece with acquiredTypes
   const tooltipPiece: Piece | null = gameMode.rules?.assimilation
-    ? ((hoveredPiece?.acquiredTypes?.length ?? 0) > 0
-        ? hoveredPiece
-        : (hoveredSquare === null && (selectedPiece?.acquiredTypes?.length ?? 0) > 0 ? selectedPiece : null))
+    ? ((hoveredPiece?.acquiredTypes?.length ?? 0) > 0 ? hoveredPiece : null)
     : null;
 
   const isValidMovePosition = (x: number, y: number) => {
@@ -298,13 +294,17 @@ export default function ChessBoard({
               className="absolute z-40 pointer-events-none flex flex-col items-center"
               style={{
                 left: `${centerPct}%`,
-                transform: 'translateX(-50%)',
-                ...(showBelow
-                  ? { top: `${(dp.y + 1) * 12.5}%` }
-                  : { top: `${dp.y * 12.5}%`, flexDirection: 'column-reverse' as const }),
+                // Above: anchor to piece top, pull the whole column upward so arrow tip touches piece
+                // Below: anchor to piece bottom, column grows downward naturally
+                top: showBelow ? `${(dp.y + 1) * 12.5}%` : `${dp.y * 12.5}%`,
+                transform: showBelow ? 'translateX(-50%)' : 'translateX(-50%) translateY(-100%)',
               }}
             >
-              {/* Bubble */}
+              {/* Above: bubble first, then arrow pointing down */}
+              {/* Below: arrow pointing up first, then bubble */}
+              {showBelow && (
+                <div className="w-0 h-0" style={{ borderLeft: '6px solid transparent', borderRight: '6px solid transparent', borderBottom: '6px solid white' }} />
+              )}
               <div className="bg-white rounded-xl shadow-xl border border-gray-100 px-2.5 py-2 flex gap-2 items-center">
                 {tooltipPiece.acquiredTypes!.map(type => (
                   <img
@@ -315,17 +315,9 @@ export default function ChessBoard({
                   />
                 ))}
               </div>
-              {/* Arrow */}
-              <div
-                className="w-0 h-0"
-                style={{
-                  borderLeft: '6px solid transparent',
-                  borderRight: '6px solid transparent',
-                  ...(showBelow
-                    ? { borderBottom: '6px solid white' }
-                    : { borderTop: '6px solid white' }),
-                }}
-              />
+              {!showBelow && (
+                <div className="w-0 h-0" style={{ borderLeft: '6px solid transparent', borderRight: '6px solid transparent', borderTop: '6px solid white' }} />
+              )}
             </div>
           );
         })()}
