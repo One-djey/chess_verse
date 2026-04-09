@@ -47,11 +47,15 @@ export default function GameModeSelect({ playType, onSelect, extraCrumbs }: Game
                 ring-2 ring-transparent ${ring}
                 transition-all duration-200 hover:-translate-y-1`}
             >
-              <div className="overflow-hidden">
+              <div className="relative overflow-hidden bg-gray-800 h-44">
                 <img
                   src={mode.image}
                   alt={t(`modes.${mode.id}.title`)}
                   className="w-full h-44 object-cover transition-transform duration-300 group-hover:scale-105"
+                  onError={(e) => {
+                    const img = e.target as HTMLImageElement;
+                    img.style.display = 'none';
+                  }}
                 />
               </div>
               <div className="p-5">
