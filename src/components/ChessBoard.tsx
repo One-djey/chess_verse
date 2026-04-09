@@ -173,8 +173,7 @@ export default function ChessBoard({
         style={{
           transform: squishing ? 'scaleX(0)' : 'scaleX(1)',
           transition: squishing ? 'transform 0.22s ease-in' : 'transform 0.22s ease-out',
-          '--cell-w': '12.5%',
-        } as React.CSSProperties}
+        }}
       >
         {/* Board squares */}
         <div className="absolute inset-0 grid grid-cols-8 grid-rows-8 gap-1 z-0">
@@ -290,40 +289,37 @@ export default function ChessBoard({
         {tooltipPiece && (() => {
           const dp = toDisplay(tooltipPiece.position.x, tooltipPiece.position.y);
           const showBelow = dp.y <= 1;
-          const topPct = showBelow ? (dp.y + 1) * 12.5 : dp.y * 12.5;
-          const transformY = showBelow ? undefined : 'translateY(-100%)';
 
-          // Horizontal positioning — avoid overflow at board edges:
-          //   left cols  (0-1): anchor bubble's LEFT  to piece's left  edge
-          //   right cols (6-7): use CSS `right` to anchor bubble's RIGHT to piece's right edge
-          //   middle     (2-5): center bubble on piece
-          let posStyle: React.CSSProperties;
-          let arrowStyle: React.CSSProperties;
+          // Arrow: always pinned to the piece's column center (percentages resolve vs the grid)
+          const arrowLeftPct = (dp.x + 0.5) * 12.5;
+          const arrowTopPct  = showBelow ? (dp.y + 1) * 12.5 : dp.y * 12.5;
+          const arrowTransform = showBelow ? 'translateX(-50%)' : 'translateX(-50%) translateY(-100%)';
+          const arrowBorder: React.CSSProperties = showBelow
+            ? { borderLeft: '6px solid transparent', borderRight: '6px solid transparent', borderBottom: '6px solid white' }
+            : { borderLeft: '6px solid transparent', borderRight: '6px solid transparent', borderTop: '6px solid white' };
+
+          // Bubble: edge-anchored horizontally to avoid overflow
+          const bubbleTopPct    = showBelow ? (dp.y + 1) * 12.5 : dp.y * 12.5;
+          const bubbleTransformY = showBelow ? 'translateY(6px)' : 'translateY(calc(-100% - 6px))';
+          let bubbleStyle: React.CSSProperties;
           if (dp.x <= 1) {
-            posStyle = { left: `${dp.x * 12.5}%`, top: `${topPct}%`, transform: transformY, width: 'max-content' };
-            arrowStyle = { alignSelf: 'flex-start', marginLeft: 'calc(var(--cell-w) * 0.5 - 6px)' };
+            bubbleStyle = { left: `${dp.x * 12.5}%`, top: `${bubbleTopPct}%`, transform: bubbleTransformY, width: 'max-content' };
           } else if (dp.x >= 6) {
-            posStyle = { right: `${(7 - dp.x) * 12.5}%`, top: `${topPct}%`, transform: transformY, width: 'max-content' };
-            arrowStyle = { alignSelf: 'flex-end', marginRight: 'calc(var(--cell-w) * 0.5 - 6px)' };
+            bubbleStyle = { right: `${(7 - dp.x) * 12.5}%`, top: `${bubbleTopPct}%`, transform: bubbleTransformY, width: 'max-content' };
           } else {
-            posStyle = {
-              left: `${(dp.x + 0.5) * 12.5}%`,
-              top: `${topPct}%`,
-              transform: ['translateX(-50%)', transformY].filter(Boolean).join(' '),
-              width: 'max-content',
-            };
-            arrowStyle = { alignSelf: 'center' };
+            bubbleStyle = { left: `${(dp.x + 0.5) * 12.5}%`, top: `${bubbleTopPct}%`, transform: `translateX(-50%) ${bubbleTransformY}`, width: 'max-content' };
           }
 
           return (
-            <div
-              className="absolute z-40 pointer-events-none flex flex-col"
-              style={posStyle}
-            >
-              {showBelow && (
-                <div className="w-0 h-0" style={{ borderLeft: '6px solid transparent', borderRight: '6px solid transparent', borderBottom: '6px solid white', ...arrowStyle }} />
-              )}
-              <div className="bg-white rounded-xl shadow-xl border border-gray-100 px-2.5 py-2 flex gap-2 items-center">
+            <>
+              <div
+                className="absolute z-40 pointer-events-none w-0 h-0"
+                style={{ left: `${arrowLeftPct}%`, top: `${arrowTopPct}%`, transform: arrowTransform, ...arrowBorder }}
+              />
+              <div
+                className="absolute z-40 pointer-events-none bg-white rounded-xl shadow-xl border border-gray-100 px-2.5 py-2 flex gap-2 items-center"
+                style={bubbleStyle}
+              >
                 {tooltipPiece.acquiredTypes!.map(type => (
                   <img
                     key={type}
@@ -333,10 +329,7 @@ export default function ChessBoard({
                   />
                 ))}
               </div>
-              {!showBelow && (
-                <div className="w-0 h-0" style={{ borderLeft: '6px solid transparent', borderRight: '6px solid transparent', borderTop: '6px solid white', ...arrowStyle }} />
-              )}
-            </div>
+            </>
           );
         })()}
 
@@ -350,16 +343,16 @@ export default function ChessBoard({
             const dp = toDisplay(piece.position.x, piece.position.y);
 
             // Single drop-shadow with explicit priority:
-            //   orange › blue (selected) › blue (playable) › green (assimilated)
+            //   orange › blue (selected) › green (assimilated) › blue (playable)
             const shadowClass = (() => {
               if (piece.color === currentTurn && isCheck && piece.type === 'king')
                 return 'drop-shadow-[0_0_6px_rgba(249,115,22,1)]';
               if (isSelected)
                 return 'drop-shadow-[0_0_6px_rgba(59,130,246,1)]';
-              if (hasGlow)
-                return 'drop-shadow-[0_0_4px_rgba(59,130,246,1)]';
               if (isAssimilated)
                 return 'drop-shadow-[0_0_4px_rgba(74,222,128,1)]';
+              if (hasGlow)
+                return 'drop-shadow-[0_0_4px_rgba(59,130,246,1)]';
               return '';
             })();
 
