@@ -24,6 +24,11 @@ export default function Game() {
 
   const p2p = useP2P();
 
+  // Ref updated on every render so the cleanup always reads the *current* P2P state,
+  // avoiding the stale-closure problem of capturing p2p.isP2PMode at first-render time.
+  const isActiveP2PRef = React.useRef(false);
+  isActiveP2PRef.current = modeId === 'p2p' && p2p.isP2PMode;
+
   // If we enter a non-P2P game while P2P state is still active (e.g. user navigated
   // away via the NavBar without going through handleLeaveP2P), clean up the stale state.
   // Also clean up on unmount so the WebRTC room is closed immediately when leaving,
@@ -32,7 +37,7 @@ export default function Game() {
     if (modeId !== 'p2p' && p2p.isP2PMode) {
       p2p.leaveRoom();
     }
-    return () => { if (p2p.isP2PMode) p2p.leaveRoom(); };
+    return () => { if (isActiveP2PRef.current) p2p.leaveRoom(); };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const gameMode = resolveGameMode(modeId, p2p.gameMode);
