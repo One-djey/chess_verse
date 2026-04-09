@@ -173,7 +173,8 @@ export default function ChessBoard({
         style={{
           transform: squishing ? 'scaleX(0)' : 'scaleX(1)',
           transition: squishing ? 'transform 0.22s ease-in' : 'transform 0.22s ease-out',
-        }}
+          '--cell-w': '12.5%',
+        } as React.CSSProperties}
       >
         {/* Board squares */}
         <div className="absolute inset-0 grid grid-cols-8 grid-rows-8 gap-1 z-0">
@@ -297,10 +298,13 @@ export default function ChessBoard({
           //   right cols (6-7): use CSS `right` to anchor bubble's RIGHT to piece's right edge
           //   middle     (2-5): center bubble on piece
           let posStyle: React.CSSProperties;
+          let arrowStyle: React.CSSProperties;
           if (dp.x <= 1) {
             posStyle = { left: `${dp.x * 12.5}%`, top: `${topPct}%`, transform: transformY, width: 'max-content' };
+            arrowStyle = { alignSelf: 'flex-start', marginLeft: 'calc(var(--cell-w) * 0.5 - 6px)' };
           } else if (dp.x >= 6) {
             posStyle = { right: `${(7 - dp.x) * 12.5}%`, top: `${topPct}%`, transform: transformY, width: 'max-content' };
+            arrowStyle = { alignSelf: 'flex-end', marginRight: 'calc(var(--cell-w) * 0.5 - 6px)' };
           } else {
             posStyle = {
               left: `${(dp.x + 0.5) * 12.5}%`,
@@ -308,15 +312,16 @@ export default function ChessBoard({
               transform: ['translateX(-50%)', transformY].filter(Boolean).join(' '),
               width: 'max-content',
             };
+            arrowStyle = { alignSelf: 'center' };
           }
 
           return (
             <div
-              className="absolute z-40 pointer-events-none flex flex-col items-center"
+              className="absolute z-40 pointer-events-none flex flex-col"
               style={posStyle}
             >
               {showBelow && (
-                <div className="w-0 h-0" style={{ borderLeft: '6px solid transparent', borderRight: '6px solid transparent', borderBottom: '6px solid white' }} />
+                <div className="w-0 h-0" style={{ borderLeft: '6px solid transparent', borderRight: '6px solid transparent', borderBottom: '6px solid white', ...arrowStyle }} />
               )}
               <div className="bg-white rounded-xl shadow-xl border border-gray-100 px-2.5 py-2 flex gap-2 items-center">
                 {tooltipPiece.acquiredTypes!.map(type => (
@@ -329,7 +334,7 @@ export default function ChessBoard({
                 ))}
               </div>
               {!showBelow && (
-                <div className="w-0 h-0" style={{ borderLeft: '6px solid transparent', borderRight: '6px solid transparent', borderTop: '6px solid white' }} />
+                <div className="w-0 h-0" style={{ borderLeft: '6px solid transparent', borderRight: '6px solid transparent', borderTop: '6px solid white', ...arrowStyle }} />
               )}
             </div>
           );
