@@ -30,6 +30,10 @@
     "all-random": {
       "title": "All Random",
       "description": "Pieces are randomly placed at the start, creating a unique experience every time."
+    },
+    "assimilation": {
+      "title": "Assimilation",
+      "description": "When a piece captures another, it permanently acquires its movement abilities."
     }
   },
   "p2p": {

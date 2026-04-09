@@ -30,6 +30,10 @@
     "all-random": {
       "title": "Todo aleatorio",
       "description": "Las piezas se colocan aleatoriamente al inicio, creando una experiencia única cada vez."
+    },
+    "assimilation": {
+      "title": "Asimilación",
+      "description": "Cuando una pieza captura a otra, adquiere permanentemente sus capacidades de movimiento."
     }
   },
   "p2p": {

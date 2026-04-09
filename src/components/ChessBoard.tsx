@@ -272,6 +272,10 @@ export default function ChessBoard({
             const isSelected = selectedPiece?.position.x === piece.position.x && selectedPiece?.position.y === piece.position.y;
             const isPlayable = piece.color === currentTurn && (!lockedColor || piece.color === lockedColor);
             const hasGlow = isPlayable && (movablePieceIds ? movablePieceIds.has(piece.id) : true);
+            const isAssimilatedEnemy =
+              gameMode.rules?.assimilation &&
+              piece.color !== currentTurn &&
+              (piece.acquiredTypes?.length ?? 0) > 0;
             const dp = toDisplay(piece.position.x, piece.position.y);
 
             const pieceClasses = `
@@ -281,6 +285,7 @@ export default function ChessBoard({
               ${hasGlow && !isSelected ? 'drop-shadow-[0_0_4px_rgba(59,130,246,1)]' : ''}
               ${piece.color === currentTurn && isCheck && piece.type === 'king' ? 'drop-shadow-[0_0_6px_rgba(249,115,22,1)]' : ''}
               ${isSelected ? 'scale-110 drop-shadow-[0_0_6px_rgba(59,130,246,1)]' : ''}
+              ${isAssimilatedEnemy ? 'drop-shadow-[0_0_4px_rgba(74,222,128,1)]' : ''}
               ${imagesLoaded ? 'opacity-100' : 'opacity-0'}
             `;
 

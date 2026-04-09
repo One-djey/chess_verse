@@ -1,5 +1,6 @@
 import { Piece, PieceColor, PieceType, Position, GameMode, CastlingMove, GameState } from '../../types/chess';
 import { BOARD_SIZE } from './board';
+import { getPieceCapabilities, applyAssimilationCapture } from './assimilation';
 
 // ── Small shared helpers ─────────────────────────────────────────────────────
 
@@ -57,6 +58,46 @@ function isPathClear(start: Position, end: Position, pieces: Piece[], gameMode: 
   return true;
 }
 
+// ── Per-type move validation ─────────────────────────────────────────────────
+
+/**
+ * Checks whether `piece` (at its current position) can reach `target` using
+ * the rules of the given `type`. Shared guards (boundary, ally blocking, etc.)
+ * are handled by the caller (`isValidMove`).
+ */
+function isValidMoveForSingleType(
+  type: PieceType,
+  piece: Piece,
+  target: Position,
+  pieces: Piece[],
+  gameMode: GameMode,
+): boolean {
+  const dx = target.x - piece.position.x;
+  const dy = target.y - piece.position.y;
+  const absDx = Math.abs(dx);
+  const absDy = Math.abs(dy);
+  const targetPiece = getPieceAt(normalizePos(target.x, target.y), pieces);
+
+  switch (type) {
+    case 'pawn': {
+      const dir = piece.color === 'white' ? -1 : 1;
+      const startRank = piece.color === 'white' ? 6 : 1;
+      if (dx === 0) {
+        if (dy === dir && !targetPiece) return true;
+        if (piece.position.y === startRank && dy === 2 * dir && !targetPiece)
+          return !getPieceAt({ x: piece.position.x, y: piece.position.y + dir }, pieces);
+      }
+      return absDx === 1 && dy === dir && targetPiece !== null;
+    }
+    case 'knight':  return (absDx === 2 && absDy === 1) || (absDx === 1 && absDy === 2);
+    case 'bishop':  return absDx === absDy && isPathClear(piece.position, target, pieces, gameMode);
+    case 'rook':    return (dx === 0 || dy === 0) && isPathClear(piece.position, target, pieces, gameMode);
+    case 'queen':   return (absDx === absDy || dx === 0 || dy === 0) && isPathClear(piece.position, target, pieces, gameMode);
+    case 'king':    return absDx <= 1 && absDy <= 1;
+    default:        return false;
+  }
+}
+
 // ── Move validation ──────────────────────────────────────────────────────────
 
 export const isValidMove = (
@@ -76,29 +117,8 @@ export const isValidMove = (
   if (!gameMode.rules?.borderless && piece.position.x === norm.x && piece.position.y === norm.y) return false;
   if (gameMode.rules?.borderless && crossesForbiddenEdge(piece.position, target, piece.color)) return false;
 
-  const dx = target.x - piece.position.x;
-  const dy = target.y - piece.position.y;
-  const absDx = Math.abs(dx);
-  const absDy = Math.abs(dy);
-
-  switch (piece.type) {
-    case 'pawn': {
-      const dir = piece.color === 'white' ? -1 : 1;
-      const startRank = piece.color === 'white' ? 6 : 1;
-      if (dx === 0) {
-        if (dy === dir && !targetPiece) return true;
-        if (piece.position.y === startRank && dy === 2 * dir && !targetPiece)
-          return !getPieceAt({ x: piece.position.x, y: piece.position.y + dir }, pieces);
-      }
-      return absDx === 1 && dy === dir && targetPiece !== null;
-    }
-    case 'knight':  return (absDx === 2 && absDy === 1) || (absDx === 1 && absDy === 2);
-    case 'bishop':  return absDx === absDy && isPathClear(piece.position, target, pieces, gameMode);
-    case 'rook':    return (dx === 0 || dy === 0) && isPathClear(piece.position, target, pieces, gameMode);
-    case 'queen':   return (absDx === absDy || dx === 0 || dy === 0) && isPathClear(piece.position, target, pieces, gameMode);
-    case 'king':    return absDx <= 1 && absDy <= 1;
-    default:        return false;
-  }
+  const capabilities = getPieceCapabilities(piece);
+  return capabilities.some(type => isValidMoveForSingleType(type, piece, target, pieces, gameMode));
 };
 
 // ── Check detection ──────────────────────────────────────────────────────────
@@ -126,11 +146,16 @@ export const isSquareUnderAttack = (
   pieces
     .filter(p => p.color === attackerColor)
     .some(p => {
-      if (p.type === 'pawn') {
+      const caps = getPieceCapabilities(p);
+      // Pawns (and pieces with acquired pawn movement) attack diagonally,
+      // even onto empty squares — this can't be detected via isValidMove alone.
+      if (caps.includes('pawn')) {
         const dir = p.color === 'white' ? -1 : 1;
-        return Math.abs(p.position.x - position.x) === 1 && position.y - p.position.y === dir;
+        if (Math.abs(p.position.x - position.x) === 1 && position.y - p.position.y === dir) return true;
       }
-      return isValidMove(p, position, pieces, gameMode, true);
+      // All non-pawn capabilities are correctly handled by isValidMove.
+      return caps.filter(t => t !== 'pawn').length > 0
+        && isValidMove(p, position, pieces, gameMode, true);
     });
 
 // ── Castling ─────────────────────────────────────────────────────────────────
@@ -194,14 +219,18 @@ export function applyMoveToState(prev: GameState, piece: Piece, rawTarget: Posit
   const captured = getPieceAt(target, prev.pieces);
   let pieces = captured ? prev.pieces.filter(p => p.id !== captured.id) : [...prev.pieces];
 
-  // Move piece (with pawn promotion)
+  // Move piece (with pawn promotion and optional assimilation capture)
   pieces = pieces.map(p => {
     if (p.id !== piece.id) return p;
     const promote: PieceType | undefined =
       p.type === 'pawn' && ((p.color === 'white' && target.y === 0) || (p.color === 'black' && target.y === 7))
         ? 'queen'
         : undefined;
-    return { ...p, position: target, hasMoved: true, ...(promote ? { type: promote } : {}) };
+    let updated: Piece = { ...p, position: target, hasMoved: true, ...(promote ? { type: promote } : {}) };
+    if (prev.gameMode.rules?.assimilation && captured) {
+      updated = applyAssimilationCapture(updated, captured);
+    }
+    return updated;
   });
 
   // Move rook for castling
