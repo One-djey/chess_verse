@@ -23,17 +23,22 @@ export default function P2PLobby() {
   const [qrDataUrl, setQrDataUrl] = useState('');
   const [copied, setCopied] = useState(false);
   const joinedRef = useRef(false);
+  // Prevents leaveRoom() from being called when we intentionally navigate to the game
+  const navigatingToGameRef = useRef(false);
 
   // ── Cleanup on unmount (NavBar click / browser back) ─────────────────────
   useEffect(() => {
-    return () => { leaveRoom(); };
+    return () => { if (!navigatingToGameRef.current) leaveRoom(); };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── GUEST: auto-join on mount ──────────────────────────────────────────────
   useEffect(() => {
     if (isGuest && roomParam && !joinedRef.current) {
       joinedRef.current = true;
-      joinExistingRoom(roomParam, () => navigate('/game/p2p'));
+      joinExistingRoom(roomParam, () => {
+        navigatingToGameRef.current = true;
+        navigate('/game/p2p');
+      });
     }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -51,7 +56,10 @@ export default function P2PLobby() {
     if (isP2PMode) leaveRoom();
     const id = generateRoomId();
     setRoomId(id);
-    startRoom(id, mode, () => navigate('/game/p2p'));
+    startRoom(id, mode, () => {
+      navigatingToGameRef.current = true;
+      navigate('/game/p2p');
+    });
   };
 
   const handleCopy = async () => {
