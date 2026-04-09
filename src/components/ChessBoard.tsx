@@ -80,6 +80,22 @@ export default function ChessBoard({
 
   const handleImageLoad = () => { setImagesLoaded(true); };
 
+  // ── Assimilation tooltip ─────────────────────────────────────────────────────
+  const [hoveredSquare, setHoveredSquare] = useState<{ x: number; y: number } | null>(null);
+
+  const hoveredPiece = hoveredSquare
+    ? pieces.find(p => p.position.x === hoveredSquare.x && p.position.y === hoveredSquare.y) ?? null
+    : null;
+
+  // Show acquired-types tooltip when:
+  //  • hovering a piece that has acquiredTypes (assimilation mode)
+  //  • or, when the mouse has left the board, for the currently selected piece
+  const tooltipPiece: Piece | null = gameMode.rules?.assimilation
+    ? ((hoveredPiece?.acquiredTypes?.length ?? 0) > 0
+        ? hoveredPiece
+        : (hoveredSquare === null && (selectedPiece?.acquiredTypes?.length ?? 0) > 0 ? selectedPiece : null))
+    : null;
+
   const isValidMovePosition = (x: number, y: number) => {
     return validMoves.some(move => {
       const normalizedMove = {
@@ -230,7 +246,10 @@ export default function ChessBoard({
         </div>
         
         {/* Interactive squares layer */}
-        <div className="absolute inset-0 grid grid-cols-8 grid-rows-8 gap-1 z-20">
+        <div
+          className="absolute inset-0 grid grid-cols-8 grid-rows-8 gap-1 z-20"
+          onMouseLeave={() => setHoveredSquare(null)}
+        >
           {Array(8)
             .fill(null)
             .map((_, dy) =>
@@ -246,6 +265,7 @@ export default function ChessBoard({
                     <div
                       key={`interactive-${dx}-${dy}`}
                       className="w-full h-full"
+                      onMouseEnter={() => setHoveredSquare({ x, y })}
                       onClick={() => {
                         if (piece && isPlayable) {
                           onPieceSelect(piece);
@@ -265,6 +285,50 @@ export default function ChessBoard({
                 })
             )}
         </div>
+
+        {/* Assimilation tooltip */}
+        {tooltipPiece && (() => {
+          const dp = toDisplay(tooltipPiece.position.x, tooltipPiece.position.y);
+          const showBelow = dp.y <= 1;
+          // Center of the piece cell, clamped so the bubble stays inside the board
+          const centerPct = Math.max(8, Math.min(92, (dp.x + 0.5) * 12.5));
+
+          return (
+            <div
+              className="absolute z-40 pointer-events-none flex flex-col items-center"
+              style={{
+                left: `${centerPct}%`,
+                transform: 'translateX(-50%)',
+                ...(showBelow
+                  ? { top: `${(dp.y + 1) * 12.5}%` }
+                  : { top: `${dp.y * 12.5}%`, flexDirection: 'column-reverse' as const }),
+              }}
+            >
+              {/* Bubble */}
+              <div className="bg-white rounded-xl shadow-xl border border-gray-100 px-2.5 py-2 flex gap-2 items-center">
+                {tooltipPiece.acquiredTypes!.map(type => (
+                  <img
+                    key={type}
+                    src={`/ressources/pieces/${tooltipPiece.color}_${type}.png`}
+                    alt={type}
+                    className="w-7 h-7"
+                  />
+                ))}
+              </div>
+              {/* Arrow */}
+              <div
+                className="w-0 h-0"
+                style={{
+                  borderLeft: '6px solid transparent',
+                  borderRight: '6px solid transparent',
+                  ...(showBelow
+                    ? { borderBottom: '6px solid white' }
+                    : { borderTop: '6px solid white' }),
+                }}
+              />
+            </div>
+          );
+        })()}
 
         {/* Pieces layer */}
         <div className="absolute inset-0 z-30 pointer-events-none">
