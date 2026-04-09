@@ -47,7 +47,7 @@ export default function GameModeSelect({ playType, onSelect, extraCrumbs }: Game
                 ring-2 ring-transparent ${ring}
                 transition-all duration-200 hover:-translate-y-1`}
             >
-              <div className="relative overflow-hidden bg-gray-800 h-44">
+              <div className="relative overflow-hidden bg-gray-300 h-44">
                 <img
                   src={mode.image}
                   alt={t(`modes.${mode.id}.title`)}
