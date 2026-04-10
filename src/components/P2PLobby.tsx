@@ -1,14 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import QRCode from "qrcode";
-import {
-  Copy,
-  Share2,
-  Users,
-  Loader2,
-  CheckCircle,
-  WifiOff,
-} from "lucide-react";
+import { Copy, Share2, Loader2, CheckCircle, WifiOff } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useP2P } from "../context/P2PContext";
 import { GameMode } from "../types/chess";
@@ -24,8 +17,14 @@ export default function P2PLobby() {
   const roomParam = searchParams.get("room");
   const isGuest = Boolean(roomParam);
 
-  const { startRoom, joinExistingRoom, leaveRoom, connectionState, isP2PMode } =
-    useP2P();
+  const {
+    startRoom,
+    joinExistingRoom,
+    leaveRoom,
+    connectionState,
+    isP2PMode,
+    gameMode,
+  } = useP2P();
   const { skin } = useSkin();
 
   const [roomId, setRoomId] = useState("");
@@ -107,50 +106,83 @@ export default function P2PLobby() {
         <NavBar breadcrumbs={[{ label: t("modeSelect.multiplayer") }]} />
 
         <div className="flex-1 flex items-center justify-center p-8">
-          <div className="bg-white rounded-xl shadow-lg p-10 max-w-md w-full text-center">
-            <Users size={48} className="mx-auto mb-4 text-indigo-500" />
-            <h1 className="text-3xl font-bold mb-2">{t("p2p.joinGame")}</h1>
-            <p className="text-gray-500 mb-8">{t("p2p.connectingViaP2P")}</p>
-
-            {connectionState === "connecting" && (
-              <div className="flex flex-col items-center gap-4">
-                <Loader2 size={40} className="animate-spin text-indigo-500" />
-                <p className="text-gray-600">{t("p2p.waitingForHost")}</p>
-              </div>
+          <div className="bg-white rounded-xl shadow-lg overflow-hidden max-w-sm w-full">
+            {/* Image header — skeleton until game mode is known */}
+            {gameMode ? (
+              <img
+                src={gameMode.image}
+                alt={t(`modes.${gameMode.id}.title`)}
+                className="w-full h-44 object-cover"
+              />
+            ) : (
+              <div className="w-full h-44 bg-gray-200 animate-pulse" />
             )}
 
-            {connectionState === "connected" && (
-              <div className="flex flex-col items-center gap-4">
-                <CheckCircle size={40} className="text-green-500" />
-                <p className="text-gray-600 font-semibold">
-                  {t("p2p.connectedStarting")}
-                </p>
-              </div>
-            )}
+            <div className="p-6">
+              {/* Mode title + description */}
+              {gameMode ? (
+                <>
+                  <h2 className="text-xl font-bold text-gray-900 mb-1">
+                    {t(`modes.${gameMode.id}.title`)}
+                  </h2>
+                  <p className="text-sm text-gray-500 leading-relaxed mb-5">
+                    {t(`modes.${gameMode.id}.description`)}
+                  </p>
+                </>
+              ) : (
+                <div className="mb-5">
+                  <div className="h-6 bg-gray-200 rounded animate-pulse mb-2 w-2/5" />
+                  <div className="h-4 bg-gray-100 rounded animate-pulse w-full mb-1.5" />
+                  <div className="h-4 bg-gray-100 rounded animate-pulse w-3/4" />
+                </div>
+              )}
 
-            {connectionState === "disconnected" && (
-              <div className="flex flex-col items-center gap-4">
-                <WifiOff size={40} className="text-red-500" />
-                <p className="text-red-600 font-semibold">
-                  {t("p2p.connectionLost")}
-                </p>
+              {/* Connection status */}
+              {connectionState === "connecting" && (
+                <div className="flex items-center gap-3 px-4 py-3 bg-gray-50 rounded-lg">
+                  <Loader2
+                    size={18}
+                    className="animate-spin text-indigo-500 shrink-0"
+                  />
+                  <p className="text-gray-600 text-sm">
+                    {t("p2p.waitingForHost")}
+                  </p>
+                </div>
+              )}
+              {connectionState === "connected" && (
+                <div className="flex items-center gap-3 px-4 py-3 bg-green-50 rounded-lg">
+                  <CheckCircle size={18} className="text-green-500 shrink-0" />
+                  <p className="text-green-700 text-sm font-medium">
+                    {t("p2p.connectedStarting")}
+                  </p>
+                </div>
+              )}
+              {connectionState === "disconnected" && (
+                <div className="flex flex-col gap-3">
+                  <div className="flex items-center gap-3 px-4 py-3 bg-red-50 rounded-lg">
+                    <WifiOff size={18} className="text-red-500 shrink-0" />
+                    <p className="text-red-600 text-sm font-medium">
+                      {t("p2p.connectionLost")}
+                    </p>
+                  </div>
+                  <button
+                    onClick={handleBack}
+                    className="w-full py-2.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition text-sm font-medium"
+                  >
+                    {t("p2p.backToMenu")}
+                  </button>
+                </div>
+              )}
+
+              {connectionState !== "disconnected" && (
                 <button
                   onClick={handleBack}
-                  className="px-6 py-2 bg-gray-200 rounded-lg hover:bg-gray-300"
+                  className="mt-4 w-full text-sm text-gray-400 hover:text-gray-600 underline"
                 >
-                  {t("p2p.backToMenu")}
+                  {t("p2p.cancel")}
                 </button>
-              </div>
-            )}
-
-            {connectionState !== "disconnected" && (
-              <button
-                onClick={handleBack}
-                className="mt-8 text-sm text-gray-400 hover:text-gray-600 underline"
-              >
-                {t("p2p.cancel")}
-              </button>
-            )}
+              )}
+            </div>
           </div>
         </div>
       </div>
