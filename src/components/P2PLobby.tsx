@@ -10,6 +10,52 @@ import { useSkin } from "../context/SkinContext";
 import GameModeSelect from "./GameModeSelect";
 import NavBar from "./NavBar";
 
+// ── Shared card shell ─────────────────────────────────────────────────────────
+function ModeInfoCard({
+  mode,
+  children,
+}: {
+  mode: GameMode | null;
+  children: React.ReactNode;
+}) {
+  const { t } = useTranslation();
+  return (
+    <div className="bg-white rounded-xl shadow-lg overflow-hidden max-w-sm w-full">
+      {mode ? (
+        <img
+          src={mode.image}
+          alt={t(`modes.${mode.id}.title`)}
+          className="w-full h-44 object-cover"
+        />
+      ) : (
+        <div className="w-full h-44 bg-gray-200 animate-pulse" />
+      )}
+
+      <div className="p-6">
+        {mode ? (
+          <>
+            <h2 className="text-xl font-bold text-gray-900 mb-1">
+              {t(`modes.${mode.id}.title`)}
+            </h2>
+            <p className="text-sm text-gray-500 leading-relaxed mb-5">
+              {t(`modes.${mode.id}.description`)}
+            </p>
+          </>
+        ) : (
+          <div className="mb-5">
+            <div className="h-6 bg-gray-200 rounded animate-pulse mb-2 w-2/5" />
+            <div className="h-4 bg-gray-100 rounded animate-pulse w-full mb-1.5" />
+            <div className="h-4 bg-gray-100 rounded animate-pulse w-3/4" />
+          </div>
+        )}
+
+        {children}
+      </div>
+    </div>
+  );
+}
+
+// ── Main component ────────────────────────────────────────────────────────────
 export default function P2PLobby() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -58,7 +104,7 @@ export default function P2PLobby() {
     if (!roomId || isGuest) return;
     const url = `${window.location.origin}/p2p?room=${roomId}`;
     setShareUrl(url);
-    QRCode.toDataURL(url, { width: 220, margin: 2 })
+    QRCode.toDataURL(url, { width: 200, margin: 2 })
       .then(setQrDataUrl)
       .catch(console.error);
   }, [roomId]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -106,84 +152,51 @@ export default function P2PLobby() {
         <NavBar breadcrumbs={[{ label: t("modeSelect.multiplayer") }]} />
 
         <div className="flex-1 flex items-center justify-center p-8">
-          <div className="bg-white rounded-xl shadow-lg overflow-hidden max-w-sm w-full">
-            {/* Image header — skeleton until game mode is known */}
-            {gameMode ? (
-              <img
-                src={gameMode.image}
-                alt={t(`modes.${gameMode.id}.title`)}
-                className="w-full h-44 object-cover"
-              />
-            ) : (
-              <div className="w-full h-44 bg-gray-200 animate-pulse" />
+          <ModeInfoCard mode={gameMode}>
+            {connectionState === "connecting" && (
+              <div className="flex items-center gap-3 px-4 py-3 bg-gray-50 rounded-lg">
+                <Loader2
+                  size={18}
+                  className="animate-spin text-indigo-500 shrink-0"
+                />
+                <p className="text-gray-600 text-sm">
+                  {t("p2p.waitingForHost")}
+                </p>
+              </div>
             )}
-
-            <div className="p-6">
-              {/* Mode title + description */}
-              {gameMode ? (
-                <>
-                  <h2 className="text-xl font-bold text-gray-900 mb-1">
-                    {t(`modes.${gameMode.id}.title`)}
-                  </h2>
-                  <p className="text-sm text-gray-500 leading-relaxed mb-5">
-                    {t(`modes.${gameMode.id}.description`)}
-                  </p>
-                </>
-              ) : (
-                <div className="mb-5">
-                  <div className="h-6 bg-gray-200 rounded animate-pulse mb-2 w-2/5" />
-                  <div className="h-4 bg-gray-100 rounded animate-pulse w-full mb-1.5" />
-                  <div className="h-4 bg-gray-100 rounded animate-pulse w-3/4" />
-                </div>
-              )}
-
-              {/* Connection status */}
-              {connectionState === "connecting" && (
-                <div className="flex items-center gap-3 px-4 py-3 bg-gray-50 rounded-lg">
-                  <Loader2
-                    size={18}
-                    className="animate-spin text-indigo-500 shrink-0"
-                  />
-                  <p className="text-gray-600 text-sm">
-                    {t("p2p.waitingForHost")}
+            {connectionState === "connected" && (
+              <div className="flex items-center gap-3 px-4 py-3 bg-green-50 rounded-lg">
+                <CheckCircle size={18} className="text-green-500 shrink-0" />
+                <p className="text-green-700 text-sm font-medium">
+                  {t("p2p.connectedStarting")}
+                </p>
+              </div>
+            )}
+            {connectionState === "disconnected" && (
+              <div className="flex flex-col gap-3">
+                <div className="flex items-center gap-3 px-4 py-3 bg-red-50 rounded-lg">
+                  <WifiOff size={18} className="text-red-500 shrink-0" />
+                  <p className="text-red-600 text-sm font-medium">
+                    {t("p2p.connectionLost")}
                   </p>
                 </div>
-              )}
-              {connectionState === "connected" && (
-                <div className="flex items-center gap-3 px-4 py-3 bg-green-50 rounded-lg">
-                  <CheckCircle size={18} className="text-green-500 shrink-0" />
-                  <p className="text-green-700 text-sm font-medium">
-                    {t("p2p.connectedStarting")}
-                  </p>
-                </div>
-              )}
-              {connectionState === "disconnected" && (
-                <div className="flex flex-col gap-3">
-                  <div className="flex items-center gap-3 px-4 py-3 bg-red-50 rounded-lg">
-                    <WifiOff size={18} className="text-red-500 shrink-0" />
-                    <p className="text-red-600 text-sm font-medium">
-                      {t("p2p.connectionLost")}
-                    </p>
-                  </div>
-                  <button
-                    onClick={handleBack}
-                    className="w-full py-2.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition text-sm font-medium"
-                  >
-                    {t("p2p.backToMenu")}
-                  </button>
-                </div>
-              )}
-
-              {connectionState !== "disconnected" && (
                 <button
                   onClick={handleBack}
-                  className="mt-4 w-full text-sm text-gray-400 hover:text-gray-600 underline"
+                  className="w-full py-2.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition text-sm font-medium"
                 >
-                  {t("p2p.cancel")}
+                  {t("p2p.backToMenu")}
                 </button>
-              )}
-            </div>
-          </div>
+              </div>
+            )}
+            {connectionState !== "disconnected" && (
+              <button
+                onClick={handleBack}
+                className="mt-4 w-full text-sm text-gray-400 hover:text-gray-600 underline"
+              >
+                {t("p2p.cancel")}
+              </button>
+            )}
+          </ModeInfoCard>
         </div>
       </div>
     );
@@ -208,29 +221,24 @@ export default function P2PLobby() {
         />
 
         <div className="flex-1 flex items-center justify-center p-8">
-          <div className="bg-white rounded-xl shadow-lg p-10 max-w-md w-full">
-            <h1 className="text-2xl font-bold text-center mb-1">
-              {t("p2p.inviteOpponent")}
-            </h1>
-            <p className="text-gray-500 text-center text-sm mb-6">
-              {t("p2p.shareQrOrLink")}
-            </p>
-
-            <div className="text-center mb-6">
+          <ModeInfoCard mode={gameMode}>
+            {/* QR code */}
+            <div className="flex justify-center mb-4">
               {qrDataUrl ? (
                 <img
                   src={qrDataUrl}
                   alt={t("p2p.inviteQrAlt")}
-                  className="mx-auto rounded-xl border border-gray-200"
+                  className="rounded-xl border border-gray-200"
                 />
               ) : (
-                <div className="w-[220px] h-[220px] mx-auto flex items-center justify-center bg-gray-50 rounded-xl">
-                  <Loader2 size={32} className="animate-spin text-gray-400" />
+                <div className="w-[200px] h-[200px] flex items-center justify-center bg-gray-50 rounded-xl">
+                  <Loader2 size={28} className="animate-spin text-gray-400" />
                 </div>
               )}
             </div>
 
-            <div className="flex gap-2 mb-5">
+            {/* Share / copy */}
+            <div className="flex gap-2 mb-4">
               <button
                 onClick={handleShare}
                 className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition text-sm font-medium"
@@ -250,7 +258,8 @@ export default function P2PLobby() {
               </button>
             </div>
 
-            <div className="flex items-center gap-3 py-3 bg-gray-50 rounded-lg px-4 mb-4">
+            {/* Waiting status */}
+            <div className="flex items-center gap-3 px-4 py-3 bg-gray-50 rounded-lg mb-4">
               <Loader2
                 size={18}
                 className="animate-spin text-indigo-500 shrink-0"
@@ -266,13 +275,13 @@ export default function P2PLobby() {
             >
               {t("p2p.cancel")}
             </button>
-          </div>
+          </ModeInfoCard>
         </div>
       </div>
     );
   }
 
-  // ── HOST STEP 3 – Opponent connected ──────────────────────────────────────
+  // ── HOST STEP 3 – Opponent connected (brief transition state) ─────────────
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col">
       <NavBar
@@ -283,11 +292,14 @@ export default function P2PLobby() {
       />
 
       <div className="flex-1 flex items-center justify-center p-8">
-        <div className="bg-white rounded-xl shadow-lg p-10 max-w-md w-full text-center">
-          <CheckCircle size={48} className="mx-auto mb-4 text-green-500" />
-          <p className="text-lg font-semibold">{t("p2p.opponentConnected")}</p>
-          <p className="text-gray-500 text-sm mt-1">{t("p2p.startingGame")}</p>
-        </div>
+        <ModeInfoCard mode={gameMode}>
+          <div className="flex items-center gap-3 px-4 py-3 bg-green-50 rounded-lg">
+            <CheckCircle size={18} className="text-green-500 shrink-0" />
+            <p className="text-green-700 text-sm font-medium">
+              {t("p2p.startingGame")}
+            </p>
+          </div>
+        </ModeInfoCard>
       </div>
     </div>
   );

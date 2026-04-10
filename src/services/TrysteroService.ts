@@ -16,10 +16,22 @@ import type {
 
 const APP_ID = "chess-verse-2024";
 
+// Curated list of reliable public Nostr relays used for WebRTC signaling.
+// Overrides the default shuffle so the app isn't affected by unstable relays
+// that happen to be selected for this appId.
+const RELAY_URLS = [
+  "wss://relay.damus.io",
+  "wss://nos.lol",
+  "wss://purplerelay.com",
+  "wss://nostr.vulpem.com",
+  "wss://relay.nostr.place",
+  "wss://relay.primal.net",
+];
+
 export type { Room };
 
 export function joinRoom(roomId: string): Room {
-  return trysteroJoinRoom({ appId: APP_ID }, roomId);
+  return trysteroJoinRoom({ appId: APP_ID, relayUrls: RELAY_URLS }, roomId);
 }
 
 export function generateRoomId(): string {
