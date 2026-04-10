@@ -76,10 +76,9 @@ export function P2PProvider({ children }: { children: React.ReactNode }) {
       setConnectionState("waiting");
       forceUpdate((n) => n + 1);
 
-      // Register BEFORE onPeerJoin to avoid any race condition
+      // Update peer skin whenever guest_ready arrives (non-blocking)
       actions.onGuestReady((msg) => {
         setPeerSkin(msg.skin);
-        onConnected();
       });
 
       room.onPeerJoin(() => {
@@ -95,6 +94,8 @@ export function P2PProvider({ children }: { children: React.ReactNode }) {
           gameMode: mode,
           hostSkin: skin,
         });
+
+        onConnected();
       });
 
       room.onPeerLeave(() => setConnectionState("disconnected"));
