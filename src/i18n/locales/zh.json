@@ -109,7 +109,12 @@
       "超级特级大师",
       "超人"
     ],
+    "pieceAppearance": "棋子外观",
     "language": "语言"
+  },
+  "skins": {
+    "classic": "经典",
+    "fantasy": "幻想"
   },
   "languages": {
     "en": "English",

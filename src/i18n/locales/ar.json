@@ -109,7 +109,12 @@
       "سوبر غراند ماستر",
       "خارق"
     ],
+    "pieceAppearance": "مظهر القطع",
     "language": "اللغة"
+  },
+  "skins": {
+    "classic": "كلاسيكي",
+    "fantasy": "فانتازيا"
   },
   "languages": {
     "en": "English",

@@ -97,6 +97,7 @@
     "aiDifficulty": "AI Difficulty",
     "beginner": "Beginner",
     "superhuman": "Superhuman",
+    "pieceAppearance": "Piece Appearance",
     "language": "Language",
     "difficultyLevels": [
       "Beginner",
@@ -110,6 +111,10 @@
       "Super Grandmaster",
       "Superhuman"
     ]
+  },
+  "skins": {
+    "classic": "Classic",
+    "fantasy": "Fantasy"
   },
   "languages": {
     "en": "English",

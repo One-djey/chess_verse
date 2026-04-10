@@ -109,7 +109,12 @@
       "Super gran maestro",
       "Sobrehumano"
     ],
+    "pieceAppearance": "Apariencia de piezas",
     "language": "Idioma"
+  },
+  "skins": {
+    "classic": "Clásico",
+    "fantasy": "Fantasy"
   },
   "languages": {
     "en": "English",

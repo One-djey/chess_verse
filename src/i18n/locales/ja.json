@@ -109,7 +109,12 @@
       "スーパーグランドマスター",
       "超人"
     ],
+    "pieceAppearance": "駒の外観",
     "language": "言語"
+  },
+  "skins": {
+    "classic": "クラシック",
+    "fantasy": "ファンタジー"
   },
   "languages": {
     "en": "English",

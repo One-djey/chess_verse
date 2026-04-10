@@ -1,8 +1,14 @@
-import { PieceColor, Position, Piece, GameMode } from './chess';
+import { PieceColor, Position, Piece, GameMode } from "./chess";
+import { PieceSkin } from "../utils/pieceImage";
 
-export type P2PRole = 'host' | 'guest';
+export type P2PRole = "host" | "guest";
 
-export type P2PConnectionState = 'idle' | 'waiting' | 'connecting' | 'connected' | 'disconnected';
+export type P2PConnectionState =
+  | "idle"
+  | "waiting"
+  | "connecting"
+  | "connected"
+  | "disconnected";
 
 export interface P2PState {
   role: P2PRole | null;
@@ -13,7 +19,7 @@ export interface P2PState {
 
 // Guest → Host: propose a move (not yet applied)
 export type MoveProposalMessage = {
-  type: 'move_proposal';
+  type: "move_proposal";
   pieceId: string;
   from: Position;
   to: Position;
@@ -21,7 +27,7 @@ export type MoveProposalMessage = {
 
 // Host → Guest: authoritative confirmed move with sequence number
 export type MoveConfirmMessage = {
-  type: 'move_confirm';
+  type: "move_confirm";
   pieceId: string;
   from: Position;
   to: Position;
@@ -30,42 +36,50 @@ export type MoveConfirmMessage = {
 
 // Host → Guest: proposed move was invalid
 export type MoveRejectMessage = {
-  type: 'move_reject';
+  type: "move_reject";
 };
 
 export type ColorAssignMessage = {
-  type: 'color_assign';
-  hostColor: 'white';
-  guestColor: 'black';
+  type: "color_assign";
+  hostColor: "white";
+  guestColor: "black";
   gameMode: GameMode;
+  hostSkin: PieceSkin;
+};
+
+// Guest → Host: handshake acknowledgment with guest's skin
+export type GuestReadyMessage = {
+  type: "guest_ready";
+  skin: PieceSkin;
 };
 
 export type SyncStateMessage = {
-  type: 'sync_state';
+  type: "sync_state";
   pieces: Piece[];
   seq: number; // initial sequence (always 0)
 };
 
 export type ResignMessage = {
-  type: 'resign';
+  type: "resign";
 };
 
 // Rematch negotiation (either player can request)
-export type RematchRequestMessage = { type: 'rematch_request' };
+export type RematchRequestMessage = { type: "rematch_request" };
 // Guest → Host: "I accept, please start"
-export type RematchAcceptMessage   = { type: 'rematch_accept' };
+export type RematchAcceptMessage = { type: "rematch_accept" };
 // Either → other: "I decline"
-export type RematchDeclineMessage  = { type: 'rematch_decline' };
+export type RematchDeclineMessage = { type: "rematch_decline" };
 // Host → Guest: authoritative board reset
-export type RematchStartMessage    = { type: 'rematch_start'; pieces: Piece[] };
+export type RematchStartMessage = { type: "rematch_start"; pieces: Piece[] };
 
-export type RematchState = 'idle' | 'requested' | 'offered' | 'starting';
+export type RematchState = "idle" | "requested" | "offered" | "starting";
 
 export type P2PMessage =
   | MoveProposalMessage
   | MoveConfirmMessage
   | MoveRejectMessage
   | ColorAssignMessage
+  | GuestReadyMessage
   | SyncStateMessage
   | ResignMessage
   | RematchRequestMessage

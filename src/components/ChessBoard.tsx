@@ -1,10 +1,11 @@
-import React, { useRef, useEffect, useState, useCallback } from 'react';
-import { Piece, Position, GameMode, PieceColor } from '../types/chess';
-import { UNICODE_PIECES, findCastlingMove } from '../utils/chess';
+import React, { useRef, useEffect, useState, useCallback } from "react";
+import { Piece, Position, GameMode, PieceColor } from "../types/chess";
+import { findCastlingMove } from "../utils/chess";
+import { PieceSkin, getPieceImageSrc } from "../utils/pieceImage";
 
 interface ChessBoardProps {
   pieces: Piece[];
-  currentTurn: 'white' | 'black';
+  currentTurn: "white" | "black";
   selectedPiece: Piece | null;
   validMoves: Position[];
   isCheck: boolean;
@@ -16,6 +17,8 @@ interface ChessBoardProps {
   rotateBlackPieces?: boolean;
   /** When set (typically during check), only these piece IDs receive the blue glow. */
   movablePieceIds?: Set<string> | null;
+  skin?: PieceSkin;
+  peerSkin?: PieceSkin;
 }
 
 export default function ChessBoard({
@@ -31,9 +34,23 @@ export default function ChessBoard({
   flipped = false,
   rotateBlackPieces = false,
   movablePieceIds = null,
+  skin = "classic",
+  peerSkin,
 }: ChessBoardProps) {
   const pieceRefs = useRef<Map<string, { x: number; y: number }>>(new Map());
   const [imagesLoaded, setImagesLoaded] = useState(false);
+
+  // Reset fade-in when skin changes
+  useEffect(() => {
+    setImagesLoaded(false);
+  }, [skin]);
+
+  const getSkinForPiece = (piece: Piece): PieceSkin => {
+    if (peerSkin && lockedColor) {
+      return piece.color === lockedColor ? skin : peerSkin;
+    }
+    return skin;
+  };
 
   // ── Flip animation ────────────────────────────────────────────────────────
   // displayFlipped tracks the *rendered* orientation; it lags behind `flipped`
@@ -57,49 +74,72 @@ export default function ChessBoard({
   }, [flipped]);
 
   // For static flips (P2P, solo default) keep displayFlipped in sync without animating
-  useEffect(() => { setDisplayFlipped(flipped); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    setDisplayFlipped(flipped);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Map internal board coords ↔ display coords (uses displayFlipped for smooth animation)
-  const toDisplay  = useCallback(
-    (x: number, y: number) => ({ x: displayFlipped ? 7 - x : x, y: displayFlipped ? 7 - y : y }),
-    [displayFlipped]
+  const toDisplay = useCallback(
+    (x: number, y: number) => ({
+      x: displayFlipped ? 7 - x : x,
+      y: displayFlipped ? 7 - y : y,
+    }),
+    [displayFlipped],
   );
   const fromDisplay = useCallback(
-    (dx: number, dy: number) => ({ x: displayFlipped ? 7 - dx : dx, y: displayFlipped ? 7 - dy : dy }),
-    [displayFlipped]
+    (dx: number, dy: number) => ({
+      x: displayFlipped ? 7 - dx : dx,
+      y: displayFlipped ? 7 - dy : dy,
+    }),
+    [displayFlipped],
   );
 
   useEffect(() => {
-    pieces.forEach(piece => {
+    pieces.forEach((piece) => {
       const key = `${piece.color}-${piece.type}-${piece.position.x}-${piece.position.y}`;
       if (!pieceRefs.current.has(key)) {
-        pieceRefs.current.set(key, { x: piece.position.x, y: piece.position.y });
+        pieceRefs.current.set(key, {
+          x: piece.position.x,
+          y: piece.position.y,
+        });
       }
     });
   }, [pieces]);
 
-  const handleImageLoad = () => { setImagesLoaded(true); };
+  const handleImageLoad = () => {
+    setImagesLoaded(true);
+  };
 
   // ── Assimilation tooltip ─────────────────────────────────────────────────────
-  const [hoveredSquare, setHoveredSquare] = useState<{ x: number; y: number } | null>(null);
+  const [hoveredSquare, setHoveredSquare] = useState<{
+    x: number;
+    y: number;
+  } | null>(null);
 
   // Reset hover when the turn changes so the tooltip doesn't linger after a move
-  useEffect(() => { setHoveredSquare(null); }, [currentTurn]);
+  useEffect(() => {
+    setHoveredSquare(null);
+  }, [currentTurn]);
 
   const hoveredPiece = hoveredSquare
-    ? pieces.find(p => p.position.x === hoveredSquare.x && p.position.y === hoveredSquare.y) ?? null
+    ? (pieces.find(
+        (p) =>
+          p.position.x === hoveredSquare.x && p.position.y === hoveredSquare.y,
+      ) ?? null)
     : null;
 
   // Show acquired-types tooltip only when actively hovering a piece with acquiredTypes
   const tooltipPiece: Piece | null = gameMode.rules?.assimilation
-    ? ((hoveredPiece?.acquiredTypes?.length ?? 0) > 0 ? hoveredPiece : null)
+    ? (hoveredPiece?.acquiredTypes?.length ?? 0) > 0
+      ? hoveredPiece
+      : null
     : null;
 
   const isValidMovePosition = (x: number, y: number) => {
-    return validMoves.some(move => {
+    return validMoves.some((move) => {
       const normalizedMove = {
         x: ((move.x % 8) + 8) % 8,
-        y: ((move.y % 8) + 8) % 8
+        y: ((move.y % 8) + 8) % 8,
       };
       return normalizedMove.x === x && normalizedMove.y === y;
     });
@@ -107,7 +147,7 @@ export default function ChessBoard({
 
   const isBorderCrossable = (x: number, y: number) => {
     if (!gameMode.rules?.borderless) return false;
-    
+
     // Check if it's a border square
     const isBorder = x === 0 || x === 7 || y === 0 || y === 7;
     if (!isBorder) return false;
@@ -116,31 +156,33 @@ export default function ChessBoard({
     if (x === 0 || x === 7) return true;
 
     // Top border is only crossable for white pieces moving up
-    if (y === 0) return currentTurn === 'white';
+    if (y === 0) return currentTurn === "white";
 
     // Bottom border is only crossable for black pieces moving down
-    if (y === 7) return currentTurn === 'black';
+    if (y === 7) return currentTurn === "black";
 
     return false;
   };
 
   const getBorderGlow = (x: number, y: number) => {
-    if (!isBorderCrossable(x, y)) return '';
+    if (!isBorderCrossable(x, y)) return "";
 
-    let glowClasses = 'absolute inset-0 pointer-events-none ';
-    
+    let glowClasses = "absolute inset-0 pointer-events-none ";
+
     // Left and right borders glow for both colors
-    if (x === 0) glowClasses += 'bg-gradient-to-l from-transparent to-green-400/50';
-    if (x === 7) glowClasses += 'bg-gradient-to-r from-transparent to-green-400/50';
-    
+    if (x === 0)
+      glowClasses += "bg-gradient-to-l from-transparent to-green-400/50";
+    if (x === 7)
+      glowClasses += "bg-gradient-to-r from-transparent to-green-400/50";
+
     // Top border glows only for white pieces moving up
-    if (y === 0 && currentTurn === 'white') {
-      glowClasses += 'bg-gradient-to-t from-transparent to-green-400/50';
+    if (y === 0 && currentTurn === "white") {
+      glowClasses += "bg-gradient-to-t from-transparent to-green-400/50";
     }
-    
+
     // Bottom border glows only for black pieces moving down
-    if (y === 7 && currentTurn === 'black') {
-      glowClasses += 'bg-gradient-to-b from-transparent to-green-400/50';
+    if (y === 7 && currentTurn === "black") {
+      glowClasses += "bg-gradient-to-b from-transparent to-green-400/50";
     }
 
     return glowClasses;
@@ -148,21 +190,24 @@ export default function ChessBoard({
 
   // Check if a move is a castling move
   const isCastlingMove = (x: number, y: number) => {
-    if (!selectedPiece || selectedPiece.type !== 'king') return false;
-    
+    if (!selectedPiece || selectedPiece.type !== "king") return false;
+
     // For king, check if the move is 2 squares horizontally
-    if (Math.abs(selectedPiece.position.x - x) === 2 && selectedPiece.position.y === y) {
+    if (
+      Math.abs(selectedPiece.position.x - x) === 2 &&
+      selectedPiece.position.y === y
+    ) {
       // Find the corresponding castling move
       const target = { x, y };
       const castlingMove = findCastlingMove(
-        selectedPiece, 
-        target, 
-        pieces, 
-        gameMode
+        selectedPiece,
+        target,
+        pieces,
+        gameMode,
       );
       return castlingMove !== null;
     }
-    
+
     return false;
   };
 
@@ -171,8 +216,10 @@ export default function ChessBoard({
       <div
         className="grid grid-cols-8 grid-rows-8 h-full gap-1 relative"
         style={{
-          transform: squishing ? 'scaleX(0)' : 'scaleX(1)',
-          transition: squishing ? 'transform 0.22s ease-in' : 'transform 0.22s ease-out',
+          transform: squishing ? "scaleX(0)" : "scaleX(1)",
+          transition: squishing
+            ? "transform 0.22s ease-in"
+            : "transform 0.22s ease-out",
         }}
       >
         {/* Board squares */}
@@ -192,14 +239,14 @@ export default function ChessBoard({
                       key={`${dx}-${dy}`}
                       className={`
                         w-full h-full relative
-                        ${isLight ? 'bg-gray-200' : 'bg-gray-600'}
+                        ${isLight ? "bg-gray-200" : "bg-gray-600"}
                         transition-colors duration-200
                       `}
                     >
                       {borderGlow && <div className={borderGlow} />}
                     </div>
                   );
-                })
+                }),
             )}
         </div>
 
@@ -220,19 +267,19 @@ export default function ChessBoard({
                     <div
                       key={`overlay-${dx}-${dy}`}
                       className={`absolute cursor-pointer ${
-                        isCastling ? 'bg-purple-400' : 'bg-blue-400'
+                        isCastling ? "bg-purple-400" : "bg-blue-400"
                       } bg-opacity-40`}
                       style={{
                         left: `${dx * 12.5}%`,
                         top: `${dy * 12.5}%`,
-                        width: '12.5%',
-                        height: '12.5%',
+                        width: "12.5%",
+                        height: "12.5%",
                       }}
                       onClick={() => {
-                        const originalMove = validMoves.find(move => {
+                        const originalMove = validMoves.find((move) => {
                           const normalized = {
                             x: ((move.x % 8) + 8) % 8,
-                            y: ((move.y % 8) + 8) % 8
+                            y: ((move.y % 8) + 8) % 8,
                           };
                           return normalized.x === x && normalized.y === y;
                         });
@@ -240,10 +287,10 @@ export default function ChessBoard({
                       }}
                     />
                   );
-                })
+                }),
             )}
         </div>
-        
+
         {/* Interactive squares layer */}
         <div
           className="absolute inset-0 grid grid-cols-8 grid-rows-8 gap-1 z-20"
@@ -256,9 +303,13 @@ export default function ChessBoard({
                 .fill(null)
                 .map((_, dx) => {
                   const { x, y } = fromDisplay(dx, dy);
-                  const piece = pieces.find((p) => p.position.x === x && p.position.y === y);
+                  const piece = pieces.find(
+                    (p) => p.position.x === x && p.position.y === y,
+                  );
                   const isValidMove = isValidMovePosition(x, y);
-                  const isPlayable = piece?.color === currentTurn && (!lockedColor || piece.color === lockedColor);
+                  const isPlayable =
+                    piece?.color === currentTurn &&
+                    (!lockedColor || piece.color === lockedColor);
 
                   return (
                     <div
@@ -269,10 +320,10 @@ export default function ChessBoard({
                         if (piece && isPlayable) {
                           onPieceSelect(piece);
                         } else if (isValidMove) {
-                          const originalMove = validMoves.find(move => {
+                          const originalMove = validMoves.find((move) => {
                             const normalized = {
                               x: ((move.x % 8) + 8) % 8,
-                              y: ((move.y % 8) + 8) % 8
+                              y: ((move.y % 8) + 8) % 8,
                             };
                             return normalized.x === x && normalized.y === y;
                           });
@@ -281,88 +332,138 @@ export default function ChessBoard({
                       }}
                     />
                   );
-                })
+                }),
             )}
         </div>
 
         {/* Assimilation tooltip */}
-        {tooltipPiece && (() => {
-          const dp = toDisplay(tooltipPiece.position.x, tooltipPiece.position.y);
-          const showBelow = dp.y <= 1;
+        {tooltipPiece &&
+          (() => {
+            const dp = toDisplay(
+              tooltipPiece.position.x,
+              tooltipPiece.position.y,
+            );
+            const showBelow = dp.y <= 1;
 
-          // Arrow: always pinned to the piece's column center (percentages resolve vs the grid)
-          const arrowLeftPct = (dp.x + 0.5) * 12.5;
-          const arrowTopPct  = showBelow ? (dp.y + 1) * 12.5 : dp.y * 12.5;
-          const arrowTransform = showBelow ? 'translateX(-50%)' : 'translateX(-50%) translateY(-100%)';
-          const arrowBorder: React.CSSProperties = showBelow
-            ? { borderLeft: '6px solid transparent', borderRight: '6px solid transparent', borderBottom: '6px solid white' }
-            : { borderLeft: '6px solid transparent', borderRight: '6px solid transparent', borderTop: '6px solid white' };
+            // Arrow: always pinned to the piece's column center (percentages resolve vs the grid)
+            const arrowLeftPct = (dp.x + 0.5) * 12.5;
+            const arrowTopPct = showBelow ? (dp.y + 1) * 12.5 : dp.y * 12.5;
+            const arrowTransform = showBelow
+              ? "translateX(-50%)"
+              : "translateX(-50%) translateY(-100%)";
+            const arrowBorder: React.CSSProperties = showBelow
+              ? {
+                  borderLeft: "6px solid transparent",
+                  borderRight: "6px solid transparent",
+                  borderBottom: "6px solid white",
+                }
+              : {
+                  borderLeft: "6px solid transparent",
+                  borderRight: "6px solid transparent",
+                  borderTop: "6px solid white",
+                };
 
-          // Bubble: edge-anchored horizontally to avoid overflow
-          const bubbleTopPct    = showBelow ? (dp.y + 1) * 12.5 : dp.y * 12.5;
-          const bubbleTransformY = showBelow ? 'translateY(6px)' : 'translateY(calc(-100% - 6px))';
-          let bubbleStyle: React.CSSProperties;
-          if (dp.x <= 1) {
-            bubbleStyle = { left: `${dp.x * 12.5}%`, top: `${bubbleTopPct}%`, transform: bubbleTransformY, width: 'max-content' };
-          } else if (dp.x >= 6) {
-            bubbleStyle = { right: `${(7 - dp.x) * 12.5}%`, top: `${bubbleTopPct}%`, transform: bubbleTransformY, width: 'max-content' };
-          } else {
-            bubbleStyle = { left: `${(dp.x + 0.5) * 12.5}%`, top: `${bubbleTopPct}%`, transform: `translateX(-50%) ${bubbleTransformY}`, width: 'max-content' };
-          }
+            // Bubble: edge-anchored horizontally to avoid overflow
+            const bubbleTopPct = showBelow ? (dp.y + 1) * 12.5 : dp.y * 12.5;
+            const bubbleTransformY = showBelow
+              ? "translateY(6px)"
+              : "translateY(calc(-100% - 6px))";
+            let bubbleStyle: React.CSSProperties;
+            if (dp.x <= 1) {
+              bubbleStyle = {
+                left: `${dp.x * 12.5}%`,
+                top: `${bubbleTopPct}%`,
+                transform: bubbleTransformY,
+                width: "max-content",
+              };
+            } else if (dp.x >= 6) {
+              bubbleStyle = {
+                right: `${(7 - dp.x) * 12.5}%`,
+                top: `${bubbleTopPct}%`,
+                transform: bubbleTransformY,
+                width: "max-content",
+              };
+            } else {
+              bubbleStyle = {
+                left: `${(dp.x + 0.5) * 12.5}%`,
+                top: `${bubbleTopPct}%`,
+                transform: `translateX(-50%) ${bubbleTransformY}`,
+                width: "max-content",
+              };
+            }
 
-          return (
-            <>
-              <div
-                className="absolute z-40 pointer-events-none w-0 h-0"
-                style={{ left: `${arrowLeftPct}%`, top: `${arrowTopPct}%`, transform: arrowTransform, ...arrowBorder }}
-              />
-              <div
-                className="absolute z-40 pointer-events-none bg-white rounded-xl shadow-xl border border-gray-100 px-2.5 py-2 flex gap-2 items-center"
-                style={bubbleStyle}
-              >
-                {tooltipPiece.acquiredTypes!.map(type => (
-                  <img
-                    key={type}
-                    src={`/ressources/pieces/${tooltipPiece.color}_${type}.png`}
-                    alt={type}
-                    className="w-7 h-7"
-                  />
-                ))}
-              </div>
-            </>
-          );
-        })()}
+            return (
+              <>
+                <div
+                  className="absolute z-40 pointer-events-none w-0 h-0"
+                  style={{
+                    left: `${arrowLeftPct}%`,
+                    top: `${arrowTopPct}%`,
+                    transform: arrowTransform,
+                    ...arrowBorder,
+                  }}
+                />
+                <div
+                  className="absolute z-40 pointer-events-none bg-white rounded-xl shadow-xl border border-gray-100 px-2.5 py-2 flex gap-2 items-center"
+                  style={bubbleStyle}
+                >
+                  {tooltipPiece.acquiredTypes!.map((type) => (
+                    <img
+                      key={type}
+                      src={getPieceImageSrc(
+                        tooltipPiece.color,
+                        type,
+                        getSkinForPiece(tooltipPiece),
+                      )}
+                      alt={type}
+                      className="w-7 h-7"
+                    />
+                  ))}
+                </div>
+              </>
+            );
+          })()}
 
         {/* Pieces layer */}
         <div className="absolute inset-0 z-30 pointer-events-none">
           {pieces.map((piece) => {
-            const isSelected = selectedPiece?.position.x === piece.position.x && selectedPiece?.position.y === piece.position.y;
-            const isPlayable = piece.color === currentTurn && (!lockedColor || piece.color === lockedColor);
-            const hasGlow = isPlayable && (movablePieceIds ? movablePieceIds.has(piece.id) : true);
-            const isAssimilated = gameMode.rules?.assimilation && (piece.acquiredTypes?.length ?? 0) > 0;
+            const isSelected =
+              selectedPiece?.position.x === piece.position.x &&
+              selectedPiece?.position.y === piece.position.y;
+            const isPlayable =
+              piece.color === currentTurn &&
+              (!lockedColor || piece.color === lockedColor);
+            const hasGlow =
+              isPlayable &&
+              (movablePieceIds ? movablePieceIds.has(piece.id) : true);
+            const isAssimilated =
+              gameMode.rules?.assimilation &&
+              (piece.acquiredTypes?.length ?? 0) > 0;
             const dp = toDisplay(piece.position.x, piece.position.y);
 
             // Single drop-shadow with explicit priority:
             //   orange › blue (selected) › green (assimilated) › blue (playable)
             const shadowClass = (() => {
-              if (piece.color === currentTurn && isCheck && piece.type === 'king')
-                return 'drop-shadow-[0_0_6px_rgba(249,115,22,1)]';
-              if (isSelected)
-                return 'drop-shadow-[0_0_6px_rgba(59,130,246,1)]';
+              if (
+                piece.color === currentTurn &&
+                isCheck &&
+                piece.type === "king"
+              )
+                return "drop-shadow-[0_0_6px_rgba(249,115,22,1)]";
+              if (isSelected) return "drop-shadow-[0_0_6px_rgba(59,130,246,1)]";
               if (isAssimilated)
-                return 'drop-shadow-[0_0_4px_rgba(74,222,128,1)]';
-              if (hasGlow)
-                return 'drop-shadow-[0_0_4px_rgba(59,130,246,1)]';
-              return '';
+                return "drop-shadow-[0_0_4px_rgba(74,222,128,1)]";
+              if (hasGlow) return "drop-shadow-[0_0_4px_rgba(59,130,246,1)]";
+              return "";
             })();
 
             const pieceClasses = `
               select-none absolute
               transform transition-all duration-300 ease-in-out
-              ${isPlayable ? 'hover:scale-110' : 'opacity-80'}
-              ${isSelected ? 'scale-110' : ''}
+              ${isPlayable ? "hover:scale-110" : "opacity-80"}
+              ${isSelected ? "scale-110" : ""}
               ${shadowClass}
-              ${imagesLoaded ? 'opacity-100' : 'opacity-0'}
+              ${imagesLoaded ? "opacity-100" : "opacity-0"}
             `;
 
             return (
@@ -372,20 +473,27 @@ export default function ChessBoard({
                 style={{
                   left: `${dp.x * 12.5}%`,
                   top: `${dp.y * 12.5}%`,
-                  width: '12.5%',
-                  height: '12.5%',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
+                  width: "12.5%",
+                  height: "12.5%",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
                 }}
               >
                 <img
-                  src={`/ressources/pieces/${piece.color}_${piece.type}.png`}
+                  src={getPieceImageSrc(
+                    piece.color,
+                    piece.type,
+                    getSkinForPiece(piece),
+                  )}
                   alt={`${piece.color} ${piece.type}`}
                   style={{
-                    width: '80%',
-                    height: '80%',
-                    transform: rotateBlackPieces && piece.color === 'black' ? 'rotate(180deg)' : undefined,
+                    width: "80%",
+                    height: "80%",
+                    transform:
+                      rotateBlackPieces && piece.color === "black"
+                        ? "rotate(180deg)"
+                        : undefined,
                   }}
                   onLoad={handleImageLoad}
                 />

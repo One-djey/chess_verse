@@ -97,6 +97,7 @@
     "aiDifficulty": "Difficulté de l'IA",
     "beginner": "Débutant",
     "superhuman": "Surhumain",
+    "pieceAppearance": "Apparence des pièces",
     "language": "Langue",
     "difficultyLevels": [
       "Débutant",
@@ -110,6 +111,10 @@
       "Super grand-maître",
       "Surhumain"
     ]
+  },
+  "skins": {
+    "classic": "Classique",
+    "fantasy": "Fantasy"
   },
   "languages": {
     "en": "English",

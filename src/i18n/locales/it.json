@@ -109,7 +109,12 @@
       "Super grande maestro",
       "Sovrumano"
     ],
+    "pieceAppearance": "Aspetto dei pezzi",
     "language": "Lingua"
+  },
+  "skins": {
+    "classic": "Classico",
+    "fantasy": "Fantasy"
   },
   "languages": {
     "en": "English",

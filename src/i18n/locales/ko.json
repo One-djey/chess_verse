@@ -109,7 +109,12 @@
       "슈퍼 그랜드마스터",
       "초인"
     ],
+    "pieceAppearance": "말 외관",
     "language": "언어"
+  },
+  "skins": {
+    "classic": "클래식",
+    "fantasy": "판타지"
   },
   "languages": {
     "en": "English",
