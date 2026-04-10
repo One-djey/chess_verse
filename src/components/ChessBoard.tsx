@@ -443,60 +443,67 @@ export default function ChessBoard({
 
             // Single drop-shadow with explicit priority:
             //   orange › blue (selected) › green (assimilated) › blue (playable)
-            const shadowClass = (() => {
+            // Always set a filter (even no-op) to keep GPU layer stable across turns.
+            const shadowFilter = (() => {
               if (
                 piece.color === currentTurn &&
                 isCheck &&
                 piece.type === "king"
               )
-                return "drop-shadow-[0_0_6px_rgba(249,115,22,1)]";
-              if (isSelected) return "drop-shadow-[0_0_6px_rgba(59,130,246,1)]";
+                return "drop-shadow(0 0 6px rgba(249,115,22,1))";
+              if (isSelected) return "drop-shadow(0 0 6px rgba(59,130,246,1))";
               if (isAssimilated)
-                return "drop-shadow-[0_0_4px_rgba(74,222,128,1)]";
-              if (hasGlow) return "drop-shadow-[0_0_4px_rgba(59,130,246,1)]";
-              return "";
+                return "drop-shadow(0 0 4px rgba(74,222,128,1))";
+              if (hasGlow) return "drop-shadow(0 0 4px rgba(59,130,246,1))";
+              return "drop-shadow(0 0 0px transparent)";
             })();
 
-            const pieceClasses = `
-              select-none absolute
-              transform transition-all duration-300 ease-in-out
-              ${isPlayable ? "hover:scale-110" : "opacity-80"}
-              ${isSelected ? "scale-110" : ""}
-              ${shadowClass}
-              ${imagesLoaded ? "opacity-100" : "opacity-0"}
-            `;
-
             return (
+              // Outer div: GPU-composited position via transform — no layout reflow on move
               <div
                 key={piece.id}
-                className={pieceClasses}
+                className="absolute"
                 style={{
-                  left: `${dp.x * 12.5}%`,
-                  top: `${dp.y * 12.5}%`,
                   width: "12.5%",
                   height: "12.5%",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
+                  left: 0,
+                  top: 0,
+                  transform: `translate(${dp.x * 100}%, ${dp.y * 100}%)`,
+                  transition: "transform 300ms ease-in-out",
                 }}
               >
-                <img
-                  src={getPieceImageSrc(
-                    piece.color,
-                    piece.type,
-                    getSkinForPiece(piece),
-                  )}
-                  alt={`${piece.color} ${piece.type}`}
+                {/* Inner div: scale + filter + opacity, isolated from position animation */}
+                <div
+                  className={`
+                    w-full h-full flex items-center justify-center
+                    select-none hover:scale-110
+                    ${isSelected ? "scale-110" : ""}
+                    ${imagesLoaded ? "opacity-100" : "opacity-0"}
+                  `}
                   style={{
-                    width: "80%",
-                    height: "80%",
-                    transform:
-                      rotateBlackPieces && piece.color === "black"
-                        ? "rotate(180deg)"
-                        : undefined,
+                    filter: shadowFilter,
+                    transition:
+                      "transform 300ms ease-in-out, filter 80ms ease-in-out",
                   }}
-                  onLoad={handleImageLoad}
-                />
+                >
+                  <img
+                    src={getPieceImageSrc(
+                      piece.color,
+                      piece.type,
+                      getSkinForPiece(piece),
+                    )}
+                    alt={`${piece.color} ${piece.type}`}
+                    style={{
+                      width: "80%",
+                      height: "80%",
+                      transform:
+                        rotateBlackPieces && piece.color === "black"
+                          ? "rotate(180deg)"
+                          : undefined,
+                    }}
+                    onLoad={handleImageLoad}
+                  />
+                </div>
               </div>
             );
           })}
