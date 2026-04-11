@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next";
 import { useP2P } from "../context/P2PContext";
 import { GameMode } from "../types/chess";
 import { generateRoomId } from "../services/TrysteroService";
+import { gameModes } from "./GameModes";
 import { useSkin } from "../context/SkinContext";
 import GameModeSelect from "./GameModeSelect";
 import NavBar from "./NavBar";
@@ -61,7 +62,9 @@ export default function P2PLobby() {
   const [searchParams] = useSearchParams();
   const { t } = useTranslation();
   const roomParam = searchParams.get("room");
+  const modeParam = searchParams.get("mode");
   const isGuest = Boolean(roomParam);
+  const guestMode = gameModes.find((m) => m.id === modeParam) ?? null;
 
   const {
     startRoom,
@@ -92,7 +95,7 @@ export default function P2PLobby() {
   useEffect(() => {
     if (isGuest && roomParam && !joinedRef.current) {
       joinedRef.current = true;
-      joinExistingRoom(roomParam, skin, () => {
+      joinExistingRoom(roomParam, guestMode, skin, () => {
         navigatingToGameRef.current = true;
         navigate("/game/p2p");
       });
@@ -102,7 +105,7 @@ export default function P2PLobby() {
   // ── HOST: generate QR when roomId is set ──────────────────────────────────
   useEffect(() => {
     if (!roomId || isGuest) return;
-    const url = `${window.location.origin}/p2p?room=${roomId}`;
+    const url = `${window.location.origin}/p2p?room=${roomId}&mode=${gameMode?.id}`;
     setShareUrl(url);
     QRCode.toDataURL(url, { width: 200, margin: 2 })
       .then(setQrDataUrl)
@@ -129,7 +132,10 @@ export default function P2PLobby() {
     if (navigator.share) {
       try {
         await navigator.share({
-          title: "ChessVerse – Join my game!",
+          title: "ChessVerse",
+          text: t("p2p.inviteText", {
+            mode: gameMode ? t(`modes.${gameMode.id}.title`) : "ChessVerse",
+          }),
           url: shareUrl,
         });
       } catch {

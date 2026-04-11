@@ -52,7 +52,8 @@
     "copied": "복사됨!",
     "waitingForOpponent": "상대방 대기 중…",
     "opponentConnected": "상대방 연결됨!",
-    "startingGame": "게임 시작 중…"
+    "startingGame": "게임 시작 중…",
+    "inviteText": "ChessVerse에서 {{mode}} 게임을 함께 해요!"
   },
   "p2pStatus": {
     "opponentDisconnected": "상대방 연결 끊김",

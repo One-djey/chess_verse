@@ -52,7 +52,8 @@
     "copied": "¡Copiado!",
     "waitingForOpponent": "Esperando al oponente…",
     "opponentConnected": "¡Oponente conectado!",
-    "startingGame": "Iniciando partida…"
+    "startingGame": "Iniciando partida…",
+    "inviteText": "¡Únete a mí para una partida de {{mode}} en ChessVerse!"
   },
   "p2pStatus": {
     "opponentDisconnected": "Oponente desconectado",

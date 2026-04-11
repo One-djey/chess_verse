@@ -52,7 +52,8 @@
     "copied": "تم النسخ!",
     "waitingForOpponent": "في انتظار الخصم…",
     "opponentConnected": "الخصم متصل!",
-    "startingGame": "جارٍ بدء اللعبة…"
+    "startingGame": "جارٍ بدء اللعبة…",
+    "inviteText": "انضم إليّ للعب {{mode}} على ChessVerse!"
   },
   "p2pStatus": {
     "opponentDisconnected": "انقطع اتصال الخصم",

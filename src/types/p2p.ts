@@ -1,4 +1,4 @@
-import { PieceColor, Position, Piece, GameMode } from "./chess";
+import { PieceColor, Position, Piece } from "./chess";
 import { PieceSkin } from "../utils/pieceImage";
 
 export type P2PRole = "host" | "guest";
@@ -43,7 +43,6 @@ export type ColorAssignMessage = {
   type: "color_assign";
   hostColor: "white";
   guestColor: "black";
-  gameMode: GameMode;
   hostSkin: PieceSkin;
 };
 

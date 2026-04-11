@@ -52,7 +52,8 @@
     "copied": "コピーしました！",
     "waitingForOpponent": "対戦相手を待機中…",
     "opponentConnected": "対戦相手が接続しました！",
-    "startingGame": "ゲーム開始中…"
+    "startingGame": "ゲーム開始中…",
+    "inviteText": "ChessVerseで{{mode}}の対局に参加しよう！"
   },
   "p2pStatus": {
     "opponentDisconnected": "対戦相手が切断されました",

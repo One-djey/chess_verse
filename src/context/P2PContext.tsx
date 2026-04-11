@@ -30,6 +30,7 @@ interface P2PContextValue {
   ) => void;
   joinExistingRoom: (
     roomId: string,
+    mode: GameMode | null,
     skin: PieceSkin,
     onConnected: () => void,
   ) => void;
@@ -91,7 +92,6 @@ export function P2PProvider({ children }: { children: React.ReactNode }) {
           type: "color_assign",
           hostColor: "white",
           guestColor: "black",
-          gameMode: mode,
           hostSkin: skin,
         });
 
@@ -109,7 +109,12 @@ export function P2PProvider({ children }: { children: React.ReactNode }) {
    * Sends guest_ready (with own skin) just before navigating.
    */
   const joinExistingRoom = useCallback(
-    (roomId: string, skin: PieceSkin, onConnected: () => void) => {
+    (
+      roomId: string,
+      mode: GameMode | null,
+      skin: PieceSkin,
+      onConnected: () => void,
+    ) => {
       const room = joinRoom(roomId);
       const actions = makeRoomActions(room);
       roomRef.current = room;
@@ -117,6 +122,7 @@ export function P2PProvider({ children }: { children: React.ReactNode }) {
 
       setRole("guest");
       setPlayerColor(null);
+      setGameMode(mode);
       setIsP2PMode(true);
       setConnectionState("connecting");
       forceUpdate((n) => n + 1);
@@ -134,7 +140,6 @@ export function P2PProvider({ children }: { children: React.ReactNode }) {
 
       actions.onColorAssign((msg) => {
         setPlayerColor(msg.guestColor);
-        setGameMode(msg.gameMode);
         setPeerSkin(msg.hostSkin);
         setConnectionState("connected");
         received.color = true;
