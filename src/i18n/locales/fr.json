@@ -132,14 +132,14 @@
     "cta": "Installer"
   },
   "feedback": {
-    "button": "Envoyer un retour",
-    "title": "Envoyer un retour",
+    "button": "Nous écrire",
+    "title": "Nous écrire",
     "categories": {
       "bug": "Signaler un bug",
       "feature": "Suggestion",
-      "general": "Retour général"
+      "general": "Message général"
     },
-    "messagePlaceholder": "Décrivez votre retour...",
+    "messagePlaceholder": "Votre message...",
     "submit": "Ouvrir le client mail",
     "note": "Ceci ouvrira votre client mail avec le message pré-rempli."
   },
