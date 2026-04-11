@@ -131,6 +131,18 @@
     "message": "安装 ChessVerse 以快速访问",
     "cta": "安装"
   },
+  "feedback": {
+    "button": "发送反馈",
+    "title": "发送反馈",
+    "categories": {
+      "bug": "错误报告",
+      "feature": "功能请求",
+      "general": "一般反馈"
+    },
+    "messagePlaceholder": "请描述您的反馈...",
+    "submit": "打开邮件客户端",
+    "note": "这将打开您的邮件客户端，邮件内容已预先填写。"
+  },
   "legal": {
     "footer": {
       "mentions": "法律声明",

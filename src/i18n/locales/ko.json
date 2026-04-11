@@ -131,6 +131,18 @@
     "message": "빠른 접근을 위해 ChessVerse를 설치하세요",
     "cta": "설치"
   },
+  "feedback": {
+    "button": "피드백 보내기",
+    "title": "피드백 보내기",
+    "categories": {
+      "bug": "버그 신고",
+      "feature": "기능 요청",
+      "general": "일반 피드백"
+    },
+    "messagePlaceholder": "피드백을 입력해 주세요...",
+    "submit": "이메일 클라이언트 열기",
+    "note": "이메일 클라이언트가 메시지가 미리 입력된 상태로 열립니다."
+  },
   "legal": {
     "footer": {
       "mentions": "법적 고지",

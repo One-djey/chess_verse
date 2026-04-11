@@ -1,10 +1,12 @@
-import { X, Download, Check } from "lucide-react";
+import { useState } from "react";
+import { X, Download, Check, MessageSquare } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { getDifficultyKey } from "../utils/chess";
 import { SUPPORTED_LANGUAGES, SupportedLanguage } from "../i18n";
 import { useInstall } from "../context/InstallContext";
 import { useSkin } from "../context/SkinContext";
 import { SKINS, getPieceImageSrc } from "../utils/pieceImage";
+import FeedbackModal from "./FeedbackModal";
 
 type GameSettingsState = {
   aiEnabled: boolean;
@@ -29,6 +31,7 @@ export default function GameSettings({
   const { t, i18n } = useTranslation();
   const { canInstall, triggerInstall } = useInstall();
   const { skin, setSkin } = useSkin();
+  const [feedbackOpen, setFeedbackOpen] = useState(false);
 
   if (!isOpen) return null;
 
@@ -228,6 +231,17 @@ export default function GameSettings({
             </div>
           </div>
 
+          {/* ── Support ── */}
+          <div className="pt-2 border-t border-gray-100">
+            <button
+              onClick={() => { onClose(); setFeedbackOpen(true); }}
+              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium text-gray-600 rounded-lg border border-gray-200 hover:bg-gray-50 transition"
+            >
+              <MessageSquare size={16} />
+              {t("feedback.button")}
+            </button>
+          </div>
+
           {/* ── Install app (only when installable and not already PWA) ── */}
           {canInstall && (
             <div className="pt-2 border-t border-gray-100">
@@ -243,5 +257,6 @@ export default function GameSettings({
         </div>
       </div>
     </div>
+    <FeedbackModal isOpen={feedbackOpen} onClose={() => setFeedbackOpen(false)} />
   );
 }

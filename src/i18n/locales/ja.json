@@ -131,6 +131,18 @@
     "message": "ChessVerseをインストールしてすぐアクセス",
     "cta": "インストール"
   },
+  "feedback": {
+    "button": "フィードバックを送る",
+    "title": "フィードバックを送る",
+    "categories": {
+      "bug": "バグ報告",
+      "feature": "機能リクエスト",
+      "general": "一般的なフィードバック"
+    },
+    "messagePlaceholder": "フィードバックを入力してください...",
+    "submit": "メールクライアントを開く",
+    "note": "メールクライアントがメッセージ入力済みで開きます。"
+  },
   "legal": {
     "footer": {
       "mentions": "法的表示",
