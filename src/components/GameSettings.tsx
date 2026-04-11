@@ -232,29 +232,25 @@ export default function GameSettings({
                 </div>
               </div>
 
-              {/* ── Support ── */}
-              <div className="pt-2 border-t border-gray-100">
+              {/* ── Support + Install (single separator) ── */}
+              <div className="pt-2 border-t border-gray-100 flex gap-2">
                 <button
                   onClick={() => { onClose(); setFeedbackOpen(true); }}
-                  className="w-full flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium text-gray-600 rounded-lg border border-gray-200 hover:bg-gray-50 transition"
+                  className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium text-gray-600 rounded-lg border border-gray-200 hover:bg-gray-50 transition"
                 >
                   <MessageSquare size={16} />
                   {t("feedback.button")}
                 </button>
-              </div>
-
-              {/* ── Install app (only when installable and not already PWA) ── */}
-              {canInstall && (
-                <div className="pt-2 border-t border-gray-100">
+                {canInstall && (
                   <button
                     onClick={triggerInstall}
-                    className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 active:bg-blue-800 transition"
+                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 active:bg-blue-800 transition"
                   >
                     <Download size={16} />
-                    {t("install.cta")} ChessVerse
+                    {t("install.cta")}
                   </button>
-                </div>
-              )}
+                )}
+              </div>
             </div>
           </div>
         </div>
