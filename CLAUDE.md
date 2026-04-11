@@ -16,6 +16,7 @@ React 18 + TypeScript + Vite + Tailwind CSS. No backend. P2P via Trystero (WebRT
 | Game (main logic)    | `src/components/Game.tsx`                                        |
 | Game end modal       | `src/components/GameOver.tsx`                                    |
 | Settings modal       | `src/components/GameSettings.tsx`                                |
+| Feedback modal       | `src/components/FeedbackModal.tsx`                               |
 | Chess board/pieces   | `src/utils/chess/board.ts`                                       |
 | Chess move logic     | `src/utils/chess/moves.ts`                                       |
 | Assimilation logic   | `src/utils/chess/assimilation.ts`                                |
@@ -107,6 +108,15 @@ Defined in `src/utils/pieceImage.ts`. Convention: `public/ressources/pieces/{ski
 ## P2P protocol
 
 Host generates room, validates all moves, sends `sync_state` + `color_assign` (with `hostSkin`) to guest. Guest responds with `guest_ready` (with `guestSkin`) — host navigates only after receiving it. Message types in `src/types/p2p.ts`.
+
+## Feedback
+
+Accessible via a **Support section** at the bottom of the Settings modal (gear icon in NavBar, available on every page).
+
+- Opens `FeedbackModal` — category picker (Bug report / Feature request / General feedback) + free-text textarea
+- On submit, generates a `mailto:contact@jeremy-maisse.com` link with pre-filled subject and body, then calls `window.location.href`
+- No backend involved; opens the user's local email client
+- A future "Buy me a coffee" link will be added to the same Support section
 
 ## Local storage keys
 
