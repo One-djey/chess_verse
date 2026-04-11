@@ -16,6 +16,7 @@ React 18 + TypeScript + Vite + Tailwind CSS. No backend. P2P via Trystero (WebRT
 | Game (main logic)    | `src/components/Game.tsx`                                        |
 | Game end modal       | `src/components/GameOver.tsx`                                    |
 | Settings modal       | `src/components/GameSettings.tsx`                                |
+| Feedback modal       | `src/components/FeedbackModal.tsx`                               |
 | Chess board/pieces   | `src/utils/chess/board.ts`                                       |
 | Chess move logic     | `src/utils/chess/moves.ts`                                       |
 | Assimilation logic   | `src/utils/chess/assimilation.ts`                                |
@@ -112,9 +113,11 @@ Host generates room, validates all moves, sends `sync_state` + `color_assign` (w
 
 Accessible via a **Support section** at the bottom of the Settings modal (gear icon in NavBar, available on every page).
 
-- Inline form inside the Settings modal — category picker (Bug report / Feature request / General feedback) + free-text textarea, revealed with a slide/fade animation (same `opacity` + `max-h` pattern as other sections)
-- On submit, generates a `mailto:contact@jeremy-maisse.com` link with pre-filled subject and body, then calls `window.location.href`
+- "Send feedback" button in the Support section closes Settings and opens `FeedbackModal` (no modal stacking)
+- `FeedbackModal` — category picker (Bug report / Feature request / General feedback) + free-text textarea
+- On submit: clears inputs, closes modal, then calls `window.location.href` with a `mailto:contact@jeremy-maisse.com` pre-filled link
 - No backend involved; opens the user's local email client
+- `feedbackOpen` state lives in `GameSettings` outside the `isOpen` guard (component uses `{isOpen && ...}` conditional render instead of early return) so the feedback modal can outlive the settings modal
 - A future "Buy me a coffee" link will be added to the same Support section
 
 ## Local storage keys
