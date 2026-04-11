@@ -1,12 +1,13 @@
-import { useState } from "react";
-import { X, Download, Check, MessageSquare } from "lucide-react";
+import { useEffect, useState } from "react";
+import { X, Download, Check, MessageSquare, ChevronDown, Send } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { getDifficultyKey } from "../utils/chess";
 import { SUPPORTED_LANGUAGES, SupportedLanguage } from "../i18n";
 import { useInstall } from "../context/InstallContext";
 import { useSkin } from "../context/SkinContext";
 import { SKINS, getPieceImageSrc } from "../utils/pieceImage";
-import FeedbackModal from "./FeedbackModal";
+
+const FEEDBACK_EMAIL = "contact@jeremy-maisse.com";
 
 type GameSettingsState = {
   aiEnabled: boolean;
@@ -32,13 +33,29 @@ export default function GameSettings({
   const { canInstall, triggerInstall } = useInstall();
   const { skin, setSkin } = useSkin();
   const [feedbackOpen, setFeedbackOpen] = useState(false);
+  const [feedbackCategory, setFeedbackCategory] = useState<"bug" | "feature" | "general">("general");
+  const [feedbackMessage, setFeedbackMessage] = useState("");
+
+  useEffect(() => {
+    if (!isOpen) {
+      setFeedbackOpen(false);
+      setFeedbackCategory("general");
+      setFeedbackMessage("");
+    }
+  }, [isOpen]);
 
   if (!isOpen) return null;
+
+  const handleFeedbackSubmit = () => {
+    const categoryLabel = t(`feedback.categories.${feedbackCategory}`);
+    const subject = encodeURIComponent(`ChessVerse - ${categoryLabel}`);
+    const body = encodeURIComponent(feedbackMessage);
+    window.location.href = `mailto:${FEEDBACK_EMAIL}?subject=${subject}&body=${body}`;
+  };
 
   const hasGameSettings = settings != null && onSettingsChange != null;
 
   return (
-    <>
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100]">
       <div className="bg-white rounded-lg shadow-xl w-96 transform transition-all">
         <div className="flex justify-between items-center p-6 border-b">
@@ -235,12 +252,57 @@ export default function GameSettings({
           {/* ── Support ── */}
           <div className="pt-2 border-t border-gray-100">
             <button
-              onClick={() => { onClose(); setFeedbackOpen(true); }}
-              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium text-gray-600 rounded-lg border border-gray-200 hover:bg-gray-50 transition"
+              onClick={() => setFeedbackOpen((o) => !o)}
+              className="w-full flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-gray-600 rounded-lg border border-gray-200 hover:bg-gray-50 transition"
             >
               <MessageSquare size={16} />
               {t("feedback.button")}
+              <ChevronDown
+                size={14}
+                className={`ml-auto transition-transform duration-300 ${feedbackOpen ? "rotate-180" : ""}`}
+              />
             </button>
+
+            <div
+              className={`transition-all duration-300 ease-in-out overflow-hidden ${
+                feedbackOpen ? "opacity-100 max-h-96" : "opacity-0 max-h-0"
+              }`}
+            >
+              <div className="pt-3 space-y-3">
+                <div className="flex flex-wrap gap-2">
+                  {(["bug", "feature", "general"] as const).map((cat) => (
+                    <button
+                      key={cat}
+                      onClick={() => setFeedbackCategory(cat)}
+                      className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
+                        feedbackCategory === cat
+                          ? "bg-blue-600 text-white"
+                          : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                      }`}
+                    >
+                      {t(`feedback.categories.${cat}`)}
+                    </button>
+                  ))}
+                </div>
+                <textarea
+                  value={feedbackMessage}
+                  onChange={(e) => setFeedbackMessage(e.target.value)}
+                  placeholder={t("feedback.messagePlaceholder")}
+                  rows={4}
+                  className="w-full rounded-lg border border-gray-200 p-3 text-sm text-gray-700 placeholder-gray-400 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+                <button
+                  onClick={handleFeedbackSubmit}
+                  className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 active:bg-blue-800 transition"
+                >
+                  <Send size={16} />
+                  {t("feedback.submit")}
+                </button>
+                <p className="text-xs text-gray-400 text-center">
+                  {t("feedback.note")}
+                </p>
+              </div>
+            </div>
           </div>
 
           {/* ── Install app (only when installable and not already PWA) ── */}
@@ -258,7 +320,5 @@ export default function GameSettings({
         </div>
       </div>
     </div>
-    <FeedbackModal isOpen={feedbackOpen} onClose={() => setFeedbackOpen(false)} />
-    </>
   );
 }
