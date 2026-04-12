@@ -131,6 +131,19 @@
     "message": "Install ChessVerse for quick access",
     "cta": "Install"
   },
+  "feedback": {
+    "button": "Send feedback",
+    "title": "Send feedback",
+    "categories": {
+      "bug": "Bug report",
+      "feature": "Feature request",
+      "general": "General feedback"
+    },
+    "messagePlaceholder": "Describe your feedback...",
+    "submit": "Open email client",
+    "note": "This will open your email client with the message pre-filled.",
+    "donate": "Buy me a coffee"
+  },
   "legal": {
     "footer": {
       "mentions": "Legal Notice",

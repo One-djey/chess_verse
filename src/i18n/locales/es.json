@@ -131,6 +131,19 @@
     "message": "Instala ChessVerse para acceso rápido",
     "cta": "Instalar"
   },
+  "feedback": {
+    "button": "Enviar comentarios",
+    "title": "Enviar comentarios",
+    "categories": {
+      "bug": "Informe de error",
+      "feature": "Solicitud de función",
+      "general": "Comentario general"
+    },
+    "messagePlaceholder": "Describe tus comentarios...",
+    "submit": "Abrir cliente de correo",
+    "note": "Esto abrirá tu cliente de correo con el mensaje prellenado.",
+    "donate": "Invítame a un café"
+  },
   "legal": {
     "footer": {
       "mentions": "Aviso legal",

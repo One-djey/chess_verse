@@ -18,6 +18,7 @@ No installation needed — just open the link and start playing!
 - **Visual indicators** — Highlighted valid moves, selected piece, king in check (orange), assimilated pieces (green glow).
 - **Assimilation mode** — Pieces permanently acquire the movement abilities of pieces they capture; accumulated abilities visualised via hover tooltip.
 - **Multilingual UI** — English, French, Spanish, Italian, Arabic, Japanese, Chinese, Korean.
+- **Feedback form** — Send feedback directly from the Settings modal; generates a pre-filled mailto link, no backend needed.
 - **Installable as a PWA** — Add to home screen for quick access.
 - **Endgame statistics** — Match duration, move count, AI level, rematch option.
 
