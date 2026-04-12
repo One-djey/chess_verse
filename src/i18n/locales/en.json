@@ -141,7 +141,8 @@
     },
     "messagePlaceholder": "Describe your feedback...",
     "submit": "Open email client",
-    "note": "This will open your email client with the message pre-filled."
+    "note": "This will open your email client with the message pre-filled.",
+    "donate": "Buy me a coffee"
   },
   "legal": {
     "footer": {

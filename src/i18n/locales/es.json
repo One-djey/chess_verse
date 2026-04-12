@@ -141,7 +141,8 @@
     },
     "messagePlaceholder": "Describe tus comentarios...",
     "submit": "Abrir cliente de correo",
-    "note": "Esto abrirá tu cliente de correo con el mensaje prellenado."
+    "note": "Esto abrirá tu cliente de correo con el mensaje prellenado.",
+    "donate": "Invítame a un café"
   },
   "legal": {
     "footer": {

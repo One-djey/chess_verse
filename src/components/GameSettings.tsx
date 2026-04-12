@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { X, Download, Check, MessageSquare } from "lucide-react";
+import { X, Download, Check, MessageSquare, Coffee } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { getDifficultyKey } from "../utils/chess";
 import { SUPPORTED_LANGUAGES, SupportedLanguage } from "../i18n";
@@ -233,18 +233,29 @@ export default function GameSettings({
               </div>
 
               {/* ── Support + Install (single separator) ── */}
-              <div className="pt-2 border-t border-gray-100 flex gap-2">
-                <button
-                  onClick={() => { onClose(); setFeedbackOpen(true); }}
-                  className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium text-gray-600 rounded-lg border border-gray-200 hover:bg-gray-50 transition"
-                >
-                  <MessageSquare size={16} />
-                  {t("feedback.button")}
-                </button>
+              <div className="pt-2 border-t border-gray-100 space-y-2">
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => { onClose(); setFeedbackOpen(true); }}
+                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium text-gray-600 rounded-lg border border-gray-200 hover:bg-gray-50 transition"
+                  >
+                    <MessageSquare size={16} />
+                    {t("feedback.button")}
+                  </button>
+                  <a
+                    href={`https://donate.stripe.com/eVq3cueo0dkNfVlfovbEA00?locale=${i18n.resolvedLanguage}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium text-amber-700 rounded-lg border border-amber-200 bg-amber-50 hover:bg-amber-100 transition"
+                  >
+                    <Coffee size={16} />
+                    {t("feedback.donate")}
+                  </a>
+                </div>
                 {canInstall && (
                   <button
                     onClick={triggerInstall}
-                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 active:bg-blue-800 transition"
+                    className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 active:bg-blue-800 transition"
                   >
                     <Download size={16} />
                     {t("install.cta")}

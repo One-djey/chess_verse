@@ -141,7 +141,8 @@
     },
     "messagePlaceholder": "Votre message...",
     "submit": "Ouvrir le client mail",
-    "note": "Ceci ouvrira votre client mail avec le message pré-rempli."
+    "note": "Ceci ouvrira votre client mail avec le message pré-rempli.",
+    "donate": "Offrir un café"
   },
   "legal": {
     "footer": {
