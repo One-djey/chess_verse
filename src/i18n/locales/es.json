@@ -115,6 +115,7 @@
   },
   "learning": {
     "pinnedPiece": "Esta pieza no puede moverse — pondría al rey en jaque",
+    "checkBlockedPiece": "Esta pieza no puede resolver el jaque",
     "settingsTitle": "Aprendizaje y asistencia",
     "dangerIndicator": "Indicador de peligro",
     "dangerIndicatorDesc": "Resalta tus piezas que están bajo ataque",

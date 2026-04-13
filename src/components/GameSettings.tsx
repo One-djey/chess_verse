@@ -29,8 +29,8 @@ function ToggleRow({
   onChange: (v: boolean) => void;
 }) {
   return (
-    <div className="flex items-center justify-between">
-      <div>
+    <div className="flex items-center justify-between gap-3">
+      <div className="min-w-0 flex-1">
         <p className="text-sm font-medium text-gray-900">{label}</p>
         {desc && <p className="text-xs text-gray-500 mt-0.5">{desc}</p>}
       </div>
@@ -38,7 +38,7 @@ function ToggleRow({
         role="switch"
         aria-checked={checked}
         onClick={() => onChange(!checked)}
-        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 focus:outline-none ${
+        className={`flex-shrink-0 relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 focus:outline-none ${
           checked ? "bg-blue-600" : "bg-gray-200"
         }`}
       >

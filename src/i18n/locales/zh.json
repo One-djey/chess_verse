@@ -115,6 +115,7 @@
   },
   "learning": {
     "pinnedPiece": "此棋子无法移动 — 否则将使王暴露在攻击下",
+    "checkBlockedPiece": "此棋子无法解除将军状态",
     "settingsTitle": "学习与辅助",
     "dangerIndicator": "危险指示器",
     "dangerIndicatorDesc": "高亮显示正在被攻击的棋子",

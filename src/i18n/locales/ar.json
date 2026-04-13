@@ -115,6 +115,7 @@
   },
   "learning": {
     "pinnedPiece": "هذه القطعة لا تستطيع الحركة — ستكشف الملك",
+    "checkBlockedPiece": "هذه القطعة لا تستطيع رفع الكشف عن الملك",
     "settingsTitle": "التعلم والمساعدة",
     "dangerIndicator": "مؤشر الخطر",
     "dangerIndicatorDesc": "تمييز قطعك التي تتعرض للهجوم",

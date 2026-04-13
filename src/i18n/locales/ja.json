@@ -115,6 +115,7 @@
   },
   "learning": {
     "pinnedPiece": "このコマは動けません — 王手がかかります",
+    "checkBlockedPiece": "このコマを動かしても王手を解消できません",
     "settingsTitle": "学習とアシスト",
     "dangerIndicator": "危険インジケーター",
     "dangerIndicatorDesc": "攻撃されている自分の駒を強調表示",

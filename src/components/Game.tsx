@@ -1,7 +1,7 @@
 import React from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { X } from "lucide-react";
+import { X, ShieldAlert, Zap, GitFork, Pin, Crosshair, TrendingUp, ArrowLeftRight, AlertTriangle } from "lucide-react";
 import ChessBoard from "./ChessBoard";
 import GameOver from "./GameOver";
 import NavBar from "./NavBar";
@@ -14,14 +14,14 @@ import { useChessGame } from "../hooks/useChessGame";
 import { useP2PGame } from "../hooks/useP2PGame";
 import { useSkin } from "../context/SkinContext";
 
-const TACTIC_ICONS: Record<TacticTag, string> = {
-  check: "♟",
-  discoveredCheck: "♟",
-  fork: "⚔️",
-  pin: "📌",
-  capture: "✕",
-  promotion: "♛",
-  castling: "🏰",
+const TACTIC_ICONS: Record<TacticTag, React.ComponentType<{ size?: number; className?: string }>> = {
+  check: ShieldAlert,
+  discoveredCheck: Zap,
+  fork: GitFork,
+  pin: Pin,
+  capture: Crosshair,
+  promotion: TrendingUp,
+  castling: ArrowLeftRight,
 };
 
 function AnnotationToast({
@@ -39,10 +39,11 @@ function AnnotationToast({
   }, [tag, onDismiss]);
 
   const desc = t(`learning.tactics.${tag}Desc`);
+  const Icon = TACTIC_ICONS[tag];
 
   return (
     <div className="flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-200 rounded-lg shadow-md text-sm text-gray-700">
-      <span>{TACTIC_ICONS[tag]}</span>
+      <Icon size={16} className="flex-shrink-0 text-gray-500" />
       <div>
         <span className="font-semibold">{t(`learning.tactics.${tag}`)}</span>
         {desc && (
@@ -227,6 +228,8 @@ export default function Game() {
   // ── Danger indicator ──────────────────────────────────────────────────────
   const endangeredPieceIds = React.useMemo<Set<string>>(() => {
     if (!chess.settings.showDangerIndicator) return new Set();
+    // Don't show danger for opponent pieces during AI turn (avoids brief flash at turn change)
+    if (chess.aiEnabled && chess.gameState.currentTurn !== "white") return new Set();
     const opp =
       chess.gameState.currentTurn === "white" ? "black" : "white";
     const ids = new Set<string>();
@@ -267,12 +270,30 @@ export default function Game() {
 
   React.useEffect(() => {
     setHintMove(null);
-    if (!canShowHint || !chess.aiRef.current) return;
-    chess.aiRef.current
-      .getHintMove(chess.gameState.pieces, chess.gameState.currentTurn)
-      .then((move) => setHintMove(move))
-      .catch((e) => console.error("Hint:", e));
-  }, [chess.gameState.currentTurn, canShowHint]); // eslint-disable-line react-hooks/exhaustive-deps
+    if (!canShowHint) return;
+
+    let cancelled = false;
+
+    const tryHint = (retriesLeft: number) => {
+      if (cancelled) return;
+      if (!chess.aiRef.current) {
+        // Engine not ready yet — retry shortly
+        if (retriesLeft > 0) setTimeout(() => tryHint(retriesLeft - 1), 600);
+        return;
+      }
+      chess.aiRef.current
+        .getHintMove(chess.gameState.pieces, chess.gameState.currentTurn)
+        .then((move) => { if (!cancelled) setHintMove(move); })
+        .catch((e) => {
+          console.error("Hint failed:", e);
+          if (!cancelled && retriesLeft > 0)
+            setTimeout(() => tryHint(retriesLeft - 1), 600);
+        });
+    };
+
+    tryHint(2); // up to 3 attempts total
+    return () => { cancelled = true; };
+  }, [chess.gameState.currentTurn, canShowHint, chess.gameState.startTime]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Dangerous valid moves (for orange overlay on risky destinations) ───────
   const dangerousValidMoves = React.useMemo<Set<string>>(() => {
@@ -359,7 +380,8 @@ export default function Game() {
   }, [chess.gameState.gameOver]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Pinned-piece notification ─────────────────────────────────────────────
-  const [pinnedNotice, setPinnedNotice] = React.useState(false);
+  // null = hidden; string = i18n key to display
+  const [pinnedNotice, setPinnedNotice] = React.useState<string | null>(null);
 
   // ── User action handlers ───────────────────────────────────────────────────
   const handlePieceSelect = (piece: Piece) => {
@@ -376,9 +398,13 @@ export default function Game() {
       chess.gameState.gameMode,
     );
     if (moves.length === 0) {
-      setPinnedNotice(true);
+      // When king is already in check, the piece can't resolve it; otherwise it's pinned.
+      const noticeKey = chess.gameState.isCheck
+        ? "learning.checkBlockedPiece"
+        : "learning.pinnedPiece";
+      setPinnedNotice(noticeKey);
       // Auto-dismiss
-      setTimeout(() => setPinnedNotice(false), 3000);
+      setTimeout(() => setPinnedNotice(null), 3000);
     }
     chess.setGameState((prev) => ({
       ...prev,
@@ -529,10 +555,10 @@ export default function Game() {
         {/* Pinned-piece notice */}
         {pinnedNotice && (
           <div className="flex items-center gap-2 px-4 py-2.5 bg-white border border-orange-200 rounded-lg shadow-md text-sm text-orange-700">
-            <span>⚠️</span>
-            <span>{t("learning.pinnedPiece")}</span>
+            <AlertTriangle size={16} className="flex-shrink-0" />
+            <span>{t(pinnedNotice)}</span>
             <button
-              onClick={() => setPinnedNotice(false)}
+              onClick={() => setPinnedNotice(null)}
               className="ml-2 text-orange-400 hover:text-orange-600"
             >
               <X size={14} />
