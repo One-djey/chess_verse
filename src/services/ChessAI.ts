@@ -174,6 +174,15 @@ export class ChessAI {
     return piece.color === 'white' ? char.toUpperCase() : char;
   }
 
+  public restart() {
+    this.destroy();
+    this.isReady = false;
+    this.isSearching = false;
+    this.moveResolver = null;
+    this.initializeStockfish();
+    this.setDifficulty(this.difficulty);
+  }
+
   public destroy() {
     if (this.stockfish) {
       this.stockfish.terminate();

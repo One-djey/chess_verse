@@ -114,6 +114,7 @@
     "language": "言語"
   },
   "learning": {
+    "pinnedPiece": "このコマは動けません — 王手がかかります",
     "settingsTitle": "学習とアシスト",
     "dangerIndicator": "危険インジケーター",
     "dangerIndicatorDesc": "攻撃されている自分の駒を強調表示",

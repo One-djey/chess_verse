@@ -114,6 +114,7 @@
     "language": "언어"
   },
   "learning": {
+    "pinnedPiece": "이 기물은 움직일 수 없습니다 — 왕이 노출됩니다",
     "settingsTitle": "학습 및 지원",
     "dangerIndicator": "위험 표시기",
     "dangerIndicatorDesc": "공격받고 있는 내 기물 강조 표시",

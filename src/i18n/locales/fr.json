@@ -114,6 +114,7 @@
     ]
   },
   "learning": {
+    "pinnedPiece": "Cette pièce ne peut pas bouger — elle mettrait le roi en échec",
     "settingsTitle": "Apprentissage & Assistance",
     "dangerIndicator": "Indicateur de danger",
     "dangerIndicatorDesc": "Met en évidence les pièces en danger et les cases risquées",

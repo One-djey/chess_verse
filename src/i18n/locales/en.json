@@ -114,6 +114,7 @@
     ]
   },
   "learning": {
+    "pinnedPiece": "This piece can't move — it would expose your king",
     "settingsTitle": "Learning & Assistance",
     "dangerIndicator": "Danger Indicator",
     "dangerIndicatorDesc": "Highlight pieces under attack & risky move squares",

@@ -496,7 +496,6 @@ export default function ChessBoard({
                 return "drop-shadow(0 0 6px rgba(249,115,22,1))";  // orange — danger
               if (isSelected)
                 return "drop-shadow(0 0 6px rgba(59,130,246,1))";  // blue — selected
-                return "drop-shadow(0 0 6px rgba(168,85,247,1))";  // purple — hint
               if (isAssimilated)
                 return "drop-shadow(0 0 4px rgba(74,222,128,1))";  // green — assimilation
               if (hasGlow)

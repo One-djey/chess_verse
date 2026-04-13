@@ -114,6 +114,7 @@
     "language": "اللغة"
   },
   "learning": {
+    "pinnedPiece": "هذه القطعة لا تستطيع الحركة — ستكشف الملك",
     "settingsTitle": "التعلم والمساعدة",
     "dangerIndicator": "مؤشر الخطر",
     "dangerIndicatorDesc": "تمييز قطعك التي تتعرض للهجوم",

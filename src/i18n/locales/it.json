@@ -114,6 +114,7 @@
     "language": "Lingua"
   },
   "learning": {
+    "pinnedPiece": "Questo pezzo non può muoversi — esporrebbe il re allo scacco",
     "settingsTitle": "Apprendimento e assistenza",
     "dangerIndicator": "Indicatore di pericolo",
     "dangerIndicatorDesc": "Evidenzia i tuoi pezzi sotto attacco",

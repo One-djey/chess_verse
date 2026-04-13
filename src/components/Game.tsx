@@ -123,60 +123,82 @@ export default function Game() {
       chess.gameState.gameOver
     )
       return;
-    const trigger = async () => {
+
+    let cancelled = false;
+
+    const applyMove = (move: { from: { x: number; y: number }; to: { x: number; y: number } }) => {
+      const piece = chess.gameState.pieces.find(
+        (p) =>
+          p.position.x === move.from.x &&
+          p.position.y === move.from.y &&
+          p.color === "black",
+      );
+      if (!piece) return;
+      const valid = getValidMoves(
+        piece,
+        chess.gameState.pieces,
+        chess.gameState.gameMode,
+      ).some((v) => v.x === move.to.x && v.y === move.to.y);
+      if (!valid) return;
+      chess.setGameState((prev) => {
+        const nextState = applyMoveToState(prev, piece, move.to);
+        const capturedPiece =
+          prev.pieces.find(
+            (p) =>
+              p.color !== piece.color &&
+              p.position.x === move.to.x &&
+              p.position.y === move.to.y,
+          ) ?? null;
+        triggerAnnotation({
+          piece,
+          from: piece.position,
+          to: move.to,
+          capturedPiece,
+          wasPromotion:
+            piece.type === "pawn" && (move.to.y === 0 || move.to.y === 7),
+          wasCastling:
+            piece.type === "king" &&
+            Math.abs(piece.position.x - move.to.x) === 2,
+          prevPieces: prev.pieces,
+          nextPieces: nextState.pieces,
+          gameMode: prev.gameMode,
+        });
+        return nextState;
+      });
+    };
+
+    const trigger = async (retriesLeft: number) => {
+      if (cancelled) return;
       if (!chess.aiRef.current) {
-        setTimeout(trigger, 1000);
+        if (retriesLeft > 0)
+          setTimeout(() => trigger(retriesLeft - 1), 1000);
         return;
       }
       try {
         const move = await chess.aiRef.current.getNextMove(
           chess.gameState.pieces,
         );
-        const piece = chess.gameState.pieces.find(
-          (p) =>
-            p.position.x === move.from.x &&
-            p.position.y === move.from.y &&
-            p.color === "black",
-        );
-        if (!piece) return;
-        const valid = getValidMoves(
-          piece,
-          chess.gameState.pieces,
-          chess.gameState.gameMode,
-        ).some((v) => v.x === move.to.x && v.y === move.to.y);
-        if (valid)
-          chess.setGameState((prev) => {
-            const nextState = applyMoveToState(prev, piece, move.to);
-            const capturedPiece =
-              prev.pieces.find(
-                (p) =>
-                  p.color !== piece.color &&
-                  p.position.x === move.to.x &&
-                  p.position.y === move.to.y,
-              ) ?? null;
-            triggerAnnotation({
-              piece,
-              from: piece.position,
-              to: move.to,
-              capturedPiece,
-              wasPromotion:
-                piece.type === "pawn" &&
-                (move.to.y === 0 || move.to.y === 7),
-              wasCastling:
-                piece.type === "king" &&
-                Math.abs(piece.position.x - move.to.x) === 2,
-              prevPieces: prev.pieces,
-              nextPieces: nextState.pieces,
-              gameMode: prev.gameMode,
-            });
-            return nextState;
-          });
+        if (!cancelled) applyMove(move);
       } catch (e) {
-        console.error(e);
+        console.error("AI move failed:", e);
+        if (cancelled) return;
+        if (retriesLeft > 0) {
+          // Try to reinitialise the engine before retrying
+          chess.aiRef.current?.restart?.();
+          setTimeout(() => trigger(retriesLeft - 1), 800);
+        } else {
+          // All retries exhausted — disable AI so the player can continue
+          console.warn("AI permanently failed after 3 retries. Disabling AI.");
+          chess.handleSettingsChange({ ...chess.settings, aiEnabled: false });
+        }
       }
     };
-    const id = setTimeout(trigger, 500);
-    return () => clearTimeout(id);
+
+    const id = setTimeout(() => trigger(3), 500);
+    return () => {
+      cancelled = true;
+      clearTimeout(id);
+    };
   }, [chess.gameState.currentTurn, chess.aiEnabled, chess.gameState.gameOver]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Movable pieces (for check highlight) ──────────────────────────────────
@@ -336,6 +358,9 @@ export default function Game() {
     });
   }, [chess.gameState.gameOver]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // ── Pinned-piece notification ─────────────────────────────────────────────
+  const [pinnedNotice, setPinnedNotice] = React.useState(false);
+
   // ── User action handlers ───────────────────────────────────────────────────
   const handlePieceSelect = (piece: Piece) => {
     if (
@@ -345,10 +370,20 @@ export default function Game() {
     )
       return;
     if (piece.color !== chess.gameState.currentTurn) return;
+    const moves = getValidMoves(
+      piece,
+      chess.gameState.pieces,
+      chess.gameState.gameMode,
+    );
+    if (moves.length === 0) {
+      setPinnedNotice(true);
+      // Auto-dismiss
+      setTimeout(() => setPinnedNotice(false), 3000);
+    }
     chess.setGameState((prev) => ({
       ...prev,
       selectedPiece: piece,
-      validMoves: getValidMoves(piece, prev.pieces, prev.gameMode),
+      validMoves: moves,
     }));
   };
 
@@ -490,6 +525,20 @@ export default function Game() {
           skin={skin}
           peerSkin={p2p.peerSkin ?? undefined}
         />
+
+        {/* Pinned-piece notice */}
+        {pinnedNotice && (
+          <div className="flex items-center gap-2 px-4 py-2.5 bg-white border border-orange-200 rounded-lg shadow-md text-sm text-orange-700">
+            <span>⚠️</span>
+            <span>{t("learning.pinnedPiece")}</span>
+            <button
+              onClick={() => setPinnedNotice(false)}
+              className="ml-2 text-orange-400 hover:text-orange-600"
+            >
+              <X size={14} />
+            </button>
+          </div>
+        )}
 
         {/* Annotation toast */}
         {annotation && !annotationDismissed && chess.settings.showMoveAnnotations && (
