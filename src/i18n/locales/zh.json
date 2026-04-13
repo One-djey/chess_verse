@@ -117,9 +117,8 @@
     "settingsTitle": "学习与辅助",
     "dangerIndicator": "危险指示器",
     "dangerIndicatorDesc": "高亮显示正在被攻击的棋子",
-    "hintButton": "最佳走法提示",
-    "hintButtonDesc": "在您的回合显示提示按钮",
-    "hintLoading": "思考中…",
+    "showHint": "最佳走法提示",
+    "showHintDesc": "在您的回合显示提示按钮",
     "tactics": {
       "check": "将军！",
       "checkDesc": "王处于将军状态",

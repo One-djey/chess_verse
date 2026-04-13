@@ -1,7 +1,7 @@
 import React from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Lightbulb, X } from "lucide-react";
+import { X } from "lucide-react";
 import ChessBoard from "./ChessBoard";
 import GameOver from "./GameOver";
 import NavBar from "./NavBar";
@@ -230,35 +230,58 @@ export default function Game() {
     chess.gameState.gameMode,
   ]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // ── Hint ──────────────────────────────────────────────────────────────────
+  // ── Hint (auto-calculated at the start of each turn) ─────────────────────
   const [hintMove, setHintMove] = React.useState<{
     from: Position;
     to: Position;
   } | null>(null);
-  const [isHintLoading, setIsHintLoading] = React.useState(false);
 
-  const handleHintRequest = React.useCallback(async () => {
-    if (!chess.aiRef.current || isHintLoading || p2p.isP2PMode) return;
-    setIsHintLoading(true);
-    setHintMove(null);
-    try {
-      const move = await chess.aiRef.current.getHintMove(
-        chess.gameState.pieces,
-        chess.gameState.currentTurn,
-      );
-      setHintMove(move);
-      setTimeout(() => setHintMove(null), 5000);
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setIsHintLoading(false);
-    }
-  }, [chess.aiRef, chess.gameState.pieces, chess.gameState.currentTurn, isHintLoading, p2p.isP2PMode]); // eslint-disable-line react-hooks/exhaustive-deps
+  // Hint is available when the option is on, not in P2P, and it's the human's turn
+  const canShowHint =
+    chess.settings.showHint &&
+    !p2p.isP2PMode &&
+    !chess.gameState.gameOver &&
+    (!chess.aiEnabled || chess.gameState.currentTurn === "white");
 
-  // Clear hint when the turn changes (player made a move)
   React.useEffect(() => {
     setHintMove(null);
-  }, [chess.gameState.currentTurn]);
+    if (!canShowHint || !chess.aiRef.current) return;
+    chess.aiRef.current
+      .getHintMove(chess.gameState.pieces, chess.gameState.currentTurn)
+      .then((move) => setHintMove(move))
+      .catch((e) => console.error("Hint:", e));
+  }, [chess.gameState.currentTurn, canShowHint]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ── Dangerous valid moves (for orange overlay on risky destinations) ───────
+  const dangerousValidMoves = React.useMemo<Set<string>>(() => {
+    if (!chess.settings.showDangerIndicator || !chess.gameState.selectedPiece)
+      return new Set();
+    const opp =
+      chess.gameState.currentTurn === "white" ? "black" : "white";
+    const result = new Set<string>();
+    chess.gameState.validMoves.forEach((move) => {
+      const nx = ((move.x % 8) + 8) % 8;
+      const ny = ((move.y % 8) + 8) % 8;
+      if (
+        isSquareUnderAttack(
+          { x: nx, y: ny },
+          opp,
+          chess.gameState.pieces,
+          chess.gameState.gameMode,
+        )
+      ) {
+        result.add(`${nx},${ny}`);
+      }
+    });
+    return result;
+  }, [
+    chess.settings.showDangerIndicator,
+    chess.gameState.selectedPiece,
+    chess.gameState.validMoves,
+    chess.gameState.pieces,
+    chess.gameState.currentTurn,
+    chess.gameState.gameMode,
+  ]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Annotations ───────────────────────────────────────────────────────────
   const [annotation, setAnnotation] = React.useState<TacticTag | null>(null);
@@ -447,7 +470,7 @@ export default function Game() {
         />
       )}
 
-      <div className="flex flex-col items-center justify-center p-8 gap-3">
+      <div className="flex flex-col items-center justify-center p-2 sm:p-8 gap-3">
         <ChessBoard
           pieces={chess.gameState.pieces}
           currentTurn={chess.gameState.currentTurn}
@@ -463,28 +486,10 @@ export default function Game() {
           movablePieceIds={movablePieceIds}
           endangeredPieceIds={endangeredPieceIds}
           hintMove={hintMove}
+          dangerousValidMoves={dangerousValidMoves}
           skin={skin}
           peerSkin={p2p.peerSkin ?? undefined}
         />
-
-        {/* Hint button */}
-        {chess.settings.showHintButton &&
-          !p2p.isP2PMode &&
-          !chess.gameState.gameOver && (
-            <button
-              onClick={handleHintRequest}
-              disabled={isHintLoading}
-              className="flex items-center gap-2 px-4 py-2 bg-purple-100 border border-purple-300 text-purple-800 rounded-lg hover:bg-purple-200 transition text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <Lightbulb
-                size={16}
-                className={isHintLoading ? "animate-pulse" : ""}
-              />
-              {isHintLoading
-                ? t("learning.hintLoading")
-                : t("learning.hintButton")}
-            </button>
-          )}
 
         {/* Annotation toast */}
         {annotation && !annotationDismissed && chess.settings.showMoveAnnotations && (

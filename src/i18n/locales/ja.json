@@ -117,9 +117,8 @@
     "settingsTitle": "学習とアシスト",
     "dangerIndicator": "危険インジケーター",
     "dangerIndicatorDesc": "攻撃されている自分の駒を強調表示",
-    "hintButton": "最善手のヒント",
-    "hintButtonDesc": "自分のターン中にヒントボタンを表示",
-    "hintLoading": "考え中…",
+    "showHint": "最善手のヒント",
+    "showHintDesc": "自分のターン中にヒントボタンを表示",
     "tactics": {
       "check": "チェック！",
       "checkDesc": "キングがチェックを受けています",

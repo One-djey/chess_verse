@@ -117,9 +117,8 @@
     "settingsTitle": "학습 및 지원",
     "dangerIndicator": "위험 표시기",
     "dangerIndicatorDesc": "공격받고 있는 내 기물 강조 표시",
-    "hintButton": "최선의 수 힌트",
-    "hintButtonDesc": "내 차례에 힌트 버튼 표시",
-    "hintLoading": "생각 중…",
+    "showHint": "최선의 수 힌트",
+    "showHintDesc": "내 차례에 힌트 버튼 표시",
     "tactics": {
       "check": "체크!",
       "checkDesc": "킹이 체크 상태입니다",

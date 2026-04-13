@@ -8,7 +8,7 @@ export type LocalSettings = {
   aiDifficulty: number;
   flipBoard: boolean;
   showDangerIndicator: boolean;
-  showHintButton: boolean;
+  showHint: boolean;
   showMoveAnnotations: boolean;
 };
 
@@ -18,7 +18,7 @@ const DEFAULT_SETTINGS: LocalSettings = {
   aiDifficulty: 5,
   flipBoard: false,
   showDangerIndicator: false,
-  showHintButton: false,
+  showHint: false,
   showMoveAnnotations: false,
 };
 

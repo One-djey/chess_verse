@@ -116,10 +116,9 @@
   "learning": {
     "settingsTitle": "Apprentissage & Assistance",
     "dangerIndicator": "Indicateur de danger",
-    "dangerIndicatorDesc": "Met en évidence vos pièces attaquées",
-    "hintButton": "Suggestion de meilleur coup",
-    "hintButtonDesc": "Affiche un bouton d'aide pendant votre tour",
-    "hintLoading": "Réflexion…",
+    "dangerIndicatorDesc": "Met en évidence les pièces en danger et les cases risquées",
+    "showHint": "Suggestion de meilleur coup",
+    "showHintDesc": "Affiche automatiquement le meilleur coup au début de chaque tour",
     "tactics": {
       "check": "Échec !",
       "checkDesc": "Le roi est en échec",

@@ -116,10 +116,9 @@
   "learning": {
     "settingsTitle": "Learning & Assistance",
     "dangerIndicator": "Danger Indicator",
-    "dangerIndicatorDesc": "Highlight your pieces that are under attack",
-    "hintButton": "Best Move Hint",
-    "hintButtonDesc": "Show a hint button during your turn",
-    "hintLoading": "Thinking…",
+    "dangerIndicatorDesc": "Highlight pieces under attack & risky move squares",
+    "showHint": "Best Move Hint",
+    "showHintDesc": "Automatically show the best move at the start of each turn",
     "tactics": {
       "check": "Check!",
       "checkDesc": "The king is in check",

@@ -117,9 +117,8 @@
     "settingsTitle": "التعلم والمساعدة",
     "dangerIndicator": "مؤشر الخطر",
     "dangerIndicatorDesc": "تمييز قطعك التي تتعرض للهجوم",
-    "hintButton": "اقتراح أفضل حركة",
-    "hintButtonDesc": "إظهار زر تلميح أثناء دورك",
-    "hintLoading": "جارٍ التفكير…",
+    "showHint": "اقتراح أفضل حركة",
+    "showHintDesc": "إظهار زر تلميح أثناء دورك",
     "tactics": {
       "check": "كش!",
       "checkDesc": "الملك في وضع كش",

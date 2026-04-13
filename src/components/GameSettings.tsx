@@ -70,7 +70,7 @@ export default function GameSettings({
     <>
       {isOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100]">
-          <div className="bg-white rounded-lg shadow-xl w-96 transform transition-all">
+          <div className="bg-white rounded-lg shadow-xl w-96 max-h-[90vh] flex flex-col transform transition-all">
             <div className="flex justify-between items-center p-6 border-b">
               <h2 className="text-xl font-semibold text-gray-900">
                 {t("gameSettings.title")}
@@ -83,7 +83,7 @@ export default function GameSettings({
               </button>
             </div>
 
-            <div className="p-6 space-y-6">
+            <div className="p-6 space-y-6 overflow-y-auto">
               {/* ── Game type (only when in a local game) ── */}
               {hasGameSettings && (
                 <div className="space-y-4">
@@ -196,11 +196,11 @@ export default function GameSettings({
                       }
                     />
                     <ToggleRow
-                      label={t("learning.hintButton")}
-                      desc={t("learning.hintButtonDesc")}
-                      checked={settings!.showHintButton}
+                      label={t("learning.showHint")}
+                      desc={t("learning.showHintDesc")}
+                      checked={settings!.showHint}
                       onChange={(v) =>
-                        onSettingsChange!({ ...settings!, showHintButton: v })
+                        onSettingsChange!({ ...settings!, showHint: v })
                       }
                     />
                     <ToggleRow

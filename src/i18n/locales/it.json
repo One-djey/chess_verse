@@ -117,9 +117,8 @@
     "settingsTitle": "Apprendimento e assistenza",
     "dangerIndicator": "Indicatore di pericolo",
     "dangerIndicatorDesc": "Evidenzia i tuoi pezzi sotto attacco",
-    "hintButton": "Suggerimento mossa migliore",
-    "hintButtonDesc": "Mostra un pulsante suggerimento durante il tuo turno",
-    "hintLoading": "Pensando…",
+    "showHint": "Suggerimento mossa migliore",
+    "showHintDesc": "Mostra un pulsante suggerimento durante il tuo turno",
     "tactics": {
       "check": "Scacco!",
       "checkDesc": "Il re è sotto scacco",
