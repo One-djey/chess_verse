@@ -231,7 +231,10 @@ export default function ChessBoard({
   };
 
   return (
-    <div className="aspect-square w-[min(80vh,calc(100vw-1rem))] max-w-[800px] bg-white shadow-xl rounded-lg p-4">
+    <div
+      className="bg-white shadow-xl rounded-lg p-4"
+      style={{ width: 'min(80vh, calc(100vw - 1rem))', maxWidth: '800px', aspectRatio: '1 / 1' }}
+    >
       <div
         className="grid grid-cols-8 grid-rows-8 h-full gap-1 relative"
         style={{
@@ -477,8 +480,8 @@ export default function ChessBoard({
             const dp = toDisplay(piece.position.x, piece.position.y);
 
             // Glow priority (highest → lowest):
-            //   red (check king) > orange (endangered) > blue (selected) >
-            //   purple (hint piece) > green (assimilation) > blue (playable)
+            //   red (check king) > purple (hint) > orange (endangered) >
+            //   blue (selected) > green (assimilation) > blue (playable)
             const isEndangered = endangeredPieceIds?.has(piece.id) ?? false;
             const isHintPiece =
               hintMove &&
@@ -487,11 +490,12 @@ export default function ChessBoard({
             const shadowFilter = (() => {
               if (piece.color === currentTurn && isCheck && piece.type === "king")
                 return "drop-shadow(0 0 6px rgba(239,68,68,1))";   // red — check
+              if (isHintPiece)
+                return "drop-shadow(0 0 6px rgba(168,85,247,1))";  // purple — hint
               if (isEndangered && !isSelected)
                 return "drop-shadow(0 0 6px rgba(249,115,22,1))";  // orange — danger
               if (isSelected)
                 return "drop-shadow(0 0 6px rgba(59,130,246,1))";  // blue — selected
-              if (isHintPiece)
                 return "drop-shadow(0 0 6px rgba(168,85,247,1))";  // purple — hint
               if (isAssimilated)
                 return "drop-shadow(0 0 4px rgba(74,222,128,1))";  // green — assimilation
