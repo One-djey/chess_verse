@@ -113,6 +113,33 @@
     "pieceAppearance": "Apariencia de piezas",
     "language": "Idioma"
   },
+  "learning": {
+    "pinnedPiece": "Esta pieza no puede moverse — pondría al rey en jaque",
+    "checkBlockedPiece": "Esta pieza no puede resolver el jaque",
+    "settingsTitle": "Aprendizaje y asistencia",
+    "dangerIndicator": "Indicador de peligro",
+    "dangerIndicatorDesc": "Resalta tus piezas que están bajo ataque",
+    "showHint": "Sugerencia de mejor jugada",
+    "showHintDesc": "Muestra un botón de pista durante tu turno",
+    "tactics": {
+      "check": "¡Jaque!",
+      "checkDesc": "El rey está en jaque",
+      "discoveredCheck": "¡Jaque descubierto!",
+      "discoveredCheckDesc": "Mover una pieza reveló un ataque al rey",
+      "fork": "¡Horquilla!",
+      "forkDesc": "Una pieza ataca dos piezas a la vez",
+      "pin": "¡Clavada!",
+      "pinDesc": "Una pieza está clavada al rey",
+      "capture": "Captura",
+      "captureDesc": "",
+      "promotion": "¡Promoción!",
+      "promotionDesc": "Un peón alcanza la última fila",
+      "castling": "Enroque",
+      "castlingDesc": "El rey y la torre intercambian posiciones"
+    },
+    "moveAnnotations": "Anotaciones de jugada",
+    "moveAnnotationsDesc": "Muestra etiquetas tácticas después de cada jugada"
+  },
   "skins": {
     "classic": "Clásico",
     "fantasy": "Fantasy"

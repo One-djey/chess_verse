@@ -113,6 +113,33 @@
     "pieceAppearance": "棋子外观",
     "language": "语言"
   },
+  "learning": {
+    "pinnedPiece": "此棋子无法移动 — 否则将使王暴露在攻击下",
+    "checkBlockedPiece": "此棋子无法解除将军状态",
+    "settingsTitle": "学习与辅助",
+    "dangerIndicator": "危险指示器",
+    "dangerIndicatorDesc": "高亮显示正在被攻击的棋子",
+    "showHint": "最佳走法提示",
+    "showHintDesc": "在您的回合显示提示按钮",
+    "tactics": {
+      "check": "将军！",
+      "checkDesc": "王处于将军状态",
+      "discoveredCheck": "揭露将军！",
+      "discoveredCheckDesc": "移动棋子揭露了对王的攻击",
+      "fork": "双重攻击！",
+      "forkDesc": "一个棋子同时攻击两个棋子",
+      "pin": "牵制！",
+      "pinDesc": "一个棋子被牵制在王上",
+      "capture": "吃子",
+      "captureDesc": "",
+      "promotion": "升变！",
+      "promotionDesc": "兵抵达最后一排",
+      "castling": "易位",
+      "castlingDesc": "王和车交换位置"
+    },
+    "moveAnnotations": "走法注释",
+    "moveAnnotationsDesc": "每步棋后显示战术标签"
+  },
   "skins": {
     "classic": "经典",
     "fantasy": "幻想"

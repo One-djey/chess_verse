@@ -17,6 +17,12 @@ interface ChessBoardProps {
   rotateBlackPieces?: boolean;
   /** When set (typically during check), only these piece IDs receive the blue glow. */
   movablePieceIds?: Set<string> | null;
+  /** Piece IDs of current player's pieces that are under enemy attack. */
+  endangeredPieceIds?: Set<string> | null;
+  /** Best move hint: piece at `from` gets purple glow; destination turns purple when piece is selected. */
+  hintMove?: { from: Position; to: Position } | null;
+  /** "x,y" strings of valid-move destinations defended by the opponent — shown in orange. */
+  dangerousValidMoves?: Set<string> | null;
   skin?: PieceSkin;
   peerSkin?: PieceSkin;
 }
@@ -34,6 +40,9 @@ export default function ChessBoard({
   flipped = false,
   rotateBlackPieces = false,
   movablePieceIds = null,
+  endangeredPieceIds = null,
+  hintMove = null,
+  dangerousValidMoves = null,
   skin = "classic",
   peerSkin,
 }: ChessBoardProps) {
@@ -135,6 +144,16 @@ export default function ChessBoard({
       : null
     : null;
 
+  // ── Hint helpers ─────────────────────────────────────────────────────────────
+  const normHintTo = hintMove
+    ? { x: ((hintMove.to.x % 8) + 8) % 8, y: ((hintMove.to.y % 8) + 8) % 8 }
+    : null;
+  const hintPieceSelected =
+    hintMove &&
+    selectedPiece &&
+    selectedPiece.position.x === hintMove.from.x &&
+    selectedPiece.position.y === hintMove.from.y;
+
   const isValidMovePosition = (x: number, y: number) => {
     return validMoves.some((move) => {
       const normalizedMove = {
@@ -212,9 +231,12 @@ export default function ChessBoard({
   };
 
   return (
-    <div className="aspect-square w-[80vh] max-w-[800px] bg-white shadow-xl rounded-lg p-4">
+    <div
+      className="bg-white shadow-xl rounded-lg p-4"
+      style={{ width: 'min(80vh, calc(100vw - 1rem))', maxWidth: '800px', aspectRatio: '1 / 1' }}
+    >
       <div
-        className="grid grid-cols-8 grid-rows-8 h-full gap-1 relative"
+        className="grid grid-cols-8 grid-rows-8 h-full relative"
         style={{
           transform: squishing ? "scaleX(0)" : "scaleX(1)",
           transition: squishing
@@ -223,7 +245,7 @@ export default function ChessBoard({
         }}
       >
         {/* Board squares */}
-        <div className="absolute inset-0 grid grid-cols-8 grid-rows-8 gap-1 z-0">
+        <div className="absolute inset-0 grid grid-cols-8 grid-rows-8 z-0">
           {Array(8)
             .fill(null)
             .map((_, dy) =>
@@ -263,12 +285,28 @@ export default function ChessBoard({
                   const isCastling = isCastlingMove(x, y);
                   if (!isValidMove && !isCastling) return null;
 
+                  // Is this the hint destination AND the hinted piece is selected?
+                  const isHintDest =
+                    hintPieceSelected &&
+                    normHintTo &&
+                    normHintTo.x === x &&
+                    normHintTo.y === y;
+
+                  const isDangerous = dangerousValidMoves?.has(`${x},${y}`) ?? false;
+
+                  // Color priority: hint dest purple > castling purple > danger orange > safe blue
+                  const colorClass = isHintDest
+                    ? "bg-purple-500 bg-opacity-60"
+                    : isCastling
+                      ? "bg-purple-400 bg-opacity-40"
+                      : isDangerous
+                        ? "bg-orange-400 bg-opacity-50"
+                        : "bg-blue-400 bg-opacity-40";
+
                   return (
                     <div
                       key={`overlay-${dx}-${dy}`}
-                      className={`absolute cursor-pointer ${
-                        isCastling ? "bg-purple-400" : "bg-blue-400"
-                      } bg-opacity-40`}
+                      className={`absolute cursor-pointer ${colorClass}`}
                       style={{
                         left: `${dx * 12.5}%`,
                         top: `${dy * 12.5}%`,
@@ -293,7 +331,7 @@ export default function ChessBoard({
 
         {/* Interactive squares layer */}
         <div
-          className="absolute inset-0 grid grid-cols-8 grid-rows-8 gap-1 z-20"
+          className="absolute inset-0 grid grid-cols-8 grid-rows-8 z-20"
           onMouseLeave={() => setHoveredSquare(null)}
         >
           {Array(8)
@@ -441,20 +479,27 @@ export default function ChessBoard({
               (piece.acquiredTypes?.length ?? 0) > 0;
             const dp = toDisplay(piece.position.x, piece.position.y);
 
-            // Single drop-shadow with explicit priority:
-            //   orange › blue (selected) › green (assimilated) › blue (playable)
-            // Always set a filter (even no-op) to keep GPU layer stable across turns.
+            // Glow priority (highest → lowest):
+            //   red (check king) > purple (hint) > orange (endangered) >
+            //   blue (selected) > green (assimilation) > blue (playable)
+            const isEndangered = endangeredPieceIds?.has(piece.id) ?? false;
+            const isHintPiece =
+              hintMove &&
+              piece.position.x === hintMove.from.x &&
+              piece.position.y === hintMove.from.y;
             const shadowFilter = (() => {
-              if (
-                piece.color === currentTurn &&
-                isCheck &&
-                piece.type === "king"
-              )
-                return "drop-shadow(0 0 6px rgba(249,115,22,1))";
-              if (isSelected) return "drop-shadow(0 0 6px rgba(59,130,246,1))";
+              if (piece.color === currentTurn && isCheck && piece.type === "king")
+                return "drop-shadow(0 0 6px rgba(239,68,68,1))";   // red — check
+              if (isHintPiece)
+                return "drop-shadow(0 0 6px rgba(168,85,247,1))";  // purple — hint
+              if (isEndangered && !isSelected)
+                return "drop-shadow(0 0 6px rgba(249,115,22,1))";  // orange — danger
+              if (isSelected)
+                return "drop-shadow(0 0 6px rgba(59,130,246,1))";  // blue — selected
               if (isAssimilated)
-                return "drop-shadow(0 0 4px rgba(74,222,128,1))";
-              if (hasGlow) return "drop-shadow(0 0 4px rgba(59,130,246,1))";
+                return "drop-shadow(0 0 4px rgba(74,222,128,1))";  // green — assimilation
+              if (hasGlow)
+                return "drop-shadow(0 0 4px rgba(59,130,246,1))";  // blue — playable
               return "drop-shadow(0 0 0px transparent)";
             })();
 

@@ -3,10 +3,24 @@ import { GameState, Piece, GameMode } from '../types/chess';
 import { getInitialPieces } from '../utils/chess';
 import { ChessAI } from '../services/ChessAI';
 
-export type LocalSettings = { aiEnabled: boolean; aiDifficulty: number; flipBoard: boolean };
+export type LocalSettings = {
+  aiEnabled: boolean;
+  aiDifficulty: number;
+  flipBoard: boolean;
+  showDangerIndicator: boolean;
+  showHint: boolean;
+  showMoveAnnotations: boolean;
+};
 
 const STORAGE_KEY = 'chess_settings';
-const DEFAULT_SETTINGS: LocalSettings = { aiEnabled: true, aiDifficulty: 5, flipBoard: false };
+const DEFAULT_SETTINGS: LocalSettings = {
+  aiEnabled: true,
+  aiDifficulty: 5,
+  flipBoard: false,
+  showDangerIndicator: false,
+  showHint: false,
+  showMoveAnnotations: false,
+};
 
 export function makeInitialState(pieces: Piece[], gameMode: GameMode): GameState {
   return {
@@ -38,7 +52,8 @@ export function useChessGame({ modeId, navigate, gameMode, isP2PMode, p2pInitial
   const [settings, setSettings] = useState<LocalSettings>(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
-      return saved ? JSON.parse(saved) : DEFAULT_SETTINGS;
+      const parsed = saved ? JSON.parse(saved) : {};
+      return { ...DEFAULT_SETTINGS, ...parsed };
     } catch { return DEFAULT_SETTINGS; }
   });
 

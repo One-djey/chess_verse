@@ -1,17 +1,64 @@
 import React from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { X, ShieldAlert, Zap, GitFork, Pin, Crosshair, TrendingUp, ArrowLeftRight, AlertTriangle } from "lucide-react";
 import ChessBoard from "./ChessBoard";
 import GameOver from "./GameOver";
 import NavBar from "./NavBar";
 import P2PStatusBar from "./P2PStatusBar";
 import { Piece, Position, GameMode, PieceColor } from "../types/chess";
-import { getValidMoves, applyMoveToState, normalizePos } from "../utils/chess";
+import { getValidMoves, applyMoveToState, normalizePos, isSquareUnderAttack, detectTactic, MoveContext, TacticTag } from "../utils/chess";
 import { gameModes } from "./GameModes";
 import { useP2P } from "../context/P2PContext";
 import { useChessGame } from "../hooks/useChessGame";
 import { useP2PGame } from "../hooks/useP2PGame";
 import { useSkin } from "../context/SkinContext";
+
+const TACTIC_ICONS: Record<TacticTag, React.ComponentType<{ size?: number; className?: string }>> = {
+  check: ShieldAlert,
+  discoveredCheck: Zap,
+  fork: GitFork,
+  pin: Pin,
+  capture: Crosshair,
+  promotion: TrendingUp,
+  castling: ArrowLeftRight,
+};
+
+function AnnotationToast({
+  tag,
+  onDismiss,
+}: {
+  tag: TacticTag;
+  onDismiss: () => void;
+}) {
+  const { t } = useTranslation();
+
+  React.useEffect(() => {
+    const id = setTimeout(onDismiss, 4000);
+    return () => clearTimeout(id);
+  }, [tag, onDismiss]);
+
+  const desc = t(`learning.tactics.${tag}Desc`);
+  const Icon = TACTIC_ICONS[tag];
+
+  return (
+    <div className="flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-200 rounded-lg shadow-md text-sm text-gray-700">
+      <Icon size={16} className="flex-shrink-0 text-gray-500" />
+      <div>
+        <span className="font-semibold">{t(`learning.tactics.${tag}`)}</span>
+        {desc && (
+          <span className="ml-1.5 text-gray-500 text-xs">{desc}</span>
+        )}
+      </div>
+      <button
+        onClick={onDismiss}
+        className="ml-2 text-gray-400 hover:text-gray-600"
+      >
+        <X size={14} />
+      </button>
+    </div>
+  );
+}
 
 function resolveGameMode(
   modeId: string | undefined,
@@ -77,35 +124,82 @@ export default function Game() {
       chess.gameState.gameOver
     )
       return;
-    const trigger = async () => {
+
+    let cancelled = false;
+
+    const applyMove = (move: { from: { x: number; y: number }; to: { x: number; y: number } }) => {
+      const piece = chess.gameState.pieces.find(
+        (p) =>
+          p.position.x === move.from.x &&
+          p.position.y === move.from.y &&
+          p.color === "black",
+      );
+      if (!piece) return;
+      const valid = getValidMoves(
+        piece,
+        chess.gameState.pieces,
+        chess.gameState.gameMode,
+      ).some((v) => v.x === move.to.x && v.y === move.to.y);
+      if (!valid) return;
+      chess.setGameState((prev) => {
+        const nextState = applyMoveToState(prev, piece, move.to);
+        const capturedPiece =
+          prev.pieces.find(
+            (p) =>
+              p.color !== piece.color &&
+              p.position.x === move.to.x &&
+              p.position.y === move.to.y,
+          ) ?? null;
+        triggerAnnotation({
+          piece,
+          from: piece.position,
+          to: move.to,
+          capturedPiece,
+          wasPromotion:
+            piece.type === "pawn" && (move.to.y === 0 || move.to.y === 7),
+          wasCastling:
+            piece.type === "king" &&
+            Math.abs(piece.position.x - move.to.x) === 2,
+          prevPieces: prev.pieces,
+          nextPieces: nextState.pieces,
+          gameMode: prev.gameMode,
+        });
+        return nextState;
+      });
+    };
+
+    const trigger = async (retriesLeft: number) => {
+      if (cancelled) return;
       if (!chess.aiRef.current) {
-        setTimeout(trigger, 1000);
+        if (retriesLeft > 0)
+          setTimeout(() => trigger(retriesLeft - 1), 1000);
         return;
       }
       try {
         const move = await chess.aiRef.current.getNextMove(
           chess.gameState.pieces,
         );
-        const piece = chess.gameState.pieces.find(
-          (p) =>
-            p.position.x === move.from.x &&
-            p.position.y === move.from.y &&
-            p.color === "black",
-        );
-        if (!piece) return;
-        const valid = getValidMoves(
-          piece,
-          chess.gameState.pieces,
-          chess.gameState.gameMode,
-        ).some((v) => v.x === move.to.x && v.y === move.to.y);
-        if (valid)
-          chess.setGameState((prev) => applyMoveToState(prev, piece, move.to));
+        if (!cancelled) applyMove(move);
       } catch (e) {
-        console.error(e);
+        console.error("AI move failed:", e);
+        if (cancelled) return;
+        if (retriesLeft > 0) {
+          // Try to reinitialise the engine before retrying
+          chess.aiRef.current?.restart?.();
+          setTimeout(() => trigger(retriesLeft - 1), 800);
+        } else {
+          // All retries exhausted — disable AI so the player can continue
+          console.warn("AI permanently failed after 3 retries. Disabling AI.");
+          chess.handleSettingsChange({ ...chess.settings, aiEnabled: false });
+        }
       }
     };
-    const id = setTimeout(trigger, 500);
-    return () => clearTimeout(id);
+
+    const id = setTimeout(() => trigger(3), 500);
+    return () => {
+      cancelled = true;
+      clearTimeout(id);
+    };
   }, [chess.gameState.currentTurn, chess.aiEnabled, chess.gameState.gameOver]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Movable pieces (for check highlight) ──────────────────────────────────
@@ -130,6 +224,123 @@ export default function Game() {
     chess.gameState.currentTurn,
     chess.gameState.gameMode,
   ]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ── Danger indicator ──────────────────────────────────────────────────────
+  const endangeredPieceIds = React.useMemo<Set<string>>(() => {
+    if (!chess.settings.showDangerIndicator) return new Set();
+    // Don't show danger for opponent pieces during AI turn (avoids brief flash at turn change)
+    if (chess.aiEnabled && chess.gameState.currentTurn !== "white") return new Set();
+    const opp =
+      chess.gameState.currentTurn === "white" ? "black" : "white";
+    const ids = new Set<string>();
+    chess.gameState.pieces
+      .filter((p) => p.color === chess.gameState.currentTurn)
+      .forEach((p) => {
+        if (
+          isSquareUnderAttack(
+            p.position,
+            opp,
+            chess.gameState.pieces,
+            chess.gameState.gameMode,
+          )
+        ) {
+          ids.add(p.id);
+        }
+      });
+    return ids;
+  }, [
+    chess.settings.showDangerIndicator,
+    chess.gameState.pieces,
+    chess.gameState.currentTurn,
+    chess.gameState.gameMode,
+  ]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ── Hint (auto-calculated at the start of each turn) ─────────────────────
+  const [hintMove, setHintMove] = React.useState<{
+    from: Position;
+    to: Position;
+  } | null>(null);
+
+  // Hint is available when the option is on, not in P2P, and it's the human's turn
+  const canShowHint =
+    chess.settings.showHint &&
+    !p2p.isP2PMode &&
+    !chess.gameState.gameOver &&
+    (!chess.aiEnabled || chess.gameState.currentTurn === "white");
+
+  React.useEffect(() => {
+    setHintMove(null);
+    if (!canShowHint) return;
+
+    let cancelled = false;
+
+    const tryHint = (retriesLeft: number) => {
+      if (cancelled) return;
+      if (!chess.aiRef.current) {
+        // Engine not ready yet — retry shortly
+        if (retriesLeft > 0) setTimeout(() => tryHint(retriesLeft - 1), 600);
+        return;
+      }
+      chess.aiRef.current
+        .getHintMove(chess.gameState.pieces, chess.gameState.currentTurn)
+        .then((move) => { if (!cancelled) setHintMove(move); })
+        .catch((e) => {
+          console.error("Hint failed:", e);
+          if (!cancelled && retriesLeft > 0)
+            setTimeout(() => tryHint(retriesLeft - 1), 600);
+        });
+    };
+
+    tryHint(12); // up to 13 attempts (~7s window) to cover Stockfish init delay
+    return () => { cancelled = true; };
+  }, [chess.gameState.currentTurn, canShowHint, chess.gameState.startTime]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ── Dangerous valid moves (for orange overlay on risky destinations) ───────
+  const dangerousValidMoves = React.useMemo<Set<string>>(() => {
+    if (!chess.settings.showDangerIndicator || !chess.gameState.selectedPiece)
+      return new Set();
+    const opp =
+      chess.gameState.currentTurn === "white" ? "black" : "white";
+    const result = new Set<string>();
+    chess.gameState.validMoves.forEach((move) => {
+      const nx = ((move.x % 8) + 8) % 8;
+      const ny = ((move.y % 8) + 8) % 8;
+      if (
+        isSquareUnderAttack(
+          { x: nx, y: ny },
+          opp,
+          chess.gameState.pieces,
+          chess.gameState.gameMode,
+        )
+      ) {
+        result.add(`${nx},${ny}`);
+      }
+    });
+    return result;
+  }, [
+    chess.settings.showDangerIndicator,
+    chess.gameState.selectedPiece,
+    chess.gameState.validMoves,
+    chess.gameState.pieces,
+    chess.gameState.currentTurn,
+    chess.gameState.gameMode,
+  ]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ── Annotations ───────────────────────────────────────────────────────────
+  const [annotation, setAnnotation] = React.useState<TacticTag | null>(null);
+  const [annotationDismissed, setAnnotationDismissed] = React.useState(false);
+
+  const triggerAnnotation = React.useCallback(
+    (ctx: MoveContext) => {
+      if (!chess.settings.showMoveAnnotations) return;
+      const tag = detectTactic(ctx);
+      if (tag) {
+        setAnnotation(tag);
+        setAnnotationDismissed(false);
+      }
+    },
+    [chess.settings.showMoveAnnotations],
+  );
 
   // ── Analytics ─────────────────────────────────────────────────────────────
   const playType = p2p.isP2PMode ? "multiplayer" : "local";
@@ -168,6 +379,10 @@ export default function Game() {
     });
   }, [chess.gameState.gameOver]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // ── Pinned-piece notification ─────────────────────────────────────────────
+  // null = hidden; string = i18n key to display
+  const [pinnedNotice, setPinnedNotice] = React.useState<string | null>(null);
+
   // ── User action handlers ───────────────────────────────────────────────────
   const handlePieceSelect = (piece: Piece) => {
     if (
@@ -177,10 +392,24 @@ export default function Game() {
     )
       return;
     if (piece.color !== chess.gameState.currentTurn) return;
+    const moves = getValidMoves(
+      piece,
+      chess.gameState.pieces,
+      chess.gameState.gameMode,
+    );
+    if (moves.length === 0) {
+      // When king is already in check, the piece can't resolve it; otherwise it's pinned.
+      const noticeKey = chess.gameState.isCheck
+        ? "learning.checkBlockedPiece"
+        : "learning.pinnedPiece";
+      setPinnedNotice(noticeKey);
+      // Auto-dismiss
+      setTimeout(() => setPinnedNotice(null), 3000);
+    }
     chess.setGameState((prev) => ({
       ...prev,
       selectedPiece: piece,
-      validMoves: getValidMoves(piece, prev.pieces, prev.gameMode),
+      validMoves: moves,
     }));
   };
 
@@ -215,7 +444,31 @@ export default function Game() {
       });
     }
 
-    chess.setGameState((prev) => applyMoveToState(prev, selectedPiece, norm));
+    chess.setGameState((prev) => {
+      const nextState = applyMoveToState(prev, selectedPiece, norm);
+      const capturedPiece =
+        prev.pieces.find(
+          (p) =>
+            p.color !== selectedPiece.color &&
+            p.position.x === norm.x &&
+            p.position.y === norm.y,
+        ) ?? null;
+      triggerAnnotation({
+        piece: selectedPiece,
+        from: selectedPiece.position,
+        to: norm,
+        capturedPiece,
+        wasPromotion:
+          selectedPiece.type === "pawn" && (norm.y === 0 || norm.y === 7),
+        wasCastling:
+          selectedPiece.type === "king" &&
+          Math.abs(selectedPiece.position.x - norm.x) === 2,
+        prevPieces: prev.pieces,
+        nextPieces: nextState.pieces,
+        gameMode: prev.gameMode,
+      });
+      return nextState;
+    });
   };
 
   const handleResign = () => {
@@ -278,7 +531,7 @@ export default function Game() {
         />
       )}
 
-      <div className="flex items-center justify-center p-8">
+      <div className="flex flex-col items-center justify-center p-2 sm:p-8 gap-3">
         <ChessBoard
           pieces={chess.gameState.pieces}
           currentTurn={chess.gameState.currentTurn}
@@ -292,9 +545,34 @@ export default function Game() {
           flipped={boardFlipped}
           rotateBlackPieces={rotatePieces}
           movablePieceIds={movablePieceIds}
+          endangeredPieceIds={endangeredPieceIds}
+          hintMove={hintMove}
+          dangerousValidMoves={dangerousValidMoves}
           skin={skin}
           peerSkin={p2p.peerSkin ?? undefined}
         />
+
+        {/* Pinned-piece notice */}
+        {pinnedNotice && (
+          <div className="flex items-center gap-2 px-4 py-2.5 bg-white border border-orange-200 rounded-lg shadow-md text-sm text-orange-700">
+            <AlertTriangle size={16} className="flex-shrink-0" />
+            <span>{t(pinnedNotice)}</span>
+            <button
+              onClick={() => setPinnedNotice(null)}
+              className="ml-2 text-orange-400 hover:text-orange-600"
+            >
+              <X size={14} />
+            </button>
+          </div>
+        )}
+
+        {/* Annotation toast */}
+        {annotation && !annotationDismissed && chess.settings.showMoveAnnotations && (
+          <AnnotationToast
+            tag={annotation}
+            onDismiss={() => setAnnotationDismissed(true)}
+          />
+        )}
       </div>
 
       {chess.gameState.gameOver && (

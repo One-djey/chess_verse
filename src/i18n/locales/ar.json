@@ -113,6 +113,33 @@
     "pieceAppearance": "مظهر القطع",
     "language": "اللغة"
   },
+  "learning": {
+    "pinnedPiece": "هذه القطعة لا تستطيع الحركة — ستكشف الملك",
+    "checkBlockedPiece": "هذه القطعة لا تستطيع رفع الكشف عن الملك",
+    "settingsTitle": "التعلم والمساعدة",
+    "dangerIndicator": "مؤشر الخطر",
+    "dangerIndicatorDesc": "تمييز قطعك التي تتعرض للهجوم",
+    "showHint": "اقتراح أفضل حركة",
+    "showHintDesc": "إظهار زر تلميح أثناء دورك",
+    "tactics": {
+      "check": "كش!",
+      "checkDesc": "الملك في وضع كش",
+      "discoveredCheck": "كش مكشوف!",
+      "discoveredCheckDesc": "تحريك قطعة كشف هجوماً على الملك",
+      "fork": "شوكة!",
+      "forkDesc": "قطعة واحدة تهاجم قطعتين في آن واحد",
+      "pin": "تثبيت!",
+      "pinDesc": "قطعة مثبتة على الملك",
+      "capture": "أكل",
+      "captureDesc": "",
+      "promotion": "ترقية!",
+      "promotionDesc": "بيدق يصل إلى الصف الأخير",
+      "castling": "تحصين",
+      "castlingDesc": "الملك والرخ يتبادلان المواضع"
+    },
+    "moveAnnotations": "تعليقات الحركات",
+    "moveAnnotationsDesc": "إظهار تسميات تكتيكية بعد كل حركة"
+  },
   "skins": {
     "classic": "كلاسيكي",
     "fantasy": "فانتازيا"

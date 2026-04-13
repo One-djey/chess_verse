@@ -113,6 +113,33 @@
     "pieceAppearance": "말 외관",
     "language": "언어"
   },
+  "learning": {
+    "pinnedPiece": "이 기물은 움직일 수 없습니다 — 왕이 노출됩니다",
+    "checkBlockedPiece": "이 기물로는 체크를 해소할 수 없습니다",
+    "settingsTitle": "학습 및 지원",
+    "dangerIndicator": "위험 표시기",
+    "dangerIndicatorDesc": "공격받고 있는 내 기물 강조 표시",
+    "showHint": "최선의 수 힌트",
+    "showHintDesc": "내 차례에 힌트 버튼 표시",
+    "tactics": {
+      "check": "체크!",
+      "checkDesc": "킹이 체크 상태입니다",
+      "discoveredCheck": "발견 체크!",
+      "discoveredCheckDesc": "기물을 이동하여 킹에 대한 공격이 드러남",
+      "fork": "포크!",
+      "forkDesc": "하나의 기물이 두 기물을 동시에 공격",
+      "pin": "핀!",
+      "pinDesc": "기물이 킹에 고정되어 있습니다",
+      "capture": "잡기",
+      "captureDesc": "",
+      "promotion": "프로모션!",
+      "promotionDesc": "폰이 마지막 랭크에 도달",
+      "castling": "캐슬링",
+      "castlingDesc": "킹과 룩이 자리를 교환"
+    },
+    "moveAnnotations": "수 주석",
+    "moveAnnotationsDesc": "각 수 후에 전술 레이블 표시"
+  },
   "skins": {
     "classic": "클래식",
     "fantasy": "판타지"

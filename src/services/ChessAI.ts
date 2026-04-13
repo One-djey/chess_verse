@@ -1,10 +1,11 @@
-import { Piece, Position } from '../types/chess';
+import { Piece, PieceColor, Position } from '../types/chess';
 
 export class ChessAI {
   private stockfish: Worker | null = null;
   private difficulty: number = 10;
   private movetime: number = 1000;
   private isReady: boolean = false;
+  private isSearching: boolean = false;
   private moveResolver: ((move: { from: Position; to: Position }) => void) | null = null;
 
   constructor() {
@@ -69,13 +70,54 @@ export class ChessAI {
       throw new Error("L'IA n'est pas encore initialisée");
     }
 
-    const fen = this.piecesToFEN(pieces);
-    
+    // Cancel any in-progress hint search so we don't get its bestmove as the AI move
+    if (this.isSearching) {
+      this.stockfish.postMessage('stop');
+      this.moveResolver = null;
+      this.isSearching = false;
+    }
+
+    const fen = this.piecesToFENForColor(pieces, 'black');
+    this.isSearching = true;
+
     this.stockfish.postMessage(`position fen ${fen}`);
     this.stockfish.postMessage(`go movetime ${this.movetime}`);
 
     return new Promise((resolve) => {
-      this.moveResolver = resolve;
+      this.moveResolver = (move) => {
+        this.isSearching = false;
+        resolve(move);
+      };
+    });
+  }
+
+  public async getHintMove(pieces: Piece[], color: PieceColor): Promise<{ from: Position; to: Position }> {
+    if (!this.stockfish || !this.isReady || this.isSearching) {
+      throw new Error("L'IA n'est pas disponible");
+    }
+    this.isSearching = true;
+
+    // Niveau max pour le meilleur coup possible
+    this.stockfish.postMessage('setoption name Skill Level value 20');
+    const fen = this.piecesToFENForColor(pieces, color);
+    this.stockfish.postMessage(`position fen ${fen}`);
+    this.stockfish.postMessage('go movetime 1500');
+
+    return new Promise((resolve, reject) => {
+      this.moveResolver = (move) => {
+        this.isSearching = false;
+        // Restaurer le niveau configuré
+        const skillLevel = Math.round(((this.difficulty - 1) / 19) * 20);
+        this.stockfish?.postMessage(`setoption name Skill Level value ${skillLevel}`);
+        resolve(move);
+      };
+      setTimeout(() => {
+        if (this.moveResolver) {
+          this.moveResolver = null;
+          this.isSearching = false;
+          reject(new Error('Hint timeout'));
+        }
+      }, 5000);
     });
   }
 
@@ -94,15 +136,14 @@ export class ChessAI {
     return `${file}${rank}`;
   }
 
-  private piecesToFEN(pieces: Piece[]): string {
+  private piecesToFENForColor(pieces: Piece[], color: PieceColor): string {
     let fen = '';
     let emptyCount = 0;
 
-    // Construire la position des pièces
     for (let y = 0; y < 8; y++) {
       for (let x = 0; x < 8; x++) {
         const piece = pieces.find(p => p.position.x === x && p.position.y === y);
-        
+
         if (piece) {
           if (emptyCount > 0) {
             fen += emptyCount;
@@ -113,17 +154,16 @@ export class ChessAI {
           emptyCount++;
         }
       }
-      
+
       if (emptyCount > 0) {
         fen += emptyCount;
         emptyCount = 0;
       }
-      
+
       if (y < 7) fen += '/';
     }
 
-    // Toujours indiquer que c'est le tour des noirs quand on demande à l'IA de jouer
-    fen += ' b KQkq - 0 1';
+    fen += color === 'white' ? ' w KQkq - 0 1' : ' b KQkq - 0 1';
     return fen;
   }
 
@@ -139,6 +179,15 @@ export class ChessAI {
     
     const char = chars[piece.type];
     return piece.color === 'white' ? char.toUpperCase() : char;
+  }
+
+  public restart() {
+    this.destroy();
+    this.isReady = false;
+    this.isSearching = false;
+    this.moveResolver = null;
+    this.initializeStockfish();
+    this.setDifficulty(this.difficulty);
   }
 
   public destroy() {

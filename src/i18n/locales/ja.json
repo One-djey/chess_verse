@@ -113,6 +113,33 @@
     "pieceAppearance": "駒の外観",
     "language": "言語"
   },
+  "learning": {
+    "pinnedPiece": "このコマは動けません — 王手がかかります",
+    "checkBlockedPiece": "このコマを動かしても王手を解消できません",
+    "settingsTitle": "学習とアシスト",
+    "dangerIndicator": "危険インジケーター",
+    "dangerIndicatorDesc": "攻撃されている自分の駒を強調表示",
+    "showHint": "最善手のヒント",
+    "showHintDesc": "自分のターン中にヒントボタンを表示",
+    "tactics": {
+      "check": "チェック！",
+      "checkDesc": "キングがチェックを受けています",
+      "discoveredCheck": "発見チェック！",
+      "discoveredCheckDesc": "駒を動かしてキングへの攻撃が明らかに",
+      "fork": "フォーク！",
+      "forkDesc": "1つの駒が2つの駒を同時に攻撃",
+      "pin": "ピン！",
+      "pinDesc": "駒がキングに釘付けにされています",
+      "capture": "取る",
+      "captureDesc": "",
+      "promotion": "プロモーション！",
+      "promotionDesc": "ポーンが最終ランクに到達",
+      "castling": "キャスリング",
+      "castlingDesc": "キングとルークが位置を交換"
+    },
+    "moveAnnotations": "手の注釈",
+    "moveAnnotationsDesc": "各手の後に戦術ラベルを表示"
+  },
   "skins": {
     "classic": "クラシック",
     "fantasy": "ファンタジー"
