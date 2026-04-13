@@ -113,6 +113,32 @@
     "pieceAppearance": "Aspetto dei pezzi",
     "language": "Lingua"
   },
+  "learning": {
+    "settingsTitle": "Apprendimento e assistenza",
+    "dangerIndicator": "Indicatore di pericolo",
+    "dangerIndicatorDesc": "Evidenzia i tuoi pezzi sotto attacco",
+    "hintButton": "Suggerimento mossa migliore",
+    "hintButtonDesc": "Mostra un pulsante suggerimento durante il tuo turno",
+    "hintLoading": "Pensando…",
+    "tactics": {
+      "check": "Scacco!",
+      "checkDesc": "Il re è sotto scacco",
+      "discoveredCheck": "Scacco scoperto!",
+      "discoveredCheckDesc": "Muovere un pezzo ha rivelato un attacco al re",
+      "fork": "Forchetta!",
+      "forkDesc": "Un pezzo attacca due pezzi contemporaneamente",
+      "pin": "Inchiodatura!",
+      "pinDesc": "Un pezzo è inchiodato al re",
+      "capture": "Cattura",
+      "captureDesc": "",
+      "promotion": "Promozione!",
+      "promotionDesc": "Un pedone raggiunge l'ultima traversa",
+      "castling": "Arrocco",
+      "castlingDesc": "Il re e la torre si scambiano di posto"
+    },
+    "moveAnnotations": "Annotazioni mosse",
+    "moveAnnotationsDesc": "Mostra etichette tattiche dopo ogni mossa"
+  },
   "skins": {
     "classic": "Classico",
     "fantasy": "Fantasy"

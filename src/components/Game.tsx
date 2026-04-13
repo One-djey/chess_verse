@@ -1,17 +1,63 @@
 import React from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { Lightbulb, X } from "lucide-react";
 import ChessBoard from "./ChessBoard";
 import GameOver from "./GameOver";
 import NavBar from "./NavBar";
 import P2PStatusBar from "./P2PStatusBar";
 import { Piece, Position, GameMode, PieceColor } from "../types/chess";
-import { getValidMoves, applyMoveToState, normalizePos } from "../utils/chess";
+import { getValidMoves, applyMoveToState, normalizePos, isSquareUnderAttack, detectTactic, MoveContext, TacticTag } from "../utils/chess";
 import { gameModes } from "./GameModes";
 import { useP2P } from "../context/P2PContext";
 import { useChessGame } from "../hooks/useChessGame";
 import { useP2PGame } from "../hooks/useP2PGame";
 import { useSkin } from "../context/SkinContext";
+
+const TACTIC_ICONS: Record<TacticTag, string> = {
+  check: "♟",
+  discoveredCheck: "♟",
+  fork: "⚔️",
+  pin: "📌",
+  capture: "✕",
+  promotion: "♛",
+  castling: "🏰",
+};
+
+function AnnotationToast({
+  tag,
+  onDismiss,
+}: {
+  tag: TacticTag;
+  onDismiss: () => void;
+}) {
+  const { t } = useTranslation();
+
+  React.useEffect(() => {
+    const id = setTimeout(onDismiss, 4000);
+    return () => clearTimeout(id);
+  }, [tag, onDismiss]);
+
+  const desc = t(`learning.tactics.${tag}Desc`);
+
+  return (
+    <div className="flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-200 rounded-lg shadow-md text-sm text-gray-700">
+      <span>{TACTIC_ICONS[tag]}</span>
+      <div>
+        <span className="font-semibold">{t(`learning.tactics.${tag}`)}</span>
+        {desc && (
+          <span className="ml-1.5 text-gray-500 text-xs">{desc}</span>
+        )}
+      </div>
+      <button
+        onClick={onDismiss}
+        className="ml-2 text-gray-400 hover:text-gray-600"
+      >
+        <X size={14} />
+      </button>
+    </div>
+  );
+}
 
 function resolveGameMode(
   modeId: string | undefined,
@@ -99,7 +145,32 @@ export default function Game() {
           chess.gameState.gameMode,
         ).some((v) => v.x === move.to.x && v.y === move.to.y);
         if (valid)
-          chess.setGameState((prev) => applyMoveToState(prev, piece, move.to));
+          chess.setGameState((prev) => {
+            const nextState = applyMoveToState(prev, piece, move.to);
+            const capturedPiece =
+              prev.pieces.find(
+                (p) =>
+                  p.color !== piece.color &&
+                  p.position.x === move.to.x &&
+                  p.position.y === move.to.y,
+              ) ?? null;
+            triggerAnnotation({
+              piece,
+              from: piece.position,
+              to: move.to,
+              capturedPiece,
+              wasPromotion:
+                piece.type === "pawn" &&
+                (move.to.y === 0 || move.to.y === 7),
+              wasCastling:
+                piece.type === "king" &&
+                Math.abs(piece.position.x - move.to.x) === 2,
+              prevPieces: prev.pieces,
+              nextPieces: nextState.pieces,
+              gameMode: prev.gameMode,
+            });
+            return nextState;
+          });
       } catch (e) {
         console.error(e);
       }
@@ -130,6 +201,80 @@ export default function Game() {
     chess.gameState.currentTurn,
     chess.gameState.gameMode,
   ]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ── Danger indicator ──────────────────────────────────────────────────────
+  const endangeredPieceIds = React.useMemo<Set<string>>(() => {
+    if (!chess.settings.showDangerIndicator) return new Set();
+    const opp =
+      chess.gameState.currentTurn === "white" ? "black" : "white";
+    const ids = new Set<string>();
+    chess.gameState.pieces
+      .filter((p) => p.color === chess.gameState.currentTurn)
+      .forEach((p) => {
+        if (
+          isSquareUnderAttack(
+            p.position,
+            opp,
+            chess.gameState.pieces,
+            chess.gameState.gameMode,
+          )
+        ) {
+          ids.add(p.id);
+        }
+      });
+    return ids;
+  }, [
+    chess.settings.showDangerIndicator,
+    chess.gameState.pieces,
+    chess.gameState.currentTurn,
+    chess.gameState.gameMode,
+  ]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ── Hint ──────────────────────────────────────────────────────────────────
+  const [hintMove, setHintMove] = React.useState<{
+    from: Position;
+    to: Position;
+  } | null>(null);
+  const [isHintLoading, setIsHintLoading] = React.useState(false);
+
+  const handleHintRequest = React.useCallback(async () => {
+    if (!chess.aiRef.current || isHintLoading || p2p.isP2PMode) return;
+    setIsHintLoading(true);
+    setHintMove(null);
+    try {
+      const move = await chess.aiRef.current.getHintMove(
+        chess.gameState.pieces,
+        chess.gameState.currentTurn,
+      );
+      setHintMove(move);
+      setTimeout(() => setHintMove(null), 5000);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setIsHintLoading(false);
+    }
+  }, [chess.aiRef, chess.gameState.pieces, chess.gameState.currentTurn, isHintLoading, p2p.isP2PMode]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Clear hint when the turn changes (player made a move)
+  React.useEffect(() => {
+    setHintMove(null);
+  }, [chess.gameState.currentTurn]);
+
+  // ── Annotations ───────────────────────────────────────────────────────────
+  const [annotation, setAnnotation] = React.useState<TacticTag | null>(null);
+  const [annotationDismissed, setAnnotationDismissed] = React.useState(false);
+
+  const triggerAnnotation = React.useCallback(
+    (ctx: MoveContext) => {
+      if (!chess.settings.showMoveAnnotations) return;
+      const tag = detectTactic(ctx);
+      if (tag) {
+        setAnnotation(tag);
+        setAnnotationDismissed(false);
+      }
+    },
+    [chess.settings.showMoveAnnotations],
+  );
 
   // ── Analytics ─────────────────────────────────────────────────────────────
   const playType = p2p.isP2PMode ? "multiplayer" : "local";
@@ -215,7 +360,31 @@ export default function Game() {
       });
     }
 
-    chess.setGameState((prev) => applyMoveToState(prev, selectedPiece, norm));
+    chess.setGameState((prev) => {
+      const nextState = applyMoveToState(prev, selectedPiece, norm);
+      const capturedPiece =
+        prev.pieces.find(
+          (p) =>
+            p.color !== selectedPiece.color &&
+            p.position.x === norm.x &&
+            p.position.y === norm.y,
+        ) ?? null;
+      triggerAnnotation({
+        piece: selectedPiece,
+        from: selectedPiece.position,
+        to: norm,
+        capturedPiece,
+        wasPromotion:
+          selectedPiece.type === "pawn" && (norm.y === 0 || norm.y === 7),
+        wasCastling:
+          selectedPiece.type === "king" &&
+          Math.abs(selectedPiece.position.x - norm.x) === 2,
+        prevPieces: prev.pieces,
+        nextPieces: nextState.pieces,
+        gameMode: prev.gameMode,
+      });
+      return nextState;
+    });
   };
 
   const handleResign = () => {
@@ -278,7 +447,7 @@ export default function Game() {
         />
       )}
 
-      <div className="flex items-center justify-center p-8">
+      <div className="flex flex-col items-center justify-center p-8 gap-3">
         <ChessBoard
           pieces={chess.gameState.pieces}
           currentTurn={chess.gameState.currentTurn}
@@ -292,9 +461,38 @@ export default function Game() {
           flipped={boardFlipped}
           rotateBlackPieces={rotatePieces}
           movablePieceIds={movablePieceIds}
+          endangeredPieceIds={endangeredPieceIds}
+          hintMove={hintMove}
           skin={skin}
           peerSkin={p2p.peerSkin ?? undefined}
         />
+
+        {/* Hint button */}
+        {chess.settings.showHintButton &&
+          !p2p.isP2PMode &&
+          !chess.gameState.gameOver && (
+            <button
+              onClick={handleHintRequest}
+              disabled={isHintLoading}
+              className="flex items-center gap-2 px-4 py-2 bg-purple-100 border border-purple-300 text-purple-800 rounded-lg hover:bg-purple-200 transition text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <Lightbulb
+                size={16}
+                className={isHintLoading ? "animate-pulse" : ""}
+              />
+              {isHintLoading
+                ? t("learning.hintLoading")
+                : t("learning.hintButton")}
+            </button>
+          )}
+
+        {/* Annotation toast */}
+        {annotation && !annotationDismissed && chess.settings.showMoveAnnotations && (
+          <AnnotationToast
+            tag={annotation}
+            onDismiss={() => setAnnotationDismissed(true)}
+          />
+        )}
       </div>
 
       {chess.gameState.gameOver && (

@@ -113,6 +113,32 @@
       "Surhumain"
     ]
   },
+  "learning": {
+    "settingsTitle": "Apprentissage & Assistance",
+    "dangerIndicator": "Indicateur de danger",
+    "dangerIndicatorDesc": "Met en évidence vos pièces attaquées",
+    "hintButton": "Suggestion de meilleur coup",
+    "hintButtonDesc": "Affiche un bouton d'aide pendant votre tour",
+    "hintLoading": "Réflexion…",
+    "tactics": {
+      "check": "Échec !",
+      "checkDesc": "Le roi est en échec",
+      "discoveredCheck": "Échec découvert !",
+      "discoveredCheckDesc": "Déplacer une pièce a révélé une attaque sur le roi",
+      "fork": "Fourchette !",
+      "forkDesc": "Une pièce attaque deux pièces à la fois",
+      "pin": "Clouage !",
+      "pinDesc": "Une pièce est clouée sur le roi",
+      "capture": "Capture",
+      "captureDesc": "",
+      "promotion": "Promotion !",
+      "promotionDesc": "Un pion atteint la dernière rangée",
+      "castling": "Roque",
+      "castlingDesc": "Le roi et la tour échangent leurs places"
+    },
+    "moveAnnotations": "Annotations de coup",
+    "moveAnnotationsDesc": "Affiche des étiquettes tactiques après chaque coup"
+  },
   "skins": {
     "classic": "Classique",
     "fantasy": "Fantasy"

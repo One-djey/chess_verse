@@ -113,6 +113,32 @@
       "Superhuman"
     ]
   },
+  "learning": {
+    "settingsTitle": "Learning & Assistance",
+    "dangerIndicator": "Danger Indicator",
+    "dangerIndicatorDesc": "Highlight your pieces that are under attack",
+    "hintButton": "Best Move Hint",
+    "hintButtonDesc": "Show a hint button during your turn",
+    "hintLoading": "Thinking…",
+    "tactics": {
+      "check": "Check!",
+      "checkDesc": "The king is in check",
+      "discoveredCheck": "Discovered check!",
+      "discoveredCheckDesc": "Moving a piece revealed an attack on the king",
+      "fork": "Fork!",
+      "forkDesc": "One piece attacks two pieces at once",
+      "pin": "Pin!",
+      "pinDesc": "A piece is pinned to the king",
+      "capture": "Capture",
+      "captureDesc": "",
+      "promotion": "Promotion!",
+      "promotionDesc": "A pawn reaches the last rank",
+      "castling": "Castling",
+      "castlingDesc": "King and rook switch places"
+    },
+    "moveAnnotations": "Move Annotations",
+    "moveAnnotationsDesc": "Show tactical labels after each move"
+  },
   "skins": {
     "classic": "Classic",
     "fantasy": "Fantasy"

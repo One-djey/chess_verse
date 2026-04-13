@@ -2,3 +2,4 @@
 export * from './chess/board';
 export * from './chess/moves';
 export * from './chess/assimilation';
+export * from './chess/tactics';

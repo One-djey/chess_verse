@@ -7,19 +7,49 @@ import { useInstall } from "../context/InstallContext";
 import { useSkin } from "../context/SkinContext";
 import { SKINS, getPieceImageSrc } from "../utils/pieceImage";
 import FeedbackModal from "./FeedbackModal";
-
-type GameSettingsState = {
-  aiEnabled: boolean;
-  aiDifficulty: number;
-  flipBoard: boolean;
-};
+import type { LocalSettings } from "../hooks/useChessGame";
 
 interface GameSettingsProps {
   isOpen: boolean;
   onClose: () => void;
   /** Pass null/undefined to show language-only (e.g. from non-game screens) */
-  settings?: GameSettingsState | null;
-  onSettingsChange?: (settings: GameSettingsState) => void;
+  settings?: LocalSettings | null;
+  onSettingsChange?: (settings: LocalSettings) => void;
+}
+
+function ToggleRow({
+  label,
+  desc,
+  checked,
+  onChange,
+}: {
+  label: string;
+  desc?: string;
+  checked: boolean;
+  onChange: (v: boolean) => void;
+}) {
+  return (
+    <div className="flex items-center justify-between">
+      <div>
+        <p className="text-sm font-medium text-gray-900">{label}</p>
+        {desc && <p className="text-xs text-gray-500 mt-0.5">{desc}</p>}
+      </div>
+      <button
+        role="switch"
+        aria-checked={checked}
+        onClick={() => onChange(!checked)}
+        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 focus:outline-none ${
+          checked ? "bg-blue-600" : "bg-gray-200"
+        }`}
+      >
+        <span
+          className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform duration-200 ${
+            checked ? "translate-x-6" : "translate-x-1"
+          }`}
+        />
+      </button>
+    </div>
+  );
 }
 
 export default function GameSettings({
@@ -98,35 +128,14 @@ export default function GameSettings({
                       : "opacity-0 max-h-0"
                   }`}
                 >
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-base font-medium text-gray-900">
-                        {t("gameSettings.flipBoard")}
-                      </p>
-                      <p className="text-xs text-gray-500 mt-0.5">
-                        {t("gameSettings.flipBoardDesc")}
-                      </p>
-                    </div>
-                    <button
-                      role="switch"
-                      aria-checked={settings!.flipBoard}
-                      onClick={() =>
-                        onSettingsChange!({
-                          ...settings!,
-                          flipBoard: !settings!.flipBoard,
-                        })
-                      }
-                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 focus:outline-none ${
-                        settings!.flipBoard ? "bg-blue-600" : "bg-gray-200"
-                      }`}
-                    >
-                      <span
-                        className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform duration-200 ${
-                          settings!.flipBoard ? "translate-x-6" : "translate-x-1"
-                        }`}
-                      />
-                    </button>
-                  </div>
+                  <ToggleRow
+                    label={t("gameSettings.flipBoard")}
+                    desc={t("gameSettings.flipBoardDesc")}
+                    checked={settings!.flipBoard}
+                    onChange={(v) =>
+                      onSettingsChange!({ ...settings!, flipBoard: v })
+                    }
+                  />
                 </div>
               )}
 
@@ -164,6 +173,47 @@ export default function GameSettings({
                       <span>{t("gameSettings.beginner")}</span>
                       <span>{t("gameSettings.superhuman")}</span>
                     </div>
+                  </div>
+                </div>
+              )}
+
+              {/* ── Learning & Assistance ── */}
+              {hasGameSettings && (
+                <div className="space-y-3">
+                  <label className="text-base font-medium text-gray-900">
+                    {t("learning.settingsTitle")}
+                  </label>
+                  <div className="space-y-3">
+                    <ToggleRow
+                      label={t("learning.dangerIndicator")}
+                      desc={t("learning.dangerIndicatorDesc")}
+                      checked={settings!.showDangerIndicator}
+                      onChange={(v) =>
+                        onSettingsChange!({
+                          ...settings!,
+                          showDangerIndicator: v,
+                        })
+                      }
+                    />
+                    <ToggleRow
+                      label={t("learning.hintButton")}
+                      desc={t("learning.hintButtonDesc")}
+                      checked={settings!.showHintButton}
+                      onChange={(v) =>
+                        onSettingsChange!({ ...settings!, showHintButton: v })
+                      }
+                    />
+                    <ToggleRow
+                      label={t("learning.moveAnnotations")}
+                      desc={t("learning.moveAnnotationsDesc")}
+                      checked={settings!.showMoveAnnotations}
+                      onChange={(v) =>
+                        onSettingsChange!({
+                          ...settings!,
+                          showMoveAnnotations: v,
+                        })
+                      }
+                    />
                   </div>
                 </div>
               )}

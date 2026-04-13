@@ -17,6 +17,10 @@ interface ChessBoardProps {
   rotateBlackPieces?: boolean;
   /** When set (typically during check), only these piece IDs receive the blue glow. */
   movablePieceIds?: Set<string> | null;
+  /** Piece IDs of current player's pieces that are under enemy attack. */
+  endangeredPieceIds?: Set<string> | null;
+  /** Best move hint to display (source + destination highlighted in purple). */
+  hintMove?: { from: Position; to: Position } | null;
   skin?: PieceSkin;
   peerSkin?: PieceSkin;
 }
@@ -34,6 +38,8 @@ export default function ChessBoard({
   flipped = false,
   rotateBlackPieces = false,
   movablePieceIds = null,
+  endangeredPieceIds = null,
+  hintMove = null,
   skin = "classic",
   peerSkin,
 }: ChessBoardProps) {
@@ -289,6 +295,34 @@ export default function ChessBoard({
                   );
                 }),
             )}
+
+          {/* Hint overlays — purple, pointer-events-none so click-through still works */}
+          {hintMove && (() => {
+            const src = toDisplay(hintMove.from.x, hintMove.from.y);
+            const dst = toDisplay(hintMove.to.x, hintMove.to.y);
+            return (
+              <>
+                <div
+                  className="absolute bg-purple-500 bg-opacity-50 pointer-events-none"
+                  style={{
+                    left: `${src.x * 12.5}%`,
+                    top: `${src.y * 12.5}%`,
+                    width: "12.5%",
+                    height: "12.5%",
+                  }}
+                />
+                <div
+                  className="absolute bg-purple-500 bg-opacity-50 pointer-events-none"
+                  style={{
+                    left: `${dst.x * 12.5}%`,
+                    top: `${dst.y * 12.5}%`,
+                    width: "12.5%",
+                    height: "12.5%",
+                  }}
+                />
+              </>
+            );
+          })()}
         </div>
 
         {/* Interactive squares layer */}
@@ -442,15 +476,18 @@ export default function ChessBoard({
             const dp = toDisplay(piece.position.x, piece.position.y);
 
             // Single drop-shadow with explicit priority:
-            //   orange › blue (selected) › green (assimilated) › blue (playable)
+            //   red (check king) › orange (danger) › blue (selected) › green (assimilated) › blue (playable)
             // Always set a filter (even no-op) to keep GPU layer stable across turns.
+            const isEndangered = endangeredPieceIds?.has(piece.id) ?? false;
             const shadowFilter = (() => {
               if (
                 piece.color === currentTurn &&
                 isCheck &&
                 piece.type === "king"
               )
-                return "drop-shadow(0 0 6px rgba(249,115,22,1))";
+                return "drop-shadow(0 0 6px rgba(239,68,68,1))";   // red — check
+              if (isEndangered)
+                return "drop-shadow(0 0 6px rgba(249,115,22,1))";  // orange — danger
               if (isSelected) return "drop-shadow(0 0 6px rgba(59,130,246,1))";
               if (isAssimilated)
                 return "drop-shadow(0 0 4px rgba(74,222,128,1))";
