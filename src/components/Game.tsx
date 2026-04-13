@@ -291,7 +291,7 @@ export default function Game() {
         });
     };
 
-    tryHint(2); // up to 3 attempts total
+    tryHint(12); // up to 13 attempts (~7s window) to cover Stockfish init delay
     return () => { cancelled = true; };
   }, [chess.gameState.currentTurn, canShowHint, chess.gameState.startTime]); // eslint-disable-line react-hooks/exhaustive-deps
 

@@ -236,7 +236,7 @@ export default function ChessBoard({
       style={{ width: 'min(80vh, calc(100vw - 1rem))', maxWidth: '800px', aspectRatio: '1 / 1' }}
     >
       <div
-        className="grid grid-cols-8 grid-rows-8 h-full gap-1 relative"
+        className="grid grid-cols-8 grid-rows-8 h-full relative"
         style={{
           transform: squishing ? "scaleX(0)" : "scaleX(1)",
           transition: squishing
@@ -245,7 +245,7 @@ export default function ChessBoard({
         }}
       >
         {/* Board squares */}
-        <div className="absolute inset-0 grid grid-cols-8 grid-rows-8 gap-1 z-0">
+        <div className="absolute inset-0 grid grid-cols-8 grid-rows-8 z-0">
           {Array(8)
             .fill(null)
             .map((_, dy) =>
@@ -331,7 +331,7 @@ export default function ChessBoard({
 
         {/* Interactive squares layer */}
         <div
-          className="absolute inset-0 grid grid-cols-8 grid-rows-8 gap-1 z-20"
+          className="absolute inset-0 grid grid-cols-8 grid-rows-8 z-20"
           onMouseLeave={() => setHoveredSquare(null)}
         >
           {Array(8)

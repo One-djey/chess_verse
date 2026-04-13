@@ -70,6 +70,13 @@ export class ChessAI {
       throw new Error("L'IA n'est pas encore initialisée");
     }
 
+    // Cancel any in-progress hint search so we don't get its bestmove as the AI move
+    if (this.isSearching) {
+      this.stockfish.postMessage('stop');
+      this.moveResolver = null;
+      this.isSearching = false;
+    }
+
     const fen = this.piecesToFENForColor(pieces, 'black');
     this.isSearching = true;
 
