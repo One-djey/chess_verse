@@ -126,7 +126,24 @@ export const isValidMove = (
 export const isInCheck = (color: PieceColor, pieces: Piece[], gameMode: GameMode): boolean => {
   const king = pieces.find(p => p.type === 'king' && p.color === color);
   if (!king) return false;
-  return pieces.some(p => p.color !== color && isValidMove(p, king.position, pieces, gameMode, true));
+  if (!gameMode.rules?.borderless) {
+    return pieces.some(p => p.color !== color && isValidMove(p, king.position, pieces, gameMode, true));
+  }
+  // In borderless mode an attacker can reach the king through any edge.
+  // Test all 9 virtual king positions (direct + 8 wrapped equivalents) so that
+  // paths going "the other way around" are not missed. crossesForbiddenEdge
+  // inside isValidMove naturally rejects wrap directions forbidden for each color.
+  const { x: kx, y: ky } = king.position;
+  return pieces.some(p => {
+    if (p.color === color) return false;
+    for (let di = -1; di <= 1; di++) {
+      for (let dj = -1; dj <= 1; dj++) {
+        if (isValidMove(p, { x: kx + di * BOARD_SIZE, y: ky + dj * BOARD_SIZE }, pieces, gameMode, true))
+          return true;
+      }
+    }
+    return false;
+  });
 };
 
 export const wouldBeInCheck = (piece: Piece, target: Position, pieces: Piece[], gameMode: GameMode): boolean => {
