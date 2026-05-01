@@ -6,6 +6,7 @@ export class ChessAI {
   private movetime: number = 1000;
   private isReady: boolean = false;
   private isSearching: boolean = false;
+  private stopPending: boolean = false;
   private moveResolver: ((move: { from: Position; to: Position }) => void) | null = null;
 
   constructor() {
@@ -26,9 +27,13 @@ export class ChessAI {
         }
         
         if (typeof message === 'string' && message.includes('bestmove')) {
+          if (this.stopPending) {
+            this.stopPending = false;
+            return; // bestmove from stop: belongs to the cancelled search, discard it
+          }
           const [, move] = message.split('bestmove ');
           const [from, to] = move.split(' ')[0].match(/.{2}/g) || [];
-          
+
           if (this.moveResolver && from && to) {
             this.moveResolver({
               from: this.algebraicToPosition(from),
@@ -72,6 +77,7 @@ export class ChessAI {
 
     // Cancel any in-progress hint search so we don't get its bestmove as the AI move
     if (this.isSearching) {
+      this.stopPending = true;
       this.stockfish.postMessage('stop');
       this.moveResolver = null;
       this.isSearching = false;
@@ -104,15 +110,16 @@ export class ChessAI {
     this.stockfish.postMessage('go movetime 1500');
 
     return new Promise((resolve, reject) => {
-      this.moveResolver = (move) => {
+      const resolver = (move: { from: Position; to: Position }) => {
         this.isSearching = false;
         // Restaurer le niveau configuré
         const skillLevel = Math.round(((this.difficulty - 1) / 19) * 20);
         this.stockfish?.postMessage(`setoption name Skill Level value ${skillLevel}`);
         resolve(move);
       };
+      this.moveResolver = resolver;
       setTimeout(() => {
-        if (this.moveResolver) {
+        if (this.moveResolver === resolver) { // only clear OUR resolver, not a subsequent one
           this.moveResolver = null;
           this.isSearching = false;
           reject(new Error('Hint timeout'));
@@ -185,6 +192,7 @@ export class ChessAI {
     this.destroy();
     this.isReady = false;
     this.isSearching = false;
+    this.stopPending = false;
     this.moveResolver = null;
     this.initializeStockfish();
     this.setDifficulty(this.difficulty);
