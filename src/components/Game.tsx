@@ -1,64 +1,19 @@
 import React from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { X, ShieldAlert, Zap, GitFork, Pin, Crosshair, TrendingUp, ArrowLeftRight, AlertTriangle } from "lucide-react";
+import GameLabels, { GameLabelItem, LabelVariant } from "./GameLabels";
 import ChessBoard from "./ChessBoard";
 import GameOver from "./GameOver";
 import NavBar from "./NavBar";
 import P2PStatusBar from "./P2PStatusBar";
 import { Piece, Position, GameMode, PieceColor } from "../types/chess";
-import { getValidMoves, hasRawMoves, applyMoveToState, normalizePos, isSquareUnderAttack, detectTactic, MoveContext, TacticTag } from "../utils/chess";
+import { getValidMoves, hasRawMoves, applyMoveToState, normalizePos, isSquareUnderAttack, detectTactic, MoveContext } from "../utils/chess";
 import { gameModes } from "./GameModes";
 import { useP2P } from "../context/P2PContext";
 import { useChessGame } from "../hooks/useChessGame";
 import { useP2PGame } from "../hooks/useP2PGame";
 import { useSkin } from "../context/SkinContext";
 
-const TACTIC_ICONS: Record<TacticTag, React.ComponentType<{ size?: number; className?: string }>> = {
-  check: ShieldAlert,
-  discoveredCheck: Zap,
-  fork: GitFork,
-  pin: Pin,
-  capture: Crosshair,
-  promotion: TrendingUp,
-  castling: ArrowLeftRight,
-};
-
-function AnnotationToast({
-  tag,
-  onDismiss,
-}: {
-  tag: TacticTag;
-  onDismiss: () => void;
-}) {
-  const { t } = useTranslation();
-
-  React.useEffect(() => {
-    const id = setTimeout(onDismiss, 4000);
-    return () => clearTimeout(id);
-  }, [tag, onDismiss]);
-
-  const desc = t(`learning.tactics.${tag}Desc`);
-  const Icon = TACTIC_ICONS[tag];
-
-  return (
-    <div className="flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-200 rounded-lg shadow-md text-sm text-gray-700">
-      <Icon size={16} className="flex-shrink-0 text-gray-500" />
-      <div>
-        <span className="font-semibold">{t(`learning.tactics.${tag}`)}</span>
-        {desc && (
-          <span className="ml-1.5 text-gray-500 text-xs">{desc}</span>
-        )}
-      </div>
-      <button
-        onClick={onDismiss}
-        className="ml-2 text-gray-400 hover:text-gray-600"
-      >
-        <X size={14} />
-      </button>
-    </div>
-  );
-}
 
 function resolveGameMode(
   modeId: string | undefined,
@@ -325,20 +280,27 @@ export default function Game() {
     chess.gameState.gameMode,
   ]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // ── Annotations ───────────────────────────────────────────────────────────
-  const [annotation, setAnnotation] = React.useState<TacticTag | null>(null);
-  const [annotationDismissed, setAnnotationDismissed] = React.useState(false);
+  // ── Labels (annotations + alerts) ─────────────────────────────────────────
+  const labelIdRef = React.useRef(0);
+  const [gameLabels, setGameLabels] = React.useState<GameLabelItem[]>([]);
+
+  const addLabel = React.useCallback((variant: LabelVariant) => {
+    labelIdRef.current += 1;
+    const id = String(labelIdRef.current);
+    setGameLabels((prev) => [...prev, { id, variant, createdAt: Date.now() }]);
+  }, []);
+
+  const dismissLabel = React.useCallback((id: string) => {
+    setGameLabels((prev) => prev.filter((item) => item.id !== id));
+  }, []);
 
   const triggerAnnotation = React.useCallback(
     (ctx: MoveContext) => {
       if (!chess.settings.showMoveAnnotations) return;
       const tag = detectTactic(ctx);
-      if (tag) {
-        setAnnotation(tag);
-        setAnnotationDismissed(false);
-      }
+      if (tag) addLabel(tag as LabelVariant);
     },
-    [chess.settings.showMoveAnnotations],
+    [chess.settings.showMoveAnnotations, addLabel],
   );
 
   // ── Analytics ─────────────────────────────────────────────────────────────
@@ -378,10 +340,6 @@ export default function Game() {
     });
   }, [chess.gameState.gameOver]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // ── Pinned-piece notification ─────────────────────────────────────────────
-  // null = hidden; string = i18n key to display
-  const [pinnedNotice, setPinnedNotice] = React.useState<string | null>(null);
-
   // ── User action handlers ───────────────────────────────────────────────────
   const handlePieceSelect = (piece: Piece) => {
     if (
@@ -397,17 +355,15 @@ export default function Game() {
       chess.gameState.gameMode,
     );
     if (moves.length === 0) {
-      let noticeKey: string;
+      let variant: LabelVariant;
       if (chess.gameState.isCheck) {
-        noticeKey = "learning.checkBlockedPiece";
+        variant = "checkBlockedPiece";
       } else if (!hasRawMoves(piece, chess.gameState.pieces, chess.gameState.gameMode)) {
-        noticeKey = "learning.blockedPiece";
+        variant = "blockedPiece";
       } else {
-        noticeKey = "learning.pinnedPiece";
+        variant = "pinnedPiece";
       }
-      setPinnedNotice(noticeKey);
-      // Auto-dismiss
-      setTimeout(() => setPinnedNotice(null), 3000);
+      addLabel(variant);
     }
     chess.setGameState((prev) => ({
       ...prev,
@@ -555,27 +511,7 @@ export default function Game() {
           peerSkin={p2p.peerSkin ?? undefined}
         />
 
-        {/* Pinned-piece notice */}
-        {pinnedNotice && (
-          <div className="flex items-center gap-2 px-4 py-2.5 bg-white border border-orange-200 rounded-lg shadow-md text-sm text-orange-700">
-            <AlertTriangle size={16} className="flex-shrink-0" />
-            <span>{t(pinnedNotice)}</span>
-            <button
-              onClick={() => setPinnedNotice(null)}
-              className="ml-2 text-orange-400 hover:text-orange-600"
-            >
-              <X size={14} />
-            </button>
-          </div>
-        )}
-
-        {/* Annotation toast */}
-        {annotation && !annotationDismissed && chess.settings.showMoveAnnotations && (
-          <AnnotationToast
-            tag={annotation}
-            onDismiss={() => setAnnotationDismissed(true)}
-          />
-        )}
+        <GameLabels items={gameLabels} onDismiss={dismissLabel} />
       </div>
 
       {chess.gameState.gameOver && (
