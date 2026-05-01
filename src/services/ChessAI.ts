@@ -8,6 +8,7 @@ export class ChessAI {
   private isSearching: boolean = false;
   private stopPending: boolean = false;
   private moveResolver: ((move: { from: Position; to: Position }) => void) | null = null;
+  private rejectResolver: ((reason: Error) => void) | null = null;
 
   constructor() {
     this.initializeStockfish();
@@ -59,6 +60,19 @@ export class ChessAI {
     }
   }
 
+  private cancelCurrentSearch() {
+    if (this.isSearching) {
+      this.stopPending = true;
+      this.stockfish?.postMessage('stop');
+    }
+    if (this.rejectResolver) {
+      this.rejectResolver(new Error('search cancelled'));
+      this.rejectResolver = null;
+    }
+    this.moveResolver = null;
+    this.isSearching = false;
+  }
+
   public setDifficulty(level: number) {
     this.difficulty = level;
     // Stockfish Skill Level: 0 (le plus faible) à 20 (le plus fort)
@@ -75,32 +89,42 @@ export class ChessAI {
       throw new Error("L'IA n'est pas encore initialisée");
     }
 
-    // Cancel any in-progress hint search so we don't get its bestmove as the AI move
-    if (this.isSearching) {
-      this.stopPending = true;
-      this.stockfish.postMessage('stop');
-      this.moveResolver = null;
-      this.isSearching = false;
-    }
+    this.cancelCurrentSearch();
+
+    // Ensure correct skill level (a hint search may have overridden it)
+    const skillLevel = Math.round(((this.difficulty - 1) / 19) * 20);
+    this.stockfish.postMessage(`setoption name Skill Level value ${skillLevel}`);
 
     const fen = this.piecesToFENForColor(pieces, 'black');
     this.isSearching = true;
-
     this.stockfish.postMessage(`position fen ${fen}`);
     this.stockfish.postMessage(`go movetime ${this.movetime}`);
 
-    return new Promise((resolve) => {
-      this.moveResolver = (move) => {
+    return new Promise((resolve, reject) => {
+      const resolver = (move: { from: Position; to: Position }) => {
         this.isSearching = false;
+        this.rejectResolver = null;
         resolve(move);
       };
+      this.moveResolver = resolver;
+      this.rejectResolver = reject;
+      setTimeout(() => {
+        if (this.moveResolver === resolver) {
+          this.moveResolver = null;
+          this.rejectResolver = null;
+          this.isSearching = false;
+          reject(new Error('AI move timeout'));
+        }
+      }, 5000);
     });
   }
 
   public async getHintMove(pieces: Piece[], color: PieceColor): Promise<{ from: Position; to: Position }> {
-    if (!this.stockfish || !this.isReady || this.isSearching) {
+    if (!this.stockfish || !this.isReady) {
       throw new Error("L'IA n'est pas disponible");
     }
+
+    this.cancelCurrentSearch();
     this.isSearching = true;
 
     // Niveau max pour le meilleur coup possible
@@ -112,16 +136,22 @@ export class ChessAI {
     return new Promise((resolve, reject) => {
       const resolver = (move: { from: Position; to: Position }) => {
         this.isSearching = false;
+        this.rejectResolver = null;
         // Restaurer le niveau configuré
         const skillLevel = Math.round(((this.difficulty - 1) / 19) * 20);
         this.stockfish?.postMessage(`setoption name Skill Level value ${skillLevel}`);
         resolve(move);
       };
       this.moveResolver = resolver;
+      this.rejectResolver = reject;
       setTimeout(() => {
-        if (this.moveResolver === resolver) { // only clear OUR resolver, not a subsequent one
+        if (this.moveResolver === resolver) {
           this.moveResolver = null;
+          this.rejectResolver = null;
           this.isSearching = false;
+          // Restaurer le niveau configuré en cas de timeout aussi
+          const skillLevel = Math.round(((this.difficulty - 1) / 19) * 20);
+          this.stockfish?.postMessage(`setoption name Skill Level value ${skillLevel}`);
           reject(new Error('Hint timeout'));
         }
       }, 5000);
@@ -189,11 +219,13 @@ export class ChessAI {
   }
 
   public restart() {
+    this.cancelCurrentSearch();
     this.destroy();
     this.isReady = false;
     this.isSearching = false;
     this.stopPending = false;
     this.moveResolver = null;
+    this.rejectResolver = null;
     this.initializeStockfish();
     this.setDifficulty(this.difficulty);
   }

@@ -128,7 +128,8 @@ export default function Game() {
     let cancelled = false;
 
     const applyMove = (move: { from: { x: number; y: number }; to: { x: number; y: number } }) => {
-      const piece = chess.gameState.pieces.find(
+      const currentPieces = chess.gameStateRef.current.pieces;
+      const piece = currentPieces.find(
         (p) =>
           p.position.x === move.from.x &&
           p.position.y === move.from.y &&
@@ -137,8 +138,8 @@ export default function Game() {
       if (!piece) return;
       const valid = getValidMoves(
         piece,
-        chess.gameState.pieces,
-        chess.gameState.gameMode,
+        currentPieces,
+        chess.gameStateRef.current.gameMode,
       ).some((v) => v.x === move.to.x && v.y === move.to.y);
       if (!valid) return;
       chess.setGameState((prev) => {
@@ -177,7 +178,7 @@ export default function Game() {
       }
       try {
         const move = await chess.aiRef.current.getNextMove(
-          chess.gameState.pieces,
+          chess.gameStateRef.current.pieces,
         );
         if (!cancelled) applyMove(move);
       } catch (e) {
