@@ -7,7 +7,7 @@ import GameOver from "./GameOver";
 import NavBar from "./NavBar";
 import P2PStatusBar from "./P2PStatusBar";
 import { Piece, Position, GameMode, PieceColor } from "../types/chess";
-import { getValidMoves, applyMoveToState, normalizePos, isSquareUnderAttack, detectTactic, MoveContext, TacticTag } from "../utils/chess";
+import { getValidMoves, hasRawMoves, applyMoveToState, normalizePos, isSquareUnderAttack, detectTactic, MoveContext, TacticTag } from "../utils/chess";
 import { gameModes } from "./GameModes";
 import { useP2P } from "../context/P2PContext";
 import { useChessGame } from "../hooks/useChessGame";
@@ -202,10 +202,9 @@ export default function Game() {
     };
   }, [chess.gameState.currentTurn, chess.aiEnabled, chess.gameState.gameOver]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // ── Movable pieces (for check highlight) ──────────────────────────────────
-  // When in check, only pieces that have at least one valid move should glow.
-  const movablePieceIds = React.useMemo<Set<string> | null>(() => {
-    if (!chess.gameState.isCheck) return null;
+  // ── Movable pieces ────────────────────────────────────────────────────────
+  // Only pieces with at least one legal move get the blue glow.
+  const movablePieceIds = React.useMemo<Set<string>>(() => {
     const ids = new Set<string>();
     chess.gameState.pieces
       .filter((p) => p.color === chess.gameState.currentTurn)
@@ -219,7 +218,6 @@ export default function Game() {
       });
     return ids;
   }, [
-    chess.gameState.isCheck,
     chess.gameState.pieces,
     chess.gameState.currentTurn,
     chess.gameState.gameMode,
@@ -398,10 +396,14 @@ export default function Game() {
       chess.gameState.gameMode,
     );
     if (moves.length === 0) {
-      // When king is already in check, the piece can't resolve it; otherwise it's pinned.
-      const noticeKey = chess.gameState.isCheck
-        ? "learning.checkBlockedPiece"
-        : "learning.pinnedPiece";
+      let noticeKey: string;
+      if (chess.gameState.isCheck) {
+        noticeKey = "learning.checkBlockedPiece";
+      } else if (!hasRawMoves(piece, chess.gameState.pieces, chess.gameState.gameMode)) {
+        noticeKey = "learning.blockedPiece";
+      } else {
+        noticeKey = "learning.pinnedPiece";
+      }
       setPinnedNotice(noticeKey);
       // Auto-dismiss
       setTimeout(() => setPinnedNotice(null), 3000);

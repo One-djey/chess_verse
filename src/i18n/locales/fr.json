@@ -115,6 +115,7 @@
   },
   "learning": {
     "pinnedPiece": "Cette pièce ne peut pas bouger — elle mettrait le roi en échec",
+    "blockedPiece": "Cette pièce est bloquée — aucun mouvement possible",
     "checkBlockedPiece": "Cette pièce ne peut pas résoudre l'échec",
     "settingsTitle": "Apprentissage & Assistance",
     "dangerIndicator": "Indicateur de danger",

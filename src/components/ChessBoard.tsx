@@ -15,8 +15,8 @@ interface ChessBoardProps {
   lockedColor?: PieceColor | null;
   flipped?: boolean;
   rotateBlackPieces?: boolean;
-  /** When set (typically during check), only these piece IDs receive the blue glow. */
-  movablePieceIds?: Set<string> | null;
+  /** Piece IDs that have at least one legal move — only these receive the blue glow. */
+  movablePieceIds?: Set<string>;
   /** Piece IDs of current player's pieces that are under enemy attack. */
   endangeredPieceIds?: Set<string> | null;
   /** Best move hint: piece at `from` gets purple glow; destination turns purple when piece is selected. */
@@ -39,7 +39,7 @@ export default function ChessBoard({
   lockedColor = null,
   flipped = false,
   rotateBlackPieces = false,
-  movablePieceIds = null,
+  movablePieceIds = new Set(),
   endangeredPieceIds = null,
   hintMove = null,
   dangerousValidMoves = null,
@@ -473,7 +473,7 @@ export default function ChessBoard({
               (!lockedColor || piece.color === lockedColor);
             const hasGlow =
               isPlayable &&
-              (movablePieceIds ? movablePieceIds.has(piece.id) : true);
+              movablePieceIds.has(piece.id);
             const isAssimilated =
               gameMode.rules?.assimilation &&
               (piece.acquiredTypes?.length ?? 0) > 0;

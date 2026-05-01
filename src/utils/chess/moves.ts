@@ -226,6 +226,17 @@ export const getValidMoves = (piece: Piece, pieces: Piece[], gameMode: GameMode)
 export const hasLegalMoves = (color: PieceColor, pieces: Piece[], gameMode: GameMode): boolean =>
   pieces.filter(p => p.color === color).some(p => getValidMoves(p, pieces, gameMode).length > 0);
 
+/** Returns true if the piece has at least one geometrically valid move, ignoring king-safety. */
+export const hasRawMoves = (piece: Piece, pieces: Piece[], gameMode: GameMode): boolean => {
+  const range = gameMode.rules?.borderless ? 16 : 8;
+  for (let x = -8; x < range; x++) {
+    for (let y = -8; y < range; y++) {
+      if (isValidMove(piece, { x, y }, pieces, gameMode)) return true;
+    }
+  }
+  return false;
+};
+
 // ── State transition ─────────────────────────────────────────────────────────
 
 /** Pure function: apply a move and return the next GameState. */
