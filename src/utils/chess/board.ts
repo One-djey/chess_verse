@@ -91,7 +91,8 @@ function buildRandomPieces(): Piece[] {
 
     for (const pos of positions) {
       const type = pickRandomType();
-      pieces.push({ id: `${prefix}${type[0]}${idx++}`, type, color, position: pos, hasMoved: false });
+      // Use numeric-only ids to avoid 'k' collision with king's id (knight[0] === king[0] === 'k')
+      pieces.push({ id: `${prefix}${idx++}`, type, color, position: pos, hasMoved: false });
     }
   });
   return pieces;
