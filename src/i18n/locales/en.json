@@ -115,6 +115,7 @@
   },
   "learning": {
     "pinnedPiece": "This piece can't move — it would expose your king",
+    "blockedPiece": "This piece is blocked — no moves available",
     "checkBlockedPiece": "This piece can't resolve the check",
     "settingsTitle": "Learning & Assistance",
     "dangerIndicator": "Danger Indicator",
