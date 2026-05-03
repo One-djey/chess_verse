@@ -139,7 +139,73 @@
       "castlingDesc": "キングとルークが位置を交換"
     },
     "moveAnnotations": "手の注釈",
-    "moveAnnotationsDesc": "各手の後に戦術ラベルを表示"
+    "moveAnnotationsDesc": "各手の後に戦術ラベルを表示",
+    "legendary": {
+      "mate1": "{{name}} — {{piece}}を{{square}}へ！",
+      "mate2": "{{name}}まであと2手 — {{piece}}を{{square}}へ",
+      "attack1": "{{name}} — {{piece}}を{{square}}に犠牲に！",
+      "by": "— {{inventor}}",
+      "pieces": {
+        "king": "キング",
+        "queen": "クイーン",
+        "rook": "ルーク",
+        "bishop": "ビショップ",
+        "knight": "ナイト",
+        "pawn": "ポーン"
+      },
+      "patterns": {
+        "scholarsmate": { "name": "学者のメイト" },
+        "legalsmate": {
+          "name": "レガルのメイト",
+          "inventor": "シール・ド・レガル, ~1750"
+        },
+        "smotheredmate": {
+          "name": "窒息メイト",
+          "inventor": "フィリドール（諸説）"
+        },
+        "operamate": {
+          "name": "オペラのメイト",
+          "inventor": "ポール・モーフィー, 1858"
+        },
+        "arabianmate": { "name": "アラビアンメイト", "inventor": "8世紀" },
+        "backrankmate": { "name": "バックランクメイト" },
+        "bodensmate": {
+          "name": "ボーデンのメイト",
+          "inventor": "サミュエル・ボーデン, 1853"
+        },
+        "anastasiamate": {
+          "name": "アナスタシアのメイト",
+          "inventor": "W. ハイゼ, 1803"
+        },
+        "lollismate": {
+          "name": "ロッリのメイト",
+          "inventor": "G. ロッリ, 1763"
+        },
+        "grecomate": {
+          "name": "グレコのメイト",
+          "inventor": "G. グレコ, ~1620"
+        },
+        "hookmate": { "name": "フックメイト" },
+        "greekgift": {
+          "name": "ギリシャの贈り物",
+          "inventor": "古典的サクリファイス"
+        },
+        "friedliver": {
+          "name": "フライドリバーアタック",
+          "inventor": "G.C. ポレリオ, 1610"
+        },
+        "windmill": { "name": "風車", "inventor": "トーレ vs ラスカー, 1925" },
+        "noahsark": {
+          "name": "ノアの方舟トラップ",
+          "inventor": "古典的ルイ・ロペス"
+        },
+        "elephanttrap": { "name": "エレファントトラップ" },
+        "laskertrap": {
+          "name": "ラスカートラップ",
+          "inventor": "E. ラスカー / S. デュボワ"
+        }
+      }
+    }
   },
   "skins": {
     "classic": "クラシック",

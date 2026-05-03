@@ -139,7 +139,67 @@
       "castlingDesc": "الملك والرخ يتبادلان المواضع"
     },
     "moveAnnotations": "تعليقات الحركات",
-    "moveAnnotationsDesc": "إظهار تسميات تكتيكية بعد كل حركة"
+    "moveAnnotationsDesc": "إظهار تسميات تكتيكية بعد كل حركة",
+    "legendary": {
+      "mate1": "{{name}} — العب {{piece}} إلى {{square}}!",
+      "mate2": "نقرتان من {{name}} — جرب {{piece}} إلى {{square}}",
+      "attack1": "{{name}} — ضحِّ بـ{{piece}} في {{square}}!",
+      "by": "— {{inventor}}",
+      "pieces": {
+        "king": "الملك",
+        "queen": "الوزير",
+        "rook": "الرخ",
+        "bishop": "الفيل",
+        "knight": "الحصان",
+        "pawn": "البيدق"
+      },
+      "patterns": {
+        "scholarsmate": { "name": "كش مات الراعي" },
+        "legalsmate": {
+          "name": "كش مات ليغال",
+          "inventor": "سيدي لو ليغال، ~١٧٥٠"
+        },
+        "smotheredmate": {
+          "name": "كش مات الاختناق",
+          "inventor": "فيليدور (منسوب)"
+        },
+        "operamate": {
+          "name": "كش مات الأوبرا",
+          "inventor": "بول مورفي، ١٨٥٨"
+        },
+        "arabianmate": { "name": "كش مات عربي", "inventor": "القرن الثامن" },
+        "backrankmate": { "name": "كش مات الصف الخلفي" },
+        "bodensmate": {
+          "name": "كش مات بودين",
+          "inventor": "صموئيل بودين، ١٨٥٣"
+        },
+        "anastasiamate": {
+          "name": "كش مات أناستازيا",
+          "inventor": "و. هاينسه، ١٨٠٣"
+        },
+        "lollismate": { "name": "كش مات لولّي", "inventor": "ج. لولّي، ١٧٦٣" },
+        "grecomate": { "name": "كش مات غريكو", "inventor": "ج. غريكو، ~١٦٢٠" },
+        "hookmate": { "name": "كش مات الخطاف" },
+        "greekgift": {
+          "name": "الهدية الإغريقية",
+          "inventor": "التضحية الكلاسيكية"
+        },
+        "friedliver": {
+          "name": "هجوم الكبد المقلي",
+          "inventor": "ج. بوليريو، ١٦١٠"
+        },
+        "windmill": {
+          "name": "طاحونة الهواء",
+          "inventor": "توريه ضد لاسكر، ١٩٢٥"
+        },
+        "noahsark": {
+          "name": "فخ سفينة نوح",
+          "inventor": "روي لوبيز الكلاسيكي"
+        },
+        "elephanttrap": { "name": "فخ الفيل" },
+        "laskertrap": { "name": "فخ لاسكر", "inventor": "إ. لاسكر / س. دوبوا" }
+      }
+    }
   },
   "skins": {
     "classic": "كلاسيكي",

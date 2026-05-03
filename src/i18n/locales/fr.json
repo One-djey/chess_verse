@@ -139,7 +139,61 @@
       "castlingDesc": "Le roi et la tour échangent leurs places"
     },
     "moveAnnotations": "Annotations de coup",
-    "moveAnnotationsDesc": "Affiche des étiquettes tactiques après chaque coup"
+    "moveAnnotationsDesc": "Affiche des étiquettes tactiques après chaque coup",
+    "legendary": {
+      "mate1": "{{name}} — jouez votre {{piece}} en {{square}} !",
+      "mate2": "À 2 coups du {{name}} — essayez {{piece}} en {{square}}",
+      "attack1": "{{name}} — sacrifiez votre {{piece}} en {{square}} !",
+      "by": "— {{inventor}}",
+      "pieces": {
+        "king": "roi",
+        "queen": "dame",
+        "rook": "tour",
+        "bishop": "fou",
+        "knight": "cavalier",
+        "pawn": "pion"
+      },
+      "patterns": {
+        "scholarsmate": { "name": "Coup du Berger" },
+        "legalsmate": {
+          "name": "Mat de Légal",
+          "inventor": "Sire de Légal, ~1750"
+        },
+        "smotheredmate": {
+          "name": "Mat à l'Étouffée",
+          "inventor": "Philidor (attr.)"
+        },
+        "operamate": {
+          "name": "Mat de l'Opéra",
+          "inventor": "Paul Morphy, 1858"
+        },
+        "arabianmate": { "name": "Mat Arabe", "inventor": "VIIIe siècle" },
+        "backrankmate": { "name": "Mat de Couloir" },
+        "bodensmate": {
+          "name": "Mat de Boden",
+          "inventor": "Samuel Boden, 1853"
+        },
+        "anastasiamate": {
+          "name": "Mat d'Anastasie",
+          "inventor": "W. Heinse, 1803"
+        },
+        "lollismate": { "name": "Mat de Lolli", "inventor": "G. Lolli, 1763" },
+        "grecomate": { "name": "Mat de Greco", "inventor": "G. Greco, ~1620" },
+        "hookmate": { "name": "Mat du Crochet" },
+        "greekgift": { "name": "Don Grec", "inventor": "Sacrifice classique" },
+        "friedliver": { "name": "Foie Frit", "inventor": "G.C. Polerio, 1610" },
+        "windmill": { "name": "Moulin", "inventor": "Torre vs Lasker, 1925" },
+        "noahsark": {
+          "name": "Piège de Noé",
+          "inventor": "Ruy Lopez classique"
+        },
+        "elephanttrap": { "name": "Piège de l'Éléphant" },
+        "laskertrap": {
+          "name": "Piège de Lasker",
+          "inventor": "E. Lasker / S. Dubois"
+        }
+      }
+    }
   },
   "skins": {
     "classic": "Classique",

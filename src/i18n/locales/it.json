@@ -139,7 +139,73 @@
       "castlingDesc": "Il re e la torre si scambiano di posto"
     },
     "moveAnnotations": "Annotazioni mosse",
-    "moveAnnotationsDesc": "Mostra etichette tattiche dopo ogni mossa"
+    "moveAnnotationsDesc": "Mostra etichette tattiche dopo ogni mossa",
+    "legendary": {
+      "mate1": "{{name}} — gioca il tuo {{piece}} in {{square}}!",
+      "mate2": "A 2 mosse dal {{name}} — prova {{piece}} in {{square}}",
+      "attack1": "{{name}} — sacrifica il tuo {{piece}} in {{square}}!",
+      "by": "— {{inventor}}",
+      "pieces": {
+        "king": "re",
+        "queen": "donna",
+        "rook": "torre",
+        "bishop": "alfiere",
+        "knight": "cavallo",
+        "pawn": "pedone"
+      },
+      "patterns": {
+        "scholarsmate": { "name": "Matto dello Studente" },
+        "legalsmate": {
+          "name": "Matto di Légal",
+          "inventor": "Sire de Légal, ~1750"
+        },
+        "smotheredmate": {
+          "name": "Matto Soffocato",
+          "inventor": "Philidor (attr.)"
+        },
+        "operamate": {
+          "name": "Matto dell'Opera",
+          "inventor": "Paul Morphy, 1858"
+        },
+        "arabianmate": { "name": "Matto Arabo", "inventor": "VIII secolo" },
+        "backrankmate": { "name": "Matto di Corridoio" },
+        "bodensmate": {
+          "name": "Matto di Boden",
+          "inventor": "Samuel Boden, 1853"
+        },
+        "anastasiamate": {
+          "name": "Matto di Anastasia",
+          "inventor": "W. Heinse, 1803"
+        },
+        "lollismate": {
+          "name": "Matto di Lolli",
+          "inventor": "G. Lolli, 1763"
+        },
+        "grecomate": {
+          "name": "Matto di Greco",
+          "inventor": "G. Greco, ~1620"
+        },
+        "hookmate": { "name": "Matto dell'Amo" },
+        "greekgift": {
+          "name": "Dono Greco",
+          "inventor": "Sacrificio classico"
+        },
+        "friedliver": {
+          "name": "Attacco del Fegato Fritto",
+          "inventor": "G.C. Polerio, 1610"
+        },
+        "windmill": { "name": "Mulino", "inventor": "Torre vs Lasker, 1925" },
+        "noahsark": {
+          "name": "Trappola dell'Arca di Noè",
+          "inventor": "Ruy Lopez classico"
+        },
+        "elephanttrap": { "name": "Trappola dell'Elefante" },
+        "laskertrap": {
+          "name": "Trappola di Lasker",
+          "inventor": "E. Lasker / S. Dubois"
+        }
+      }
+    }
   },
   "skins": {
     "classic": "Classico",

@@ -139,7 +139,64 @@
       "castlingDesc": "킹과 룩이 자리를 교환"
     },
     "moveAnnotations": "수 주석",
-    "moveAnnotationsDesc": "각 수 후에 전술 레이블 표시"
+    "moveAnnotationsDesc": "각 수 후에 전술 레이블 표시",
+    "legendary": {
+      "mate1": "{{name}} — {{piece}}을 {{square}}로 이동！",
+      "mate2": "{{name}}까지 2수 — {{piece}}을 {{square}}로 시도",
+      "attack1": "{{name}} — {{piece}}을 {{square}}에 희생！",
+      "by": "— {{inventor}}",
+      "pieces": {
+        "king": "킹",
+        "queen": "퀸",
+        "rook": "룩",
+        "bishop": "비숍",
+        "knight": "나이트",
+        "pawn": "폰"
+      },
+      "patterns": {
+        "scholarsmate": { "name": "학자의 메이트" },
+        "legalsmate": {
+          "name": "레갈의 메이트",
+          "inventor": "시르 드 레갈, ~1750"
+        },
+        "smotheredmate": {
+          "name": "질식 메이트",
+          "inventor": "필리도르 (추정)"
+        },
+        "operamate": { "name": "오페라 메이트", "inventor": "폴 모피, 1858" },
+        "arabianmate": { "name": "아라비안 메이트", "inventor": "8세기" },
+        "backrankmate": { "name": "백 랭크 메이트" },
+        "bodensmate": {
+          "name": "보든의 메이트",
+          "inventor": "새뮤얼 보든, 1853"
+        },
+        "anastasiamate": {
+          "name": "아나스타시아의 메이트",
+          "inventor": "W. 하이제, 1803"
+        },
+        "lollismate": { "name": "로리의 메이트", "inventor": "G. 로리, 1763" },
+        "grecomate": {
+          "name": "그레코의 메이트",
+          "inventor": "G. 그레코, ~1620"
+        },
+        "hookmate": { "name": "훅 메이트" },
+        "greekgift": { "name": "그리스의 선물", "inventor": "고전적 희생" },
+        "friedliver": {
+          "name": "프라이드 리버 어택",
+          "inventor": "G.C. 폴레리오, 1610"
+        },
+        "windmill": { "name": "풍차", "inventor": "토레 vs 라스커, 1925" },
+        "noahsark": {
+          "name": "노아의 방주 함정",
+          "inventor": "고전 루이 로페스"
+        },
+        "elephanttrap": { "name": "엘리펀트 트랩" },
+        "laskertrap": {
+          "name": "라스커 트랩",
+          "inventor": "E. 라스커 / S. 뒤부아"
+        }
+      }
+    }
   },
   "skins": {
     "classic": "클래식",

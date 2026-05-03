@@ -9,7 +9,7 @@ import {
   Crosshair,
   TrendingUp,
   ArrowLeftRight,
-  AlertTriangle,
+  Trophy,
 } from "lucide-react";
 
 export type AnnotationVariant =
@@ -21,20 +21,27 @@ export type AnnotationVariant =
   | "promotion"
   | "castling";
 
-export type AlertVariant =
-  | "pinnedPiece"
-  | "blockedPiece"
-  | "checkBlockedPiece";
+export type AlertVariant = "pinnedPiece" | "blockedPiece" | "checkBlockedPiece";
 
-export type LabelVariant = AnnotationVariant | AlertVariant;
+export type LabelVariant = AnnotationVariant | AlertVariant | "legendary";
+
+export interface LegendaryMeta {
+  patternId: string;
+  type: "mate" | "attack";
+  move: { from: { x: number; y: number }; to: { x: number; y: number } };
+  movesAway: 1 | 2;
+  pieceType: string;
+}
 
 export interface GameLabelItem {
   id: string;
   variant: LabelVariant;
   createdAt: number;
+  legendaryMeta?: LegendaryMeta;
 }
 
 const LABEL_PRIORITY: Record<LabelVariant, number> = {
+  legendary: 110,
   check: 100,
   discoveredCheck: 90,
   checkBlockedPiece: 80,
@@ -48,6 +55,7 @@ const LABEL_PRIORITY: Record<LabelVariant, number> = {
 };
 
 const LABEL_TIMEOUT: Record<LabelVariant, number> = {
+  legendary: 8000,
   check: 4000,
   discoveredCheck: 4000,
   fork: 4000,
@@ -82,6 +90,10 @@ const TACTIC_ICONS: Record<
 const MAX_VISIBLE = 5;
 const EXIT_MS = 300;
 
+function squareLabel(x: number, y: number): string {
+  return `${String.fromCharCode(97 + x)}${8 - y}`;
+}
+
 function SingleLabel({
   item,
   onDismiss,
@@ -110,17 +122,67 @@ function SingleLabel({
   }, [item.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const isAlert = ALERT_VARIANTS.has(item.variant);
+  const isLegendary = item.variant === "legendary";
 
-  const containerClass = isAlert
-    ? "flex items-center gap-2 px-4 py-2.5 bg-white border border-orange-200 rounded-lg shadow-md text-sm text-orange-700"
-    : "flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-200 rounded-lg shadow-md text-sm text-gray-700";
+  let containerClass: string;
+  let dismissClass: string;
 
-  const dismissClass = isAlert
-    ? "ml-2 text-orange-400 hover:text-orange-600"
-    : "ml-2 text-gray-400 hover:text-gray-600";
+  if (isLegendary) {
+    containerClass =
+      "flex items-start gap-2 px-4 py-2.5 bg-white border border-amber-300 rounded-lg shadow-md text-sm text-amber-800";
+    dismissClass = "ml-2 text-amber-400 hover:text-amber-600 mt-0.5";
+  } else if (isAlert) {
+    containerClass =
+      "flex items-center gap-2 px-4 py-2.5 bg-white border border-orange-200 rounded-lg shadow-md text-sm text-orange-700";
+    dismissClass = "ml-2 text-orange-400 hover:text-orange-600";
+  } else {
+    containerClass =
+      "flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-200 rounded-lg shadow-md text-sm text-gray-700";
+    dismissClass = "ml-2 text-gray-400 hover:text-gray-600";
+  }
 
   let body: React.ReactNode;
-  if (isAlert) {
+
+  if (isLegendary && item.legendaryMeta) {
+    const meta = item.legendaryMeta;
+    const square = squareLabel(meta.move.to.x, meta.move.to.y);
+    const pieceName = t(`learning.legendary.pieces.${meta.pieceType}`, {
+      defaultValue: meta.pieceType,
+    });
+    const patternName = t(
+      `learning.legendary.patterns.${meta.patternId}.name`,
+      { defaultValue: meta.patternId },
+    );
+    const inventor = t(
+      `learning.legendary.patterns.${meta.patternId}.inventor`,
+      { defaultValue: "" },
+    );
+
+    let msgKey: string;
+    if (meta.type === "attack") msgKey = "attack1";
+    else if (meta.movesAway === 1) msgKey = "mate1";
+    else msgKey = "mate2";
+
+    const msg = t(`learning.legendary.${msgKey}`, {
+      name: patternName,
+      piece: pieceName,
+      square,
+    });
+
+    body = (
+      <>
+        <Trophy size={16} className="flex-shrink-0 text-amber-500 mt-0.5" />
+        <div>
+          <span className="font-semibold">{msg}</span>
+          {inventor && (
+            <div className="text-xs italic text-amber-600 mt-0.5">
+              {t("learning.legendary.by", { inventor })}
+            </div>
+          )}
+        </div>
+      </>
+    );
+  } else if (isAlert) {
     body = <span>{t(`learning.${item.variant}`)}</span>;
   } else {
     const v = item.variant as AnnotationVariant;
@@ -131,9 +193,7 @@ function SingleLabel({
         <Icon size={16} className="flex-shrink-0 text-gray-500" />
         <div>
           <span className="font-semibold">{t(`learning.tactics.${v}`)}</span>
-          {desc && (
-            <span className="ml-1.5 text-gray-500 text-xs">{desc}</span>
-          )}
+          {desc && <span className="ml-1.5 text-gray-500 text-xs">{desc}</span>}
         </div>
       </>
     );

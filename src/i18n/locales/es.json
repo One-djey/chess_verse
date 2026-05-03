@@ -139,7 +139,67 @@
       "castlingDesc": "El rey y la torre intercambian posiciones"
     },
     "moveAnnotations": "Anotaciones de jugada",
-    "moveAnnotationsDesc": "Muestra etiquetas tácticas después de cada jugada"
+    "moveAnnotationsDesc": "Muestra etiquetas tácticas después de cada jugada",
+    "legendary": {
+      "mate1": "{{name}} — juega tu {{piece}} en {{square}}!",
+      "mate2": "A 2 jugadas del {{name}} — intenta {{piece}} en {{square}}",
+      "attack1": "{{name}} — sacrifica tu {{piece}} en {{square}}!",
+      "by": "— {{inventor}}",
+      "pieces": {
+        "king": "rey",
+        "queen": "dama",
+        "rook": "torre",
+        "bishop": "alfil",
+        "knight": "caballo",
+        "pawn": "peón"
+      },
+      "patterns": {
+        "scholarsmate": { "name": "Mate del Pastor" },
+        "legalsmate": {
+          "name": "Mate de Légal",
+          "inventor": "Sire de Légal, ~1750"
+        },
+        "smotheredmate": {
+          "name": "Mate Ahogado",
+          "inventor": "Philidor (attr.)"
+        },
+        "operamate": {
+          "name": "Mate de la Ópera",
+          "inventor": "Paul Morphy, 1858"
+        },
+        "arabianmate": { "name": "Mate Árabe", "inventor": "Siglo VIII" },
+        "backrankmate": { "name": "Mate de Pasillo" },
+        "bodensmate": {
+          "name": "Mate de Boden",
+          "inventor": "Samuel Boden, 1853"
+        },
+        "anastasiamate": {
+          "name": "Mate de Anastasia",
+          "inventor": "W. Heinse, 1803"
+        },
+        "lollismate": { "name": "Mate de Lolli", "inventor": "G. Lolli, 1763" },
+        "grecomate": { "name": "Mate de Greco", "inventor": "G. Greco, ~1620" },
+        "hookmate": { "name": "Mate del Gancho" },
+        "greekgift": {
+          "name": "Regalo Griego",
+          "inventor": "Sacrificio clásico"
+        },
+        "friedliver": {
+          "name": "Ataque del Hígado Frito",
+          "inventor": "G.C. Polerio, 1610"
+        },
+        "windmill": { "name": "Molino", "inventor": "Torre vs Lasker, 1925" },
+        "noahsark": {
+          "name": "Trampa del Arca de Noé",
+          "inventor": "Ruy López clásico"
+        },
+        "elephanttrap": { "name": "Trampa del Elefante" },
+        "laskertrap": {
+          "name": "Trampa de Lasker",
+          "inventor": "E. Lasker / S. Dubois"
+        }
+      }
+    }
   },
   "skins": {
     "classic": "Clásico",

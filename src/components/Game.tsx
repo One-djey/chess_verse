@@ -1,19 +1,31 @@
 import React from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import GameLabels, { GameLabelItem, LabelVariant } from "./GameLabels";
+import GameLabels, {
+  GameLabelItem,
+  LabelVariant,
+  LegendaryMeta,
+} from "./GameLabels";
+import { detectLegendaryPattern } from "../utils/chess/legendaryPatterns";
 import ChessBoard from "./ChessBoard";
 import GameOver from "./GameOver";
 import NavBar from "./NavBar";
 import P2PStatusBar from "./P2PStatusBar";
 import { Piece, Position, GameMode, PieceColor } from "../types/chess";
-import { getValidMoves, hasRawMoves, applyMoveToState, normalizePos, isSquareUnderAttack, detectTactic, MoveContext } from "../utils/chess";
+import {
+  getValidMoves,
+  hasRawMoves,
+  applyMoveToState,
+  normalizePos,
+  isSquareUnderAttack,
+  detectTactic,
+  MoveContext,
+} from "../utils/chess";
 import { gameModes } from "./GameModes";
 import { useP2P } from "../context/P2PContext";
 import { useChessGame } from "../hooks/useChessGame";
 import { useP2PGame } from "../hooks/useP2PGame";
 import { useSkin } from "../context/SkinContext";
-
 
 function resolveGameMode(
   modeId: string | undefined,
@@ -82,7 +94,10 @@ export default function Game() {
 
     let cancelled = false;
 
-    const applyMove = (move: { from: { x: number; y: number }; to: { x: number; y: number } }) => {
+    const applyMove = (move: {
+      from: { x: number; y: number };
+      to: { x: number; y: number };
+    }) => {
       const currentPieces = chess.gameStateRef.current.pieces;
       const piece = currentPieces.find(
         (p) =>
@@ -120,6 +135,22 @@ export default function Game() {
           nextPieces: nextState.pieces,
           gameMode: prev.gameMode,
         });
+        if (chess.settings.showMoveAnnotations) {
+          const movingColor = prev.currentTurn;
+          const gm = prev.gameMode;
+          const nextPieces = nextState.pieces;
+          setTimeout(() => {
+            const nextColor: PieceColor =
+              movingColor === "white" ? "black" : "white";
+            const nextHint = detectLegendaryPattern(nextPieces, nextColor, gm);
+            if (nextHint && nextHint.movesAway === 1) {
+              addLabel("legendary", nextHint);
+              return;
+            }
+            const post = detectLegendaryPattern(nextPieces, movingColor, gm);
+            if (post && post.movesAway === 2) addLabel("legendary", post);
+          }, 0);
+        }
         return nextState;
       });
     };
@@ -127,8 +158,7 @@ export default function Game() {
     const trigger = async (retriesLeft: number) => {
       if (cancelled) return;
       if (!chess.aiRef.current) {
-        if (retriesLeft > 0)
-          setTimeout(() => trigger(retriesLeft - 1), 1000);
+        if (retriesLeft > 0) setTimeout(() => trigger(retriesLeft - 1), 1000);
         return;
       }
       try {
@@ -183,9 +213,9 @@ export default function Game() {
   const endangeredPieceIds = React.useMemo<Set<string>>(() => {
     if (!chess.settings.showDangerIndicator) return new Set();
     // Don't show danger for opponent pieces during AI turn (avoids brief flash at turn change)
-    if (chess.aiEnabled && chess.gameState.currentTurn !== "white") return new Set();
-    const opp =
-      chess.gameState.currentTurn === "white" ? "black" : "white";
+    if (chess.aiEnabled && chess.gameState.currentTurn !== "white")
+      return new Set();
+    const opp = chess.gameState.currentTurn === "white" ? "black" : "white";
     const ids = new Set<string>();
     chess.gameState.pieces
       .filter((p) => p.color === chess.gameState.currentTurn)
@@ -237,7 +267,9 @@ export default function Game() {
       }
       chess.aiRef.current
         .getHintMove(chess.gameState.pieces, chess.gameState.currentTurn)
-        .then((move) => { if (!cancelled) setHintMove(move); })
+        .then((move) => {
+          if (!cancelled) setHintMove(move);
+        })
         .catch((e) => {
           console.error("Hint failed:", e);
           if (!cancelled && retriesLeft > 0)
@@ -246,15 +278,16 @@ export default function Game() {
     };
 
     tryHint(12); // up to 13 attempts (~7s window) to cover Stockfish init delay
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [chess.gameState.currentTurn, canShowHint, chess.gameState.startTime]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Dangerous valid moves (for orange overlay on risky destinations) ───────
   const dangerousValidMoves = React.useMemo<Set<string>>(() => {
     if (!chess.settings.showDangerIndicator || !chess.gameState.selectedPiece)
       return new Set();
-    const opp =
-      chess.gameState.currentTurn === "white" ? "black" : "white";
+    const opp = chess.gameState.currentTurn === "white" ? "black" : "white";
     const result = new Set<string>();
     chess.gameState.validMoves.forEach((move) => {
       const nx = ((move.x % 8) + 8) % 8;
@@ -284,11 +317,17 @@ export default function Game() {
   const labelIdRef = React.useRef(0);
   const [gameLabels, setGameLabels] = React.useState<GameLabelItem[]>([]);
 
-  const addLabel = React.useCallback((variant: LabelVariant) => {
-    labelIdRef.current += 1;
-    const id = String(labelIdRef.current);
-    setGameLabels((prev) => [...prev, { id, variant, createdAt: Date.now() }]);
-  }, []);
+  const addLabel = React.useCallback(
+    (variant: LabelVariant, legendaryMeta?: LegendaryMeta) => {
+      labelIdRef.current += 1;
+      const id = String(labelIdRef.current);
+      setGameLabels((prev) => [
+        ...prev,
+        { id, variant, createdAt: Date.now(), legendaryMeta },
+      ]);
+    },
+    [],
+  );
 
   const dismissLabel = React.useCallback((id: string) => {
     setGameLabels((prev) => prev.filter((item) => item.id !== id));
@@ -358,7 +397,9 @@ export default function Game() {
       let variant: LabelVariant;
       if (chess.gameState.isCheck) {
         variant = "checkBlockedPiece";
-      } else if (!hasRawMoves(piece, chess.gameState.pieces, chess.gameState.gameMode)) {
+      } else if (
+        !hasRawMoves(piece, chess.gameState.pieces, chess.gameState.gameMode)
+      ) {
         variant = "blockedPiece";
       } else {
         variant = "pinnedPiece";
@@ -426,6 +467,22 @@ export default function Game() {
         nextPieces: nextState.pieces,
         gameMode: prev.gameMode,
       });
+      if (chess.settings.showMoveAnnotations) {
+        const movingColor = prev.currentTurn;
+        const gm = prev.gameMode;
+        const nextPieces = nextState.pieces;
+        setTimeout(() => {
+          const nextColor: PieceColor =
+            movingColor === "white" ? "black" : "white";
+          const nextHint = detectLegendaryPattern(nextPieces, nextColor, gm);
+          if (nextHint && nextHint.movesAway === 1) {
+            addLabel("legendary", nextHint);
+            return;
+          }
+          const post = detectLegendaryPattern(nextPieces, movingColor, gm);
+          if (post && post.movesAway === 2) addLabel("legendary", post);
+        }, 0);
+      }
       return nextState;
     });
   };

@@ -139,7 +139,49 @@
       "castlingDesc": "王和车交换位置"
     },
     "moveAnnotations": "走法注释",
-    "moveAnnotationsDesc": "每步棋后显示战术标签"
+    "moveAnnotationsDesc": "每步棋后显示战术标签",
+    "legendary": {
+      "mate1": "{{name}} — 将{{piece}}走到{{square}}！",
+      "mate2": "距{{name}}还有2步 — 尝试将{{piece}}走到{{square}}",
+      "attack1": "{{name}} — 在{{square}}献祭{{piece}}！",
+      "by": "— {{inventor}}",
+      "pieces": {
+        "king": "王",
+        "queen": "后",
+        "rook": "车",
+        "bishop": "象",
+        "knight": "马",
+        "pawn": "兵"
+      },
+      "patterns": {
+        "scholarsmate": { "name": "牧师将军" },
+        "legalsmate": { "name": "雷格尔将军", "inventor": "雷格尔爵士, ~1750" },
+        "smotheredmate": { "name": "窒息将军", "inventor": "菲利多尔（归因）" },
+        "operamate": { "name": "歌剧将军", "inventor": "保罗·莫菲, 1858" },
+        "arabianmate": { "name": "阿拉伯将军", "inventor": "8世纪" },
+        "backrankmate": { "name": "底线将军" },
+        "bodensmate": { "name": "博登将军", "inventor": "塞缪尔·博登, 1853" },
+        "anastasiamate": {
+          "name": "阿纳斯塔西亚将军",
+          "inventor": "W. 海因斯, 1803"
+        },
+        "lollismate": { "name": "洛利将军", "inventor": "G. 洛利, 1763" },
+        "grecomate": { "name": "格列柯将军", "inventor": "G. 格列柯, ~1620" },
+        "hookmate": { "name": "钩形将军" },
+        "greekgift": { "name": "希腊礼物", "inventor": "古典牺牲" },
+        "friedliver": {
+          "name": "油炸肝攻击",
+          "inventor": "G.C. 波莱里奥, 1610"
+        },
+        "windmill": { "name": "风车战术", "inventor": "托雷 vs 拉斯克, 1925" },
+        "noahsark": { "name": "诺亚方舟陷阱", "inventor": "古典鲁伊·洛佩斯" },
+        "elephanttrap": { "name": "大象陷阱" },
+        "laskertrap": {
+          "name": "拉斯克陷阱",
+          "inventor": "E. 拉斯克 / S. 杜博伊斯"
+        }
+      }
+    }
   },
   "skins": {
     "classic": "经典",

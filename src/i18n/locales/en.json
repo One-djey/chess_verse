@@ -139,7 +139,64 @@
       "castlingDesc": "King and rook switch places"
     },
     "moveAnnotations": "Move Annotations",
-    "moveAnnotationsDesc": "Show tactical labels after each move"
+    "moveAnnotationsDesc": "Show tactical labels after each move",
+    "legendary": {
+      "mate1": "{{name}} — play your {{piece}} to {{square}}!",
+      "mate2": "2 moves from {{name}} — try {{piece}} to {{square}}",
+      "attack1": "{{name}} — sacrifice your {{piece}} on {{square}}!",
+      "by": "— {{inventor}}",
+      "pieces": {
+        "king": "king",
+        "queen": "queen",
+        "rook": "rook",
+        "bishop": "bishop",
+        "knight": "knight",
+        "pawn": "pawn"
+      },
+      "patterns": {
+        "scholarsmate": { "name": "Scholar's Mate" },
+        "legalsmate": {
+          "name": "Légal's Mate",
+          "inventor": "Sire de Légal, ~1750"
+        },
+        "smotheredmate": {
+          "name": "Smothered Mate",
+          "inventor": "Philidor (attr.)"
+        },
+        "operamate": { "name": "Opera Mate", "inventor": "Paul Morphy, 1858" },
+        "arabianmate": { "name": "Arabian Mate", "inventor": "8th century" },
+        "backrankmate": { "name": "Back Rank Mate" },
+        "bodensmate": {
+          "name": "Boden's Mate",
+          "inventor": "Samuel Boden, 1853"
+        },
+        "anastasiamate": {
+          "name": "Anastasia's Mate",
+          "inventor": "W. Heinse, 1803"
+        },
+        "lollismate": { "name": "Lolli's Mate", "inventor": "G. Lolli, 1763" },
+        "grecomate": { "name": "Greco's Mate", "inventor": "G. Greco, ~1620" },
+        "hookmate": { "name": "Hook Mate" },
+        "greekgift": {
+          "name": "Greek Gift",
+          "inventor": "Classical sacrifice"
+        },
+        "friedliver": {
+          "name": "Fried Liver Attack",
+          "inventor": "G.C. Polerio, 1610"
+        },
+        "windmill": { "name": "Windmill", "inventor": "Torre vs Lasker, 1925" },
+        "noahsark": {
+          "name": "Noah's Ark Trap",
+          "inventor": "Classical Ruy Lopez"
+        },
+        "elephanttrap": { "name": "Elephant Trap" },
+        "laskertrap": {
+          "name": "Lasker Trap",
+          "inventor": "E. Lasker / S. Dubois"
+        }
+      }
+    }
   },
   "skins": {
     "classic": "Classic",
