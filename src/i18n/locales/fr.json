@@ -10,8 +10,8 @@
     "local": "Local",
     "localDesc": "Jouez contre l'IA ou en passant l'appareil à votre adversaire.",
     "multiplayer": "Multijoueur",
-    "multiplayerDesc": "Défiez un ami à distance — sans serveur.",
-    "offline": "Hors ligne — multijoueur indisponible"
+    "multiplayerDesc": "Défiez un ami à distance, sans compte.",
+    "offline": "Hors ligne : multijoueur indisponible"
   },
   "gameModeSelect": {
     "title": "Choisissez votre mode de jeu",
@@ -75,7 +75,7 @@
     "victory": "Victoire !",
     "white": "Blancs",
     "black": "Noirs",
-    "stalemate": "Pat — aucun mouvement légal",
+    "stalemate": "Pat : aucun mouvement légal",
     "onlyKings": "Il ne reste que les rois",
     "duration": "Durée",
     "movesPlayed": "Coups joués",
@@ -114,8 +114,8 @@
     ]
   },
   "learning": {
-    "pinnedPiece": "Cette pièce ne peut pas bouger — elle mettrait le roi en échec",
-    "blockedPiece": "Cette pièce est bloquée — aucun mouvement possible",
+    "pinnedPiece": "Cette pièce ne peut pas bouger, elle mettrait le roi en échec",
+    "blockedPiece": "Cette pièce est bloquée, aucun mouvement possible",
     "checkBlockedPiece": "Cette pièce ne peut pas résoudre l'échec",
     "settingsTitle": "Apprentissage & Assistance",
     "dangerIndicator": "Indicateur de danger",
@@ -141,9 +141,9 @@
     "moveAnnotations": "Annotations de coup",
     "moveAnnotationsDesc": "Affiche des étiquettes tactiques après chaque coup",
     "legendary": {
-      "mate1": "{{name}} — jouez votre {{piece}} en {{square}} !",
-      "mate2": "À 2 coups du {{name}} — essayez {{piece}} en {{square}}",
-      "attack1": "{{name}} — sacrifiez votre {{piece}} en {{square}} !",
+      "mate1": "{{name}} : jouez votre {{piece}} en {{square}} !",
+      "mate2": "À 2 coups du {{name}} : essayez {{piece}} en {{square}}",
+      "attack1": "{{name}} : sacrifiez votre {{piece}} en {{square}} !",
       "by": "— {{inventor}}",
       "pieces": {
         "king": "roi",
@@ -314,7 +314,7 @@
       "p2pBody1": "Le mode multijoueur repose sur une connexion directe entre navigateurs (WebRTC / pair-à-pair). L'éditeur n'est pas partie aux échanges entre joueurs et décline toute responsabilité quant au comportement des utilisateurs entre eux.",
       "p2pBody2": "Aucune conversation, aucun message et aucune donnée de partie ne transite par les serveurs de l'éditeur.",
       "ipTitle": "4. Propriété intellectuelle",
-      "ipBody": "L'ensemble des éléments constitutifs de ChessVerse — code source, design, graphismes, dénomination — est la propriété exclusive de Jérémy Maisse, sauf éléments tiers dûment identifiés (Stockfish sous GPLv3, Trystero sous MIT). Toute reproduction, représentation, modification ou exploitation non autorisée est interdite et constitue une contrefaçon au sens du Code de la propriété intellectuelle.",
+      "ipBody": "L'ensemble des éléments constitutifs de ChessVerse (code source, design, graphismes, dénomination, ...) est la propriété exclusive de Jérémy Maisse, sauf éléments tiers dûment identifiés (Stockfish sous GPLv3, Trystero sous MIT). Toute reproduction, représentation, modification ou exploitation non autorisée est interdite et constitue une contrefaçon au sens du Code de la propriété intellectuelle.",
       "liabilityTitle": "5. Limitation de responsabilité",
       "liabilityIntro": "ChessVerse est fourni « en l'état » sans aucune garantie d'exactitude, de continuité ou d'absence de bugs. L'éditeur ne saurait être tenu responsable :",
       "liabilityItems": [
