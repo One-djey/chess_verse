@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Settings, Flag, ChevronRight } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
-import GameSettings from './GameSettings';
-import InstallBanner from './InstallBanner';
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { Settings, Flag, ChevronRight, Trophy } from "lucide-react";
+import { useTranslation } from "react-i18next";
+import GameSettings from "./GameSettings";
+import InstallBanner from "./InstallBanner";
 
 export interface Crumb {
   label: string;
@@ -16,11 +16,27 @@ interface NavBarProps {
   /** Shows a Surrender button — pass the handler when in an active game */
   onSurrender?: () => void;
   /** Full game settings (AI, flip board). When absent, settings modal shows language only */
-  gameSettings?: { aiEnabled: boolean; aiDifficulty: number; flipBoard: boolean } | null;
-  onGameSettingsChange?: (s: { aiEnabled: boolean; aiDifficulty: number; flipBoard: boolean }) => void;
+  gameSettings?: {
+    aiEnabled: boolean;
+    aiDifficulty: number;
+    flipBoard: boolean;
+  } | null;
+  onGameSettingsChange?: (s: {
+    aiEnabled: boolean;
+    aiDifficulty: number;
+    flipBoard: boolean;
+  }) => void;
+  /** Shows a "View Result" button when the game is over and the modal is dismissed */
+  onShowResult?: () => void;
 }
 
-export default function NavBar({ breadcrumbs = [], onSurrender, gameSettings, onGameSettingsChange }: NavBarProps) {
+export default function NavBar({
+  breadcrumbs = [],
+  onSurrender,
+  gameSettings,
+  onGameSettingsChange,
+  onShowResult,
+}: NavBarProps) {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const navigate = useNavigate();
   const { t } = useTranslation();
@@ -32,7 +48,7 @@ export default function NavBar({ breadcrumbs = [], onSurrender, gameSettings, on
         {/* ── Left: ChessVerse brand + breadcrumb ── */}
         <div className="flex items-center gap-1.5 min-w-0 flex-1">
           <button
-            onClick={() => navigate('/')}
+            onClick={() => navigate("/")}
             className="font-bold text-gray-900 hover:text-blue-600 transition-colors shrink-0 text-base leading-none"
           >
             ChessVerse
@@ -49,7 +65,9 @@ export default function NavBar({ breadcrumbs = [], onSurrender, gameSettings, on
                   {crumb.label}
                 </button>
               ) : (
-                <span className="text-sm text-gray-700 font-medium truncate">{crumb.label}</span>
+                <span className="text-sm text-gray-700 font-medium truncate">
+                  {crumb.label}
+                </span>
               )}
             </React.Fragment>
           ))}
@@ -63,13 +81,22 @@ export default function NavBar({ breadcrumbs = [], onSurrender, gameSettings, on
               className="flex items-center gap-1.5 px-3 py-1.5 bg-red-500 text-white rounded-lg hover:bg-red-600 active:bg-red-700 transition text-sm font-medium"
             >
               <Flag size={14} />
-              {t('nav.surrender')}
+              {t("nav.surrender")}
+            </button>
+          )}
+          {onShowResult && (
+            <button
+              onClick={onShowResult}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-100 text-amber-700 rounded-lg hover:bg-amber-200 active:bg-amber-300 transition text-sm font-medium"
+            >
+              <Trophy size={14} />
+              {t("nav.viewResult")}
             </button>
           )}
           <button
             onClick={() => setIsSettingsOpen(true)}
             className="p-2 rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-700 transition"
-            aria-label={t('nav.settings')}
+            aria-label={t("nav.settings")}
           >
             <Settings size={19} />
           </button>
