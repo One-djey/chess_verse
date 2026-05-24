@@ -16,6 +16,17 @@ import { SKINS, getPieceImageSrc } from "../utils/pieceImage";
 import FeedbackModal from "./FeedbackModal";
 import type { LocalSettings } from "../hooks/useChessGame";
 
+// Mirrors the key and defaults from useChessGame — kept in sync manually
+const SETTINGS_STORAGE_KEY = "chess_settings";
+const FALLBACK_SETTINGS: LocalSettings = {
+  aiEnabled: true,
+  aiDifficulty: 5,
+  flipBoard: false,
+  showDangerIndicator: false,
+  showHint: false,
+  showMoveAnnotations: false,
+};
+
 interface GameSettingsProps {
   isOpen: boolean;
   onClose: () => void;
@@ -159,6 +170,25 @@ export default function GameSettings({
 
   const hasGameSettings = settings != null && onSettingsChange != null;
 
+  // Fallback settings read/written to localStorage when outside a game
+  const [localSettings, setLocalSettings] = useState<LocalSettings>(() => {
+    try {
+      const saved = localStorage.getItem(SETTINGS_STORAGE_KEY);
+      const parsed = saved ? JSON.parse(saved) : {};
+      return { ...FALLBACK_SETTINGS, ...parsed };
+    } catch {
+      return FALLBACK_SETTINGS;
+    }
+  });
+
+  const effectiveSettings = hasGameSettings ? settings! : localSettings;
+  const handleChange = hasGameSettings
+    ? onSettingsChange!
+    : (next: LocalSettings) => {
+        setLocalSettings(next);
+        localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(next));
+      };
+
   const TABS: { id: Tab; label: string }[] = [
     { id: "partie", label: t("gameSettings.tab.partie") },
     { id: "assistance", label: t("gameSettings.tab.assistance") },
@@ -183,29 +213,27 @@ export default function GameSettings({
               </button>
             </div>
 
-            {/* ── Tab bar (only in game context) ── */}
-            {hasGameSettings && (
-              <div className="flex px-6 border-b border-gray-100 gap-1">
-                {TABS.map(({ id, label }) => (
-                  <button
-                    key={id}
-                    onClick={() => setActiveTab(id)}
-                    className={`flex-1 pb-3 text-sm font-medium transition-all border-b-2 -mb-px ${
-                      activeTab === id
-                        ? "text-blue-600 border-blue-600"
-                        : "text-gray-500 border-transparent hover:text-gray-700 hover:border-gray-300"
-                    }`}
-                  >
-                    {label}
-                  </button>
-                ))}
-              </div>
-            )}
+            {/* ── Tab bar (always visible) ── */}
+            <div className="flex px-6 border-b border-gray-100 gap-1">
+              {TABS.map(({ id, label }) => (
+                <button
+                  key={id}
+                  onClick={() => setActiveTab(id)}
+                  className={`flex-1 pb-3 text-sm font-medium transition-all border-b-2 -mb-px ${
+                    activeTab === id
+                      ? "text-blue-600 border-blue-600"
+                      : "text-gray-500 border-transparent hover:text-gray-700 hover:border-gray-300"
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
 
             {/* ── Scrollable content ── */}
             <div className="px-6 py-5 overflow-y-auto flex-1 space-y-6">
               {/* ════ PARTIE tab ════ */}
-              {hasGameSettings && activeTab === "partie" && (
+              {activeTab === "partie" && (
                 <div className="space-y-5">
                   {/* Game type */}
                   <div>
@@ -213,24 +241,30 @@ export default function GameSettings({
                     <div className="grid grid-cols-2 gap-2">
                       <button
                         className={`py-2.5 text-sm font-medium rounded-lg border-2 transition-all duration-200 ${
-                          !settings!.aiEnabled
+                          !effectiveSettings.aiEnabled
                             ? "border-blue-600 bg-blue-50 text-blue-700"
                             : "border-gray-200 text-gray-500 hover:border-gray-300"
                         }`}
                         onClick={() =>
-                          onSettingsChange!({ ...settings!, aiEnabled: false })
+                          handleChange({
+                            ...effectiveSettings,
+                            aiEnabled: false,
+                          })
                         }
                       >
                         {t("gameSettings.soloPlay")}
                       </button>
                       <button
                         className={`py-2.5 text-sm font-medium rounded-lg border-2 transition-all duration-200 ${
-                          settings!.aiEnabled
+                          effectiveSettings.aiEnabled
                             ? "border-blue-600 bg-blue-50 text-blue-700"
                             : "border-gray-200 text-gray-500 hover:border-gray-300"
                         }`}
                         onClick={() =>
-                          onSettingsChange!({ ...settings!, aiEnabled: true })
+                          handleChange({
+                            ...effectiveSettings,
+                            aiEnabled: true,
+                          })
                         }
                       >
                         {t("gameSettings.vsAI")}
@@ -241,7 +275,7 @@ export default function GameSettings({
                   {/* Flip board — solo only */}
                   <div
                     className={`transition-all duration-300 ease-in-out overflow-hidden ${
-                      !settings!.aiEnabled
+                      !effectiveSettings.aiEnabled
                         ? "opacity-100 max-h-28"
                         : "opacity-0 max-h-0"
                     }`}
@@ -249,9 +283,9 @@ export default function GameSettings({
                     <CardToggle
                       label={t("gameSettings.flipBoard")}
                       desc={t("gameSettings.flipBoardDesc")}
-                      checked={settings!.flipBoard}
+                      checked={effectiveSettings.flipBoard}
                       onChange={(v) =>
-                        onSettingsChange!({ ...settings!, flipBoard: v })
+                        handleChange({ ...effectiveSettings, flipBoard: v })
                       }
                     />
                   </div>
@@ -259,7 +293,7 @@ export default function GameSettings({
                   {/* AI Difficulty gauge — AI only */}
                   <div
                     className={`transition-all duration-300 ease-in-out overflow-hidden ${
-                      settings!.aiEnabled
+                      effectiveSettings.aiEnabled
                         ? "opacity-100 max-h-40"
                         : "opacity-0 max-h-0"
                     }`}
@@ -268,28 +302,30 @@ export default function GameSettings({
                       {t("gameSettings.aiDifficulty")}
                     </SectionLabel>
                     <DifficultyGauge
-                      value={settings!.aiDifficulty}
+                      value={effectiveSettings.aiDifficulty}
                       onChange={(v) =>
-                        onSettingsChange!({ ...settings!, aiDifficulty: v })
+                        handleChange({ ...effectiveSettings, aiDifficulty: v })
                       }
                       labelMin={t("gameSettings.beginner")}
                       labelMax={t("gameSettings.superhuman")}
-                      levelLabel={t(getDifficultyKey(settings!.aiDifficulty))}
+                      levelLabel={t(
+                        getDifficultyKey(effectiveSettings.aiDifficulty),
+                      )}
                     />
                   </div>
                 </div>
               )}
 
               {/* ════ ASSISTANCE tab ════ */}
-              {hasGameSettings && activeTab === "assistance" && (
+              {activeTab === "assistance" && (
                 <div className="space-y-2">
                   <CardToggle
                     label={t("learning.dangerIndicator")}
                     desc={t("learning.dangerIndicatorDesc")}
-                    checked={settings!.showDangerIndicator}
+                    checked={effectiveSettings.showDangerIndicator}
                     onChange={(v) =>
-                      onSettingsChange!({
-                        ...settings!,
+                      handleChange({
+                        ...effectiveSettings,
                         showDangerIndicator: v,
                       })
                     }
@@ -297,18 +333,18 @@ export default function GameSettings({
                   <CardToggle
                     label={t("learning.showHint")}
                     desc={t("learning.showHintDesc")}
-                    checked={settings!.showHint}
+                    checked={effectiveSettings.showHint}
                     onChange={(v) =>
-                      onSettingsChange!({ ...settings!, showHint: v })
+                      handleChange({ ...effectiveSettings, showHint: v })
                     }
                   />
                   <CardToggle
                     label={t("learning.moveAnnotations")}
                     desc={t("learning.moveAnnotationsDesc")}
-                    checked={settings!.showMoveAnnotations}
+                    checked={effectiveSettings.showMoveAnnotations}
                     onChange={(v) =>
-                      onSettingsChange!({
-                        ...settings!,
+                      handleChange({
+                        ...effectiveSettings,
                         showMoveAnnotations: v,
                       })
                     }
@@ -316,8 +352,8 @@ export default function GameSettings({
                 </div>
               )}
 
-              {/* ════ APPARENCE tab / no-game fallback ════ */}
-              {(!hasGameSettings || activeTab === "apparence") && (
+              {/* ════ APPARENCE tab ════ */}
+              {activeTab === "apparence" && (
                 <div className="space-y-5">
                   {/* Skin picker */}
                   <div>
