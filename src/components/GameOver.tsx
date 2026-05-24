@@ -10,6 +10,7 @@ import {
   Loader2,
   Flag,
   LogOut,
+  X,
 } from "lucide-react";
 import { getDifficultyKey } from "../utils/chess";
 import { PieceColor } from "../types/chess";
@@ -35,6 +36,8 @@ interface GameOverProps {
   onMainMenu?: () => void;
   /** Path to return to on "Main Menu" — defaults to '/' */
   returnPath?: string;
+  /** Called when the user dismisses the modal (✕ or backdrop click) */
+  onDismiss?: () => void;
 }
 
 export default function GameOver({
@@ -55,6 +58,7 @@ export default function GameOver({
   onDeclineRematch,
   onMainMenu,
   returnPath = "/",
+  onDismiss,
 }: GameOverProps) {
   const navigate = useNavigate();
   const { t } = useTranslation();
@@ -112,8 +116,23 @@ export default function GameOver({
   ];
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100]">
-      <div className="bg-white rounded-lg p-8 max-w-md w-full mx-4 shadow-xl">
+    <div
+      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100]"
+      onClick={onDismiss}
+    >
+      <div
+        className="bg-white rounded-lg p-8 max-w-md w-full mx-4 shadow-xl relative"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {onDismiss && (
+          <button
+            onClick={onDismiss}
+            className="absolute top-3 right-3 p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-700 transition"
+            aria-label="Close"
+          >
+            <X size={18} />
+          </button>
+        )}
         {/* Peer left banner */}
         {isP2PMode && peerLeft && (
           <div className="flex items-center gap-2 mb-4 px-4 py-3 bg-amber-50 border border-amber-200 rounded-lg text-amber-800 text-sm">
