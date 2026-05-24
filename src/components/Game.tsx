@@ -83,6 +83,15 @@ export default function Game() {
     chessResetGame: chess.resetGame,
   });
 
+  // ── Game-over modal visibility ────────────────────────────────────────────
+  // Tracks whether the GameOver modal is shown. Automatically opens when the
+  // game ends; can be dismissed by the user to inspect the final board state.
+  const [gameOverVisible, setGameOverVisible] = React.useState(false);
+
+  React.useEffect(() => {
+    if (chess.gameState.gameOver) setGameOverVisible(true);
+  }, [chess.gameState.gameOver]);
+
   // ── AI move trigger ────────────────────────────────────────────────────────
   React.useEffect(() => {
     if (
@@ -554,7 +563,12 @@ export default function Game() {
           { label: playTypeLabel },
           { label: t(`modes.${chess.gameState.gameMode.id}.title`) },
         ]}
-        onSurrender={handleResign}
+        onSurrender={!chess.gameState.gameOver ? handleResign : undefined}
+        onShowResult={
+          chess.gameState.gameOver && !gameOverVisible
+            ? () => setGameOverVisible(true)
+            : undefined
+        }
         gameSettings={!p2p.isP2PMode ? chess.settings : null}
         onGameSettingsChange={
           !p2p.isP2PMode ? chess.handleSettingsChange : undefined
@@ -594,7 +608,7 @@ export default function Game() {
         <GameLabels items={gameLabels} onDismiss={dismissLabel} />
       </div>
 
-      {chess.gameState.gameOver && (
+      {chess.gameState.gameOver && gameOverVisible && (
         <GameOver
           winner={chess.gameState.winner}
           drawReason={chess.gameState.drawReason}
@@ -618,6 +632,7 @@ export default function Game() {
           onDeclineRematch={p2pGame.handleDeclineRematch}
           onMainMenu={p2p.isP2PMode ? handleLeaveP2P : undefined}
           returnPath={returnPath}
+          onDismiss={() => setGameOverVisible(false)}
         />
       )}
     </div>
