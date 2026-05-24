@@ -155,12 +155,34 @@ export default function Game() {
       });
     };
 
+    const playRandomMove = () => {
+      const pieces = chess.gameStateRef.current.pieces;
+      const gm = chess.gameStateRef.current.gameMode;
+      const blackPieces = pieces.filter((p) => p.color === "black");
+      const candidates = blackPieces
+        .map((p) => ({ piece: p, moves: getValidMoves(p, pieces, gm) }))
+        .filter((pm) => pm.moves.length > 0);
+      if (candidates.length === 0) return; // stalemate/checkmate — game ends naturally
+      const pm = candidates[Math.floor(Math.random() * candidates.length)];
+      const to = pm.moves[Math.floor(Math.random() * pm.moves.length)];
+      applyMove({ from: pm.piece.position, to });
+    };
+
     const trigger = async (retriesLeft: number) => {
       if (cancelled) return;
+
+      // AI instance not created yet — wait
       if (!chess.aiRef.current) {
         if (retriesLeft > 0) setTimeout(() => trigger(retriesLeft - 1), 1000);
         return;
       }
+
+      // AI instance exists but Stockfish not yet ready — wait without restarting
+      if (!chess.aiRef.current.ready) {
+        if (retriesLeft > 0) setTimeout(() => trigger(retriesLeft - 1), 1200);
+        return;
+      }
+
       try {
         const move = await chess.aiRef.current.getNextMove(
           chess.gameStateRef.current.pieces,
@@ -170,18 +192,19 @@ export default function Game() {
         console.error("AI move failed:", e);
         if (cancelled) return;
         if (retriesLeft > 0) {
-          // Try to reinitialise the engine before retrying
+          // Reinitialise the engine before retrying
           chess.aiRef.current?.restart?.();
-          setTimeout(() => trigger(retriesLeft - 1), 800);
+          setTimeout(() => trigger(retriesLeft - 1), 1000);
         } else {
-          // All retries exhausted — disable AI so the player can continue
-          console.warn("AI permanently failed after 3 retries. Disabling AI.");
-          chess.handleSettingsChange({ ...chess.settings, aiEnabled: false });
+          // All retries exhausted — fall back to a random legal move so the game
+          // keeps going; AI stays enabled for future turns.
+          console.warn("AI failed after all retries — playing a random move.");
+          if (!cancelled) playRandomMove();
         }
       }
     };
 
-    const id = setTimeout(() => trigger(3), 500);
+    const id = setTimeout(() => trigger(5), 500);
     return () => {
       cancelled = true;
       clearTimeout(id);
