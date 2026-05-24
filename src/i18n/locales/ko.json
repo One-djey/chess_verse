@@ -99,6 +99,13 @@
     "aiDifficulty": "AI 난이도",
     "beginner": "초보",
     "superhuman": "초인",
+    "pieceAppearance": "기물 외관",
+    "language": "언어",
+    "tab": {
+      "partie": "게임",
+      "assistance": "도움말",
+      "apparence": "외관"
+    },
     "difficultyLevels": [
       "초보자",
       "클럽 초보자",

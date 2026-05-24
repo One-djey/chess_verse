@@ -99,6 +99,13 @@
     "aiDifficulty": "Difficoltà IA",
     "beginner": "Principiante",
     "superhuman": "Sovrumano",
+    "pieceAppearance": "Aspetto dei pezzi",
+    "language": "Lingua",
+    "tab": {
+      "partie": "Partita",
+      "assistance": "Assistenza",
+      "apparence": "Aspetto"
+    },
     "difficultyLevels": [
       "Principiante",
       "Principiante di club",

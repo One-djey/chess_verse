@@ -99,6 +99,13 @@
     "aiDifficulty": "صعوبة الذكاء الاصطناعي",
     "beginner": "مبتدئ",
     "superhuman": "خارق",
+    "pieceAppearance": "مظهر القطع",
+    "language": "اللغة",
+    "tab": {
+      "partie": "اللعبة",
+      "assistance": "المساعدة",
+      "apparence": "المظهر"
+    },
     "difficultyLevels": [
       "مبتدئ",
       "مبتدئ النادي",

@@ -99,6 +99,13 @@
     "aiDifficulty": "AI難易度",
     "beginner": "初心者",
     "superhuman": "超人",
+    "pieceAppearance": "駒の外観",
+    "language": "言語",
+    "tab": {
+      "partie": "ゲーム",
+      "assistance": "アシスト",
+      "apparence": "外観"
+    },
     "difficultyLevels": [
       "初心者",
       "クラブ初心者",

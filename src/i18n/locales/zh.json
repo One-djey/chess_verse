@@ -99,6 +99,13 @@
     "aiDifficulty": "AI难度",
     "beginner": "初学者",
     "superhuman": "超人",
+    "pieceAppearance": "棋子外观",
+    "language": "语言",
+    "tab": {
+      "partie": "游戏",
+      "assistance": "辅助",
+      "apparence": "外观"
+    },
     "difficultyLevels": [
       "初学者",
       "俱乐部初学者",

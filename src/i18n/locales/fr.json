@@ -101,6 +101,11 @@
     "superhuman": "Surhumain",
     "pieceAppearance": "Apparence des pièces",
     "language": "Langue",
+    "tab": {
+      "partie": "Partie",
+      "assistance": "Assistance",
+      "apparence": "Apparence"
+    },
     "difficultyLevels": [
       "Débutant",
       "Joueur de club débutant",
