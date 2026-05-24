@@ -107,6 +107,9 @@ export default function Game() {
       from: { x: number; y: number };
       to: { x: number; y: number };
     }) => {
+      // Don't apply an in-flight AI move if the game is already over
+      // (e.g. the player resigned while the engine was computing).
+      if (chess.gameStateRef.current.gameOver) return;
       const currentPieces = chess.gameStateRef.current.pieces;
       const piece = currentPieces.find(
         (p) =>
