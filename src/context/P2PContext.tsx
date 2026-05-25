@@ -1,9 +1,9 @@
-import React, {
+import {
   createContext,
-  useContext,
   useState,
   useRef,
   useCallback,
+  type ReactNode,
 } from "react";
 import type { Room } from "@trystero-p2p/core";
 import { P2PConnectionState, P2PRole } from "../types/p2p";
@@ -12,7 +12,7 @@ import { joinRoom, makeRoomActions } from "../services/TrysteroService";
 import { getInitialPieces } from "../utils/chess";
 import { PieceSkin } from "../utils/pieceImage";
 
-interface P2PContextValue {
+export interface P2PContextValue {
   isP2PMode: boolean;
   role: P2PRole | null;
   playerColor: PieceColor | null;
@@ -37,9 +37,9 @@ interface P2PContextValue {
   leaveRoom: () => void;
 }
 
-const P2PContext = createContext<P2PContextValue | null>(null);
+export const P2PContext = createContext<P2PContextValue | null>(null);
 
-export function P2PProvider({ children }: { children: React.ReactNode }) {
+export function P2PProvider({ children }: { children: ReactNode }) {
   const [isP2PMode, setIsP2PMode] = useState(false);
   const [role, setRole] = useState<P2PRole | null>(null);
   const [playerColor, setPlayerColor] = useState<PieceColor | null>(null);
@@ -191,10 +191,4 @@ export function P2PProvider({ children }: { children: React.ReactNode }) {
       {children}
     </P2PContext.Provider>
   );
-}
-
-export function useP2P(): P2PContextValue {
-  const ctx = useContext(P2PContext);
-  if (!ctx) throw new Error("useP2P must be used inside P2PProvider");
-  return ctx;
 }

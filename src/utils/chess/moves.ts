@@ -146,7 +146,6 @@ export const isValidMove = (
   target: Position,
   pieces: Piece[],
   gameMode: GameMode,
-  skipCheckValidation = false,
 ): boolean => {
   if (!gameMode.rules?.borderless) {
     if (target.x < 0 || target.x > 7 || target.y < 0 || target.y > 7)
@@ -186,8 +185,7 @@ export const isInCheck = (
   if (!gameMode.rules?.borderless) {
     return pieces.some(
       (p) =>
-        p.color !== color &&
-        isValidMove(p, king.position, pieces, gameMode, true),
+        p.color !== color && isValidMove(p, king.position, pieces, gameMode),
     );
   }
   // In borderless mode an attacker can reach the king through any edge.
@@ -205,7 +203,6 @@ export const isInCheck = (
             { x: kx + di * BOARD_SIZE, y: ky + dj * BOARD_SIZE },
             pieces,
             gameMode,
-            true,
           )
         )
           return true;
@@ -251,7 +248,7 @@ export const isSquareUnderAttack = (
       // All non-pawn capabilities are correctly handled by isValidMove.
       return (
         caps.filter((t) => t !== "pawn").length > 0 &&
-        isValidMove(p, position, pieces, gameMode, true)
+        isValidMove(p, position, pieces, gameMode)
       );
     });
 

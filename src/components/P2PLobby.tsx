@@ -3,11 +3,11 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import QRCode from "qrcode";
 import { Copy, Share2, Loader2, CheckCircle, WifiOff } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { useP2P } from "../context/P2PContext";
+import { useP2P } from "../hooks/useP2P";
 import { GameMode } from "../types/chess";
 import { generateRoomId } from "../services/TrysteroService";
-import { gameModes } from "./GameModes";
-import { useSkin } from "../context/SkinContext";
+import { gameModes } from "../utils/gameModes";
+import { useSkin } from "../hooks/useSkin";
 import GameModeSelect from "./GameModeSelect";
 import NavBar from "./NavBar";
 

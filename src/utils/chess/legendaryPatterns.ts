@@ -67,8 +67,7 @@ function classifyMate(
   const isBackRank = kp.y === 0 || kp.y === 7;
 
   const attackers = after.filter(
-    (p) =>
-      p.color === movedPiece.color && isValidMove(p, kp, after, gameMode, true),
+    (p) => p.color === movedPiece.color && isValidMove(p, kp, after, gameMode),
   );
   if (attackers.length === 0) return "";
 
@@ -176,7 +175,7 @@ function detectScholarsSetup(
       p.color === color &&
       p.type === "bishop" &&
       p.hasMoved &&
-      isValidMove(p, f7, pieces, gameMode, true),
+      isValidMove(p, f7, pieces, gameMode),
   );
   if (!bishop) return null;
 
@@ -185,7 +184,7 @@ function detectScholarsSetup(
     (p) =>
       p.color === oppColor(color) &&
       p.type !== "king" &&
-      isValidMove(p, f7, pieces, gameMode, true),
+      isValidMove(p, f7, pieces, gameMode),
   );
   if (hasOtherDefender) return null;
 
@@ -201,12 +200,12 @@ function detectScholarsSetup(
   for (const qm of queenMoves) {
     const temp = simMove(pieces, queen, qm);
     const queenAt = temp.find((p) => p.id === queen.id)!;
-    if (!isValidMove(queenAt, f7, temp, gameMode, true)) continue;
+    if (!isValidMove(queenAt, f7, temp, gameMode)) continue;
     const stillClear = !temp.some(
       (p) =>
         p.color === oppColor(color) &&
         p.type !== "king" &&
-        isValidMove(p, f7, temp, gameMode, true),
+        isValidMove(p, f7, temp, gameMode),
     );
     if (stillClear) return { from: queen.position, to: qm, pieceType: "queen" };
   }
@@ -300,7 +299,7 @@ function detectGreekGift(
     (p) =>
       p.color === color &&
       p.type === "bishop" &&
-      isValidMove(p, h7, pieces, gameMode, true),
+      isValidMove(p, h7, pieces, gameMode),
   );
   if (!bishop) return null;
 

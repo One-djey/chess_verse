@@ -1,14 +1,20 @@
-import { Piece, PieceColor, PieceType, Position, GameMode } from '../../types/chess';
-import { isInCheck, isValidMove } from './moves';
+import {
+  Piece,
+  PieceColor,
+  PieceType,
+  Position,
+  GameMode,
+} from "../../types/chess";
+import { isInCheck, isValidMove } from "./moves";
 
 export type TacticTag =
-  | 'check'
-  | 'discoveredCheck'
-  | 'fork'
-  | 'pin'
-  | 'capture'
-  | 'promotion'
-  | 'castling';
+  | "check"
+  | "discoveredCheck"
+  | "fork"
+  | "pin"
+  | "capture"
+  | "promotion"
+  | "castling";
 
 export interface MoveContext {
   /** The piece that moved (as it was BEFORE the move). */
@@ -25,20 +31,20 @@ export interface MoveContext {
   gameMode: GameMode;
 }
 
-const SLIDING_TYPES: PieceType[] = ['rook', 'bishop', 'queen'];
+const SLIDING_TYPES: PieceType[] = ["rook", "bishop", "queen"];
 
 function isSlidingPiece(piece: Piece): boolean {
   if (SLIDING_TYPES.includes(piece.type)) return true;
-  return piece.acquiredTypes?.some(t => SLIDING_TYPES.includes(t)) ?? false;
+  return piece.acquiredTypes?.some((t) => SLIDING_TYPES.includes(t)) ?? false;
 }
 
 /** Returns the moved piece in nextPieces (matched by id). */
 function getMovedPiece(ctx: MoveContext): Piece | undefined {
-  return ctx.nextPieces.find(p => p.id === ctx.piece.id);
+  return ctx.nextPieces.find((p) => p.id === ctx.piece.id);
 }
 
 function opponentColor(color: PieceColor): PieceColor {
-  return color === 'white' ? 'black' : 'white';
+  return color === "white" ? "black" : "white";
 }
 
 /**
@@ -50,12 +56,12 @@ function detectFork(ctx: MoveContext): boolean {
   if (!movedPiece) return false;
 
   const opp = opponentColor(ctx.piece.color);
-  const enemies = ctx.nextPieces.filter(p => p.color === opp);
+  const enemies = ctx.nextPieces.filter((p) => p.color === opp);
 
   let attackCount = 0;
   for (const enemy of enemies) {
     // Use skipCheckValidation=true: we only care about attack geometry, not legality
-    if (isValidMove(movedPiece, enemy.position, ctx.nextPieces, ctx.gameMode, true)) {
+    if (isValidMove(movedPiece, enemy.position, ctx.nextPieces, ctx.gameMode)) {
       attackCount++;
       if (attackCount >= 2) return true;
     }
@@ -73,14 +79,27 @@ function detectPin(ctx: MoveContext): boolean {
   if (!movedPiece || !isSlidingPiece(movedPiece)) return false;
 
   const opp = opponentColor(ctx.piece.color);
-  const enemyKing = ctx.nextPieces.find(p => p.type === 'king' && p.color === opp);
+  const enemyKing = ctx.nextPieces.find(
+    (p) => p.type === "king" && p.color === opp,
+  );
   if (!enemyKing) return false;
 
   // For each non-king enemy piece, check if removing it exposes the king to our moved piece
-  const enemyPieces = ctx.nextPieces.filter(p => p.color === opp && p.type !== 'king');
+  const enemyPieces = ctx.nextPieces.filter(
+    (p) => p.color === opp && p.type !== "king",
+  );
   for (const candidate of enemyPieces) {
-    const withoutCandidate = ctx.nextPieces.filter(p => p.id !== candidate.id);
-    if (isValidMove(movedPiece, enemyKing.position, withoutCandidate, ctx.gameMode, true)) {
+    const withoutCandidate = ctx.nextPieces.filter(
+      (p) => p.id !== candidate.id,
+    );
+    if (
+      isValidMove(
+        movedPiece,
+        enemyKing.position,
+        withoutCandidate,
+        ctx.gameMode,
+      )
+    ) {
       return true;
     }
   }
@@ -95,8 +114,8 @@ function detectPin(ctx: MoveContext): boolean {
  *   promotion > castling > check > discoveredCheck > fork > pin > capture
  */
 export function detectTactic(ctx: MoveContext): TacticTag | null {
-  if (ctx.wasPromotion) return 'promotion';
-  if (ctx.wasCastling) return 'castling';
+  if (ctx.wasPromotion) return "promotion";
+  if (ctx.wasCastling) return "castling";
 
   const opp = opponentColor(ctx.piece.color);
   const opponentInCheck = isInCheck(opp, ctx.nextPieces, ctx.gameMode);
@@ -105,17 +124,27 @@ export function detectTactic(ctx: MoveContext): TacticTag | null {
     // Was it the moved piece itself giving check, or did moving it reveal a check?
     const movedPiece = getMovedPiece(ctx);
     if (movedPiece) {
-      const enemyKing = ctx.nextPieces.find(p => p.type === 'king' && p.color === opp);
-      if (enemyKing && isValidMove(movedPiece, enemyKing.position, ctx.nextPieces, ctx.gameMode, true)) {
-        return 'check';
+      const enemyKing = ctx.nextPieces.find(
+        (p) => p.type === "king" && p.color === opp,
+      );
+      if (
+        enemyKing &&
+        isValidMove(
+          movedPiece,
+          enemyKing.position,
+          ctx.nextPieces,
+          ctx.gameMode,
+        )
+      ) {
+        return "check";
       }
     }
-    return 'discoveredCheck';
+    return "discoveredCheck";
   }
 
-  if (detectFork(ctx)) return 'fork';
-  if (detectPin(ctx)) return 'pin';
-  if (ctx.capturedPiece) return 'capture';
+  if (detectFork(ctx)) return "fork";
+  if (detectPin(ctx)) return "pin";
+  if (ctx.capturedPiece) return "capture";
 
   return null;
 }

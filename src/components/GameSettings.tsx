@@ -10,8 +10,8 @@ import {
 import { useTranslation } from "react-i18next";
 import { getDifficultyKey } from "../utils/chess";
 import { SUPPORTED_LANGUAGES, SupportedLanguage } from "../i18n";
-import { useInstall } from "../context/InstallContext";
-import { useSkin } from "../context/SkinContext";
+import { useInstall } from "../hooks/useInstall";
+import { useSkin } from "../hooks/useSkin";
 import { SKINS, getPieceImageSrc } from "../utils/pieceImage";
 import FeedbackModal from "./FeedbackModal";
 import type { LocalSettings } from "../hooks/useChessGame";

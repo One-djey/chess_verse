@@ -28,11 +28,11 @@ import {
   MoveContext,
   getSmartFallbackMove,
 } from "../utils/chess";
-import { gameModes } from "./GameModes";
-import { useP2P } from "../context/P2PContext";
+import { gameModes } from "../utils/gameModes";
+import { useP2P } from "../hooks/useP2P";
 import { useChessGame } from "../hooks/useChessGame";
 import { useP2PGame } from "../hooks/useP2PGame";
-import { useSkin } from "../context/SkinContext";
+import { useSkin } from "../hooks/useSkin";
 import { recordGame } from "../services/statsService";
 import type { PlayType } from "../services/statsService";
 import type { PieceType } from "../types/chess";
@@ -148,7 +148,7 @@ export default function Game() {
     sessionStatsRef.current = { pieceMoves: {}, piecesLost: {} };
     hintsFollowedRef.current = 0;
     wasPromotedRef.current = false;
-  }, [chess.gameState.startTime]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [chess.gameState.startTime]);
 
   // ── Game-over modal visibility ────────────────────────────────────────────
   // Tracks whether the GameOver modal is shown. Automatically opens when the
@@ -329,7 +329,7 @@ export default function Game() {
     chess.gameState.pieces,
     chess.gameState.currentTurn,
     chess.gameState.gameMode,
-  ]); // eslint-disable-line react-hooks/exhaustive-deps
+  ]);
 
   // ── Danger indicator ──────────────────────────────────────────────────────
   const endangeredPieceIds = React.useMemo<Set<string>>(() => {
@@ -359,7 +359,8 @@ export default function Game() {
     chess.gameState.pieces,
     chess.gameState.currentTurn,
     chess.gameState.gameMode,
-  ]); // eslint-disable-line react-hooks/exhaustive-deps
+    chess.aiEnabled,
+  ]);
 
   // ── Hint (auto-calculated at the start of each turn) ─────────────────────
   const [hintMove, setHintMove] = React.useState<{
@@ -433,7 +434,7 @@ export default function Game() {
     chess.gameState.pieces,
     chess.gameState.currentTurn,
     chess.gameState.gameMode,
-  ]); // eslint-disable-line react-hooks/exhaustive-deps
+  ]);
 
   // ── Labels (annotations + alerts) ─────────────────────────────────────────
   const labelIdRef = React.useRef(0);

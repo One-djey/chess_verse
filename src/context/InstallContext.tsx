@@ -1,8 +1,8 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useEffect, useState, type ReactNode } from "react";
 
 interface BeforeInstallPromptEvent extends Event {
   prompt(): Promise<void>;
-  userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
+  userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
 }
 
 interface InstallContextValue {
@@ -21,7 +21,7 @@ interface InstallContextValue {
   showBanner: boolean;
 }
 
-const InstallContext = createContext<InstallContextValue>({
+export const InstallContext = createContext<InstallContextValue>({
   canInstall: false,
   isStandalone: false,
   triggerInstall: async () => {},
@@ -31,12 +31,12 @@ const InstallContext = createContext<InstallContextValue>({
 
 function checkStandalone(): boolean {
   return (
-    window.matchMedia('(display-mode: standalone)').matches ||
+    window.matchMedia("(display-mode: standalone)").matches ||
     !!(navigator as { standalone?: boolean }).standalone
   );
 }
 
-export function InstallProvider({ children }: { children: React.ReactNode }) {
+export function InstallProvider({ children }: { children: ReactNode }) {
   const [prompt, setPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   // dismissed lives in React state (not localStorage/sessionStorage)
   // → resets to false on every new tab/browser session, persists during SPA navigation
@@ -49,31 +49,31 @@ export function InstallProvider({ children }: { children: React.ReactNode }) {
       e.preventDefault();
       setPrompt(e as BeforeInstallPromptEvent);
     };
-    window.addEventListener('beforeinstallprompt', handler);
-    return () => window.removeEventListener('beforeinstallprompt', handler);
+    window.addEventListener("beforeinstallprompt", handler);
+    return () => window.removeEventListener("beforeinstallprompt", handler);
   }, [standalone]);
 
   const triggerInstall = async () => {
     if (!prompt) return;
     await prompt.prompt();
     const { outcome } = await prompt.userChoice;
-    if (outcome === 'accepted') {
+    if (outcome === "accepted") {
       setPrompt(null);
       setDismissed(true);
     }
   };
 
   return (
-    <InstallContext.Provider value={{
-      canInstall: !!prompt && !standalone,
-      isStandalone: standalone,
-      triggerInstall,
-      dismissForSession: () => setDismissed(true),
-      showBanner: !!prompt && !standalone && !dismissed,
-    }}>
+    <InstallContext.Provider
+      value={{
+        canInstall: !!prompt && !standalone,
+        isStandalone: standalone,
+        triggerInstall,
+        dismissForSession: () => setDismissed(true),
+        showBanner: !!prompt && !standalone && !dismissed,
+      }}
+    >
       {children}
     </InstallContext.Provider>
   );
 }
-
-export const useInstall = () => useContext(InstallContext);
