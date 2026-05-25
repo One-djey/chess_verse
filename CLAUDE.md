@@ -20,7 +20,9 @@ React 18 + TypeScript + Vite + Tailwind CSS. No backend. P2P via Trystero (WebRT
 | Chess board/pieces   | `src/utils/chess/board.ts`                                                                                   |
 | Chess move logic     | `src/utils/chess/moves.ts`                                                                                   |
 | Assimilation logic   | `src/utils/chess/assimilation.ts`                                                                            |
-| Chess barrel export  | `src/utils/chess.ts` (re-exports board, moves, and assimilation)                                             |
+| Chess barrel export  | `src/utils/chess.ts` (re-exports board, moves, assimilation, constants, aiFallback)                          |
+| Chess constants      | `src/utils/chess/constants.ts` (`PIECE_VALUES` — standard material values)                                   |
+| AI fallback logic    | `src/utils/chess/aiFallback.ts` (`getSmartFallbackMove` — priority chain when Stockfish plays illegal moves) |
 | Game state hook      | `src/hooks/useChessGame.ts`                                                                                  |
 | P2P game hook        | `src/hooks/useP2PGame.ts`                                                                                    |
 | P2P context          | `src/context/P2PContext.tsx`                                                                                 |
@@ -109,6 +111,28 @@ Defined in `src/utils/pieceImage.ts`. Convention: `public/ressources/pieces/{ski
 - Skin picker in the Settings modal (always visible, visual cards with king/queen/knight preview)
 - **To add a skin**: add images to `public/ressources/pieces/<id>/`, add entry to `SKINS` in `pieceImage.ts`, add `skins.<id>` key to all 8 locale files
 - **P2P sync**: host embeds `hostSkin` in `color_assign`; guest sends `guest_ready { skin }` before navigating — both players see their own skin on their pieces and the opponent's skin on opponent pieces
+
+## AI fallback system
+
+Stockfish operates on standard chess rules and can suggest illegal moves in special modes (borderless, assimilation). When this happens — or when all Stockfish retries have failed — `getSmartFallbackMove` (in `aiFallback.ts`) is called.
+
+**Priority chain — king in check:**
+
+1. Non-king piece resolving check, safe (lowest piece value first)
+2. Non-king piece resolving check, risky (lowest piece value first)
+3. King move to a safe square
+4. `null` → checkmate confirmed
+
+**Priority chain — normal turn:**
+
+1. Safe capture (highest captured value, then lowest mover value)
+2. Safe move (lowest mover value)
+3. Risky capture (highest captured value, then lowest mover value)
+4. Risky move (lowest mover value)
+5. `null` → stalemate confirmed
+
+**"Safe"** = after the move, the moved piece is not under attack by any opponent piece (`isSquareUnderAttack`).
+**Candidate scan is always exhaustive** — never short-circuited, because borderless/assimilation modes have far more legal moves than standard chess.
 
 ## P2P protocol
 

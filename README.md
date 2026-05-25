@@ -15,7 +15,7 @@ No installation needed — just open the link and start playing!
 ## Features
 
 - **Multiple game modes** — Classic, Borderless, All Random, Assimilation.
-- **Solo & vs AI** — Play both sides yourself or face Stockfish at 10 difficulty levels (Beginner to Superhuman).
+- **Solo & vs AI** — Play both sides yourself or face Stockfish at 10 difficulty levels (Beginner to Superhuman). In special modes, a smart fallback chain ensures the AI always plays a legal move even when Stockfish suggests a move that violates special-mode rules.
 - **P2P multiplayer** — Challenge a friend remotely via a shareable link, with no server involved (WebRTC).
 - **Classic chess rules** — Castling, en passant, pawn promotion, check detection, stalemate.
 - **Visual indicators** — Highlighted valid moves, selected piece, king in check (orange), assimilated pieces (green glow).

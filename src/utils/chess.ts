@@ -1,5 +1,7 @@
 // Barrel — re-exports everything so existing imports don't need to change.
-export * from './chess/board';
-export * from './chess/moves';
-export * from './chess/assimilation';
-export * from './chess/tactics';
+export * from "./chess/board";
+export * from "./chess/moves";
+export * from "./chess/assimilation";
+export * from "./chess/tactics";
+export * from "./chess/constants";
+export * from "./chess/aiFallback";

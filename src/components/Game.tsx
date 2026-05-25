@@ -26,6 +26,7 @@ import {
   isSquareUnderAttack,
   detectTactic,
   MoveContext,
+  getSmartFallbackMove,
 } from "../utils/chess";
 import { gameModes } from "./GameModes";
 import { useP2P } from "../context/P2PContext";
@@ -189,7 +190,20 @@ export default function Game() {
         currentPieces,
         chess.gameStateRef.current.gameMode,
       ).some((v) => v.x === move.to.x && v.y === move.to.y);
-      if (!valid) return;
+      if (!valid) {
+        // Stockfish suggested a move that violates special-mode rules
+        // (e.g. assimilation, borderless). Use the smart fallback chain.
+        console.warn(
+          "[AI] Illegal move suggested by Stockfish — activating smart fallback.",
+          move,
+        );
+        const fallback = getSmartFallbackMove(
+          currentPieces,
+          chess.gameStateRef.current.gameMode,
+        );
+        if (fallback) applyMove(fallback);
+        return;
+      }
       // Track AI captures: the piece being taken is a human (white) piece
       const aiCaptured = currentPieces.find(
         (p) =>
@@ -245,19 +259,6 @@ export default function Game() {
       });
     };
 
-    const playRandomMove = () => {
-      const pieces = chess.gameStateRef.current.pieces;
-      const gm = chess.gameStateRef.current.gameMode;
-      const blackPieces = pieces.filter((p) => p.color === "black");
-      const candidates = blackPieces
-        .map((p) => ({ piece: p, moves: getValidMoves(p, pieces, gm) }))
-        .filter((pm) => pm.moves.length > 0);
-      if (candidates.length === 0) return; // stalemate/checkmate — game ends naturally
-      const pm = candidates[Math.floor(Math.random() * candidates.length)];
-      const to = pm.moves[Math.floor(Math.random() * pm.moves.length)];
-      applyMove({ from: pm.piece.position, to });
-    };
-
     const trigger = async (retriesLeft: number) => {
       if (cancelled) return;
 
@@ -286,10 +287,18 @@ export default function Game() {
           chess.aiRef.current?.restart?.();
           setTimeout(() => trigger(retriesLeft - 1), 1000);
         } else {
-          // All retries exhausted — fall back to a random legal move so the game
-          // keeps going; AI stays enabled for future turns.
-          console.warn("AI failed after all retries — playing a random move.");
-          if (!cancelled) playRandomMove();
+          // All retries exhausted — use the smart fallback chain instead of a
+          // purely random move; AI stays enabled for future turns.
+          console.warn(
+            "[AI] All retries exhausted — activating smart fallback.",
+          );
+          if (!cancelled) {
+            const fallback = getSmartFallbackMove(
+              chess.gameStateRef.current.pieces,
+              chess.gameStateRef.current.gameMode,
+            );
+            if (fallback) applyMove(fallback);
+          }
         }
       }
     };
