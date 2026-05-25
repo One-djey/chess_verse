@@ -99,7 +99,7 @@
     "aiDifficulty": "AI 난이도",
     "beginner": "초보",
     "superhuman": "초인",
-    "pieceAppearance": "기물 외관",
+    "pieceAppearance": "말 외관",
     "language": "언어",
     "tab": {
       "partie": "게임",
@@ -117,9 +117,7 @@
       "그랜드마스터",
       "슈퍼 그랜드마스터",
       "초인"
-    ],
-    "pieceAppearance": "말 외관",
-    "language": "언어"
+    ]
   },
   "learning": {
     "pinnedPiece": "이 기물은 움직일 수 없습니다 — 왕이 노출됩니다",
@@ -162,7 +160,9 @@
         "pawn": "폰"
       },
       "patterns": {
-        "scholarsmate": { "name": "학자의 메이트" },
+        "scholarsmate": {
+          "name": "학자의 메이트"
+        },
         "legalsmate": {
           "name": "레갈의 메이트",
           "inventor": "시르 드 레갈, ~1750"
@@ -171,9 +171,17 @@
           "name": "질식 메이트",
           "inventor": "필리도르 (추정)"
         },
-        "operamate": { "name": "오페라 메이트", "inventor": "폴 모피, 1858" },
-        "arabianmate": { "name": "아라비안 메이트", "inventor": "8세기" },
-        "backrankmate": { "name": "백 랭크 메이트" },
+        "operamate": {
+          "name": "오페라 메이트",
+          "inventor": "폴 모피, 1858"
+        },
+        "arabianmate": {
+          "name": "아라비안 메이트",
+          "inventor": "8세기"
+        },
+        "backrankmate": {
+          "name": "백 랭크 메이트"
+        },
         "bodensmate": {
           "name": "보든의 메이트",
           "inventor": "새뮤얼 보든, 1853"
@@ -182,23 +190,36 @@
           "name": "아나스타시아의 메이트",
           "inventor": "W. 하이제, 1803"
         },
-        "lollismate": { "name": "로리의 메이트", "inventor": "G. 로리, 1763" },
+        "lollismate": {
+          "name": "로리의 메이트",
+          "inventor": "G. 로리, 1763"
+        },
         "grecomate": {
           "name": "그레코의 메이트",
           "inventor": "G. 그레코, ~1620"
         },
-        "hookmate": { "name": "훅 메이트" },
-        "greekgift": { "name": "그리스의 선물", "inventor": "고전적 희생" },
+        "hookmate": {
+          "name": "훅 메이트"
+        },
+        "greekgift": {
+          "name": "그리스의 선물",
+          "inventor": "고전적 희생"
+        },
         "friedliver": {
           "name": "프라이드 리버 어택",
           "inventor": "G.C. 폴레리오, 1610"
         },
-        "windmill": { "name": "풍차", "inventor": "토레 vs 라스커, 1925" },
+        "windmill": {
+          "name": "풍차",
+          "inventor": "토레 vs 라스커, 1925"
+        },
         "noahsark": {
           "name": "노아의 방주 함정",
           "inventor": "고전 루이 로페스"
         },
-        "elephanttrap": { "name": "엘리펀트 트랩" },
+        "elephanttrap": {
+          "name": "엘리펀트 트랩"
+        },
         "laskertrap": {
           "name": "라스커 트랩",
           "inventor": "E. 라스커 / S. 뒤부아"
@@ -287,7 +308,7 @@
       "basisTitle": "4. 법적 근거",
       "basisBody": "처리는 게시자의 정당한 이익(서비스 개선)을 기반으로 하며, 데이터는 엄격히 익명이고 광고 또는 상업적 목적으로 사용되지 않습니다. Google의 동의 모드는 analytics_storage: granted로 구성되어 있으며 모든 광고 신호가 비활성화되어 있습니다(ad_storage: denied).",
       "cookiesTitle": "5. 쿠키",
-      "cookiesBody1": "ChessVerse는 브라우저 로컬 스토리지(localStorage)를 사용하여 게임 설정(AI 난이도, 보드 방향, 인터페이스 언어)을 기억합니다. 이 데이터는 브라우저에 남아 있으며 서버로 전송되지 않습니다.",
+      "cookiesBody1": "ChessVerse는 브라우저 로컬 스토리지(localStorage)를 사용하여 게임 설정(AI 난이도, 보드 방향, 인터페이스 언어)을 기억합니다. 이 데이터는 브라우저에 남아 있으며 서버로 전송되지 않습니다.게임 통계(플레이한 게임, 결과, 일일 활동)도 프로필 페이지를 위해 <code>chessverse_stats</code> 키를 통해 로컬에 저장됩니다.",
       "cookiesBody2": "Google Analytics 4는 익명 청중 측정을 위한 기술적 쿠키를 설정할 수 있습니다. 광고 또는 개인화 쿠키는 사용되지 않습니다.",
       "p2pTitle": "6. 멀티플레이어 모드(P2P)",
       "p2pBody": "멀티플레이어 모드에서 플레이어 간 연결은 WebRTC(Trystero 라이브러리)를 통해 피어투피어 방식으로 설정됩니다. 게임 데이터는 서버를 거치지 않고 플레이어의 브라우저 간에 직접 전송됩니다. 게임은 기록되지 않습니다.",
@@ -340,5 +361,127 @@
       "lawBody": "본 약관은 프랑스 법률의 적용을 받습니다. 분쟁이 발생하고 우호적인 해결이 이루어지지 않는 경우 니스 관할 법원이 전속 관할권을 갖습니다.",
       "contactTitle": "8. 문의"
     }
+  },
+  "profile": {
+    "title": "내 프로필",
+    "stats": "통계",
+    "achievements": "업적",
+    "totalGames": "총 게임 수",
+    "local": "로컬",
+    "p2p": "멀티플레이어",
+    "ai": "AI 대전",
+    "wins": "승리",
+    "losses": "패배",
+    "draws": "무승부",
+    "surrenders": "항복",
+    "winRate": "승률",
+    "winStreak": "최고 연승",
+    "currentStreak": "현재 연승",
+    "totalTime": "총 플레이 시간",
+    "avgTime": "평균 게임 시간",
+    "favoritePiece": "선호 기물",
+    "leastFavoritePiece": "약점 기물",
+    "favoriteMode": "선호 모드",
+    "eloRank": "AI 등급",
+    "activity": "활동 기록",
+    "noGames": "기록된 게임이 없습니다. 게임을 플레이하여 통계를 확인하세요!",
+    "ranks": {
+      "beginner": "초보자",
+      "novice": "견습생",
+      "apprentice": "수련생",
+      "knight": "기사",
+      "strategist": "전략가",
+      "master": "마스터",
+      "grandmaster": "그랜드마스터",
+      "legend": "전설"
+    },
+    "badges": {
+      "firstStep": "첫걸음",
+      "firstStepDesc": "첫 번째 게임 플레이하기",
+      "veteran": "베테랑",
+      "veteranDesc": "100게임 플레이하기",
+      "explorer": "탐험가",
+      "explorerDesc": "4가지 게임 모드 모두 체험하기",
+      "bilingue": "다국어 사용자",
+      "bilingueDesc": "2가지 언어로 게임하기",
+      "serialWinner": "연속 승자",
+      "serialWinnerDesc": "20번 승리하기",
+      "onFire": "불꽃 질주",
+      "onFireDesc": "3연승 달성하기",
+      "unstoppable": "무적",
+      "unstoppableDesc": "10연승 달성하기",
+      "quickWin": "번개 승리",
+      "quickWinDesc": "10수 이내에 게임 승리하기",
+      "diplomat": "외교관",
+      "diplomatDesc": "첫 번째 무승부 달성하기",
+      "scholarsMate": "스칼라스 메이트",
+      "scholarsMateDesc": "스칼라스 메이트로 승리하기 (정확한 수순)",
+      "coronation": "대관식",
+      "coronationDesc": "폰을 퀸으로 프로모션하기",
+      "assisted": "도움받기",
+      "assistedDesc": "힌트 제안 100번 따르기",
+      "aiHunter": "AI 사냥꾼",
+      "aiHunterDesc": "난이도 레벨 15에서 AI 이기기",
+      "p2pPioneer": "P2P 개척자",
+      "p2pPioneerDesc": "첫 번째 온라인 게임 플레이하기",
+      "chaosFan": "혼돈의 팬",
+      "chaosFanDesc": "전체 랜덤 모드 10게임 플레이하기",
+      "assimilationFan": "동화 팬",
+      "assimilationFanDesc": "동화 모드 10게임 플레이하기",
+      "borderlessTraveler": "무경계 여행자",
+      "borderlessTravelerDesc": "무경계 모드 10게임 플레이하기",
+      "nightOwl": "야행성",
+      "nightOwlDesc": "오후 10시 이후에 10게임 플레이하기",
+      "earlyBird": "일찍 일어나는 새",
+      "earlyBirdDesc": "오전 8시 이전에 게임하기",
+      "marathon": "마라톤",
+      "marathonDesc": "42시간 플레이 시간 누적하기",
+      "whatElse": "What Else?",
+      "whatElseDesc": "커피 한 잔으로 프로젝트 지원하기",
+      "contributor": "기여자",
+      "contributorDesc": "메일 양식으로 피드백 보내기",
+      "coward": "겁쟁이",
+      "cowardDesc": "10번 항복하기",
+      "assiduous": "성실한 플레이어",
+      "assiduousDesc": "7일 연속 플레이하기"
+    },
+    "pieces": {
+      "queen": "퀸",
+      "rook": "룩",
+      "bishop": "비숍",
+      "knight": "나이트",
+      "king": "킹",
+      "pawn": "폰"
+    },
+    "months": {
+      "jan": "1월",
+      "feb": "2월",
+      "mar": "3월",
+      "apr": "4월",
+      "may": "5월",
+      "jun": "6월",
+      "jul": "7월",
+      "aug": "8월",
+      "sep": "9월",
+      "oct": "10월",
+      "nov": "11월",
+      "dec": "12월"
+    },
+    "days": {
+      "mon": "월",
+      "wed": "수",
+      "fri": "금"
+    },
+    "activityNoGames": "게임 없음",
+    "game": "게임",
+    "games": "게임",
+    "less": "적음",
+    "more": "많음",
+    "unlocked": "✓ 달성",
+    "favoritePieceHint": "가장 많이 이동",
+    "leastFavoritePieceHint": "가장 많이 잡힘",
+    "movesMade": "이동",
+    "timesCaptured": "잡힘",
+    "level": "레벨"
   }
 }

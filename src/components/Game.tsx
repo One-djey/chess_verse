@@ -11,7 +11,13 @@ import ChessBoard from "./ChessBoard";
 import GameOver from "./GameOver";
 import NavBar from "./NavBar";
 import P2PStatusBar from "./P2PStatusBar";
-import { Piece, Position, GameMode, PieceColor } from "../types/chess";
+import {
+  Piece,
+  Position,
+  GameMode,
+  PieceColor,
+  MoveRecord,
+} from "../types/chess";
 import {
   getValidMoves,
   hasRawMoves,
@@ -26,6 +32,43 @@ import { useP2P } from "../context/P2PContext";
 import { useChessGame } from "../hooks/useChessGame";
 import { useP2PGame } from "../hooks/useP2PGame";
 import { useSkin } from "../context/SkinContext";
+import { recordGame } from "../services/statsService";
+import type { PlayType } from "../services/statsService";
+import type { PieceType } from "../types/chess";
+
+/**
+ * Detects the exact Scholar's Mate pattern (white side):
+ * 1. e2→e4  2. Q→h5  3. B→c4  4. Q×f7#
+ * Board uses y=0 at top (white promotes at y=0, starts at y=6/7).
+ */
+function detectScholarsMate(moves: MoveRecord[]): boolean {
+  if (moves.length < 7) return false;
+  const m0 = moves[0]; // white ply 1: pawn e2(4,6)→e4(4,4)
+  const m2 = moves[2]; // white ply 2: queen →h5(7,3)
+  const m4 = moves[4]; // white ply 3: bishop →c4(2,4)
+  const m6 = moves[6]; // white ply 4: queen ×f7(5,1)#
+  return (
+    m0.piece.color === "white" &&
+    m0.piece.type === "pawn" &&
+    m0.from.x === 4 &&
+    m0.from.y === 6 &&
+    m0.to.x === 4 &&
+    m0.to.y === 4 &&
+    m2.piece.color === "white" &&
+    m2.piece.type === "queen" &&
+    m2.to.x === 7 &&
+    m2.to.y === 3 &&
+    m4.piece.color === "white" &&
+    m4.piece.type === "bishop" &&
+    m4.to.x === 2 &&
+    m4.to.y === 4 &&
+    m6.piece.color === "white" &&
+    m6.piece.type === "queen" &&
+    m6.to.x === 5 &&
+    m6.to.y === 1 &&
+    m6.capturedPiece !== null
+  );
+}
 
 function resolveGameMode(
   modeId: string | undefined,
@@ -38,7 +81,7 @@ function resolveGameMode(
 export default function Game() {
   const { modeId } = useParams();
   const navigate = useNavigate();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   const p2p = useP2P();
   const { skin } = useSkin();
@@ -47,6 +90,21 @@ export default function Game() {
   // avoiding the stale-closure problem of capturing p2p.isP2PMode at first-render time.
   const isActiveP2PRef = React.useRef(false);
   isActiveP2PRef.current = modeId === "p2p" && p2p.isP2PMode;
+
+  // ── Session stats tracking ─────────────────────────────────────────────────
+  // Accumulates per-piece move/capture counts during the current game.
+  // Flushed to statsService when the game ends; reset on each new game.
+  // NOTE: the reset effect (tied to chess.gameState.startTime) is declared
+  // after `chess` is initialised below, to avoid a TDZ error.
+  const sessionStatsRef = React.useRef<{
+    pieceMoves: Partial<Record<PieceType, number>>;
+    piecesLost: Partial<Record<PieceType, number>>;
+  }>({ pieceMoves: {}, piecesLost: {} });
+
+  /** Number of times the player followed the hint suggestion this game. */
+  const hintsFollowedRef = React.useRef(0);
+  /** Whether the player promoted a pawn during this game. */
+  const wasPromotedRef = React.useRef(false);
 
   // If we enter a non-P2P game while P2P state is still active (e.g. user navigated
   // away via the NavBar without going through handleLeaveP2P), clean up the stale state.
@@ -82,6 +140,14 @@ export default function Game() {
     gameStateRef: chess.gameStateRef,
     chessResetGame: chess.resetGame,
   });
+
+  // Reset session stats whenever a new game starts (startTime changes).
+  // Declared here (after `chess`) to avoid a temporal dead zone error.
+  React.useEffect(() => {
+    sessionStatsRef.current = { pieceMoves: {}, piecesLost: {} };
+    hintsFollowedRef.current = 0;
+    wasPromotedRef.current = false;
+  }, [chess.gameState.startTime]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Game-over modal visibility ────────────────────────────────────────────
   // Tracks whether the GameOver modal is shown. Automatically opens when the
@@ -124,6 +190,18 @@ export default function Game() {
         chess.gameStateRef.current.gameMode,
       ).some((v) => v.x === move.to.x && v.y === move.to.y);
       if (!valid) return;
+      // Track AI captures: the piece being taken is a human (white) piece
+      const aiCaptured = currentPieces.find(
+        (p) =>
+          p.color !== piece.color &&
+          p.position.x === move.to.x &&
+          p.position.y === move.to.y,
+      );
+      if (aiCaptured && aiCaptured.type !== "pawn") {
+        const t = aiCaptured.type as PieceType;
+        sessionStatsRef.current.piecesLost[t] =
+          (sessionStatsRef.current.piecesLost[t] ?? 0) + 1;
+      }
       chess.setGameState((prev) => {
         const nextState = applyMoveToState(prev, piece, move.to);
         const capturedPiece =
@@ -401,6 +479,7 @@ export default function Game() {
       moveCount,
       startTime,
       gameMode,
+      moves,
     } = chess.gameState;
     window.dataLayer = window.dataLayer || [];
     window.dataLayer.push({
@@ -411,6 +490,38 @@ export default function Game() {
       end_reason: surrenderedBy ? "surrender" : (drawReason ?? "checkmate"),
       duration_seconds: Math.round((Date.now() - startTime) / 1000),
       move_count: moveCount.white + moveCount.black,
+    });
+
+    // ── Record stats ──
+    const playerColor: PieceColor = p2p.isP2PMode
+      ? (p2p.playerColor ?? "white")
+      : "white";
+    const isWin = winner !== null && winner === playerColor;
+    const totalMoves = moveCount.white + moveCount.black;
+    const statsPlayType: PlayType = p2p.isP2PMode
+      ? "p2p"
+      : chess.aiEnabled
+        ? "ai"
+        : "local";
+    recordGame({
+      mode: gameMode.id,
+      playType: statsPlayType,
+      winner,
+      surrenderedBy,
+      drawReason,
+      duration: Date.now() - startTime,
+      moveCount: totalMoves,
+      aiDifficulty: chess.aiEnabled ? chess.settings.aiDifficulty : undefined,
+      pieceMoves: { ...sessionStatsRef.current.pieceMoves },
+      piecesLost: { ...sessionStatsRef.current.piecesLost },
+      playerColor,
+      hour: new Date().getHours(),
+      isQuickWin: isWin && totalMoves < 10,
+      wasPromoted: wasPromotedRef.current,
+      wasScholarsMate:
+        isWin && playerColor === "white" && detectScholarsMate(moves),
+      hintsFollowedInGame: hintsFollowedRef.current,
+      language: i18n.language,
     });
   }, [chess.gameState.gameOver]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -477,6 +588,44 @@ export default function Game() {
         to: norm,
         seq: p2pGame.seqRef.current,
       });
+    }
+
+    // ── Track hint following ──
+    if (
+      hintMove &&
+      selectedPiece.position.x === hintMove.from.x &&
+      selectedPiece.position.y === hintMove.from.y &&
+      norm.x === hintMove.to.x &&
+      norm.y === hintMove.to.y
+    ) {
+      hintsFollowedRef.current += 1;
+    }
+
+    // ── Track pawn promotion by player ──
+    const isPlayerPromotion =
+      selectedPiece.type === "pawn" &&
+      ((selectedPiece.color === "white" && norm.y === 0) ||
+        (selectedPiece.color === "black" && norm.y === 7));
+    if (isPlayerPromotion) wasPromotedRef.current = true;
+
+    // ── Track piece stats (non-pawn only) ──
+    // pieceMoves: the piece being moved by the human player
+    if (selectedPiece.type !== "pawn") {
+      const t = selectedPiece.type as PieceType;
+      sessionStatsRef.current.pieceMoves[t] =
+        (sessionStatsRef.current.pieceMoves[t] ?? 0) + 1;
+    }
+    // piecesLost: opponent pieces being captured (= pieces the mover takes from opponent)
+    const capturedForStats = chess.gameState.pieces.find(
+      (p) =>
+        p.color !== selectedPiece.color &&
+        p.position.x === norm.x &&
+        p.position.y === norm.y,
+    );
+    if (capturedForStats && capturedForStats.type !== "pawn") {
+      const t = capturedForStats.type as PieceType;
+      sessionStatsRef.current.piecesLost[t] =
+        (sessionStatsRef.current.piecesLost[t] ?? 0) + 1;
     }
 
     chess.setGameState((prev) => {

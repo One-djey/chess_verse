@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { X, MessageSquare, Send } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { recordFeedbackSent } from "../services/statsService";
 
 const FEEDBACK_EMAIL = "contact@jeremy-maisse.com";
 
@@ -25,6 +26,7 @@ export default function FeedbackModal({ isOpen, onClose }: FeedbackModalProps) {
     setMessage("");
     setCategory("general");
     onClose();
+    recordFeedbackSent();
     window.location.href = `mailto:${FEEDBACK_EMAIL}?subject=${subject}&body=${body}`;
   };
 

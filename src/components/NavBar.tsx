@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Settings, Flag, ChevronRight, Trophy } from "lucide-react";
+import { Settings, Flag, ChevronRight, Trophy, User } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import GameSettings from "./GameSettings";
 import InstallBanner from "./InstallBanner";
@@ -93,6 +93,13 @@ export default function NavBar({
               {t("nav.viewResult")}
             </button>
           )}
+          <button
+            onClick={() => navigate("/profile")}
+            className="p-2 rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-700 transition"
+            aria-label={t("profile.title")}
+          >
+            <User size={19} />
+          </button>
           <button
             onClick={() => setIsSettingsOpen(true)}
             className="p-2 rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-700 transition"

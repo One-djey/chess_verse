@@ -1,7 +1,7 @@
-import { useState, useEffect, useRef } from 'react';
-import { GameState, Piece, GameMode } from '../types/chess';
-import { getInitialPieces } from '../utils/chess';
-import { ChessAI } from '../services/ChessAI';
+import { useState, useEffect, useRef } from "react";
+import { GameState, Piece, GameMode } from "../types/chess";
+import { getInitialPieces } from "../utils/chess";
+import { ChessAI } from "../services/ChessAI";
 
 export type LocalSettings = {
   aiEnabled: boolean;
@@ -12,7 +12,7 @@ export type LocalSettings = {
   showMoveAnnotations: boolean;
 };
 
-const STORAGE_KEY = 'chess_settings';
+const STORAGE_KEY = "chess_settings";
 const DEFAULT_SETTINGS: LocalSettings = {
   aiEnabled: true,
   aiDifficulty: 5,
@@ -22,15 +22,19 @@ const DEFAULT_SETTINGS: LocalSettings = {
   showMoveAnnotations: false,
 };
 
-export function makeInitialState(pieces: Piece[], gameMode: GameMode): GameState {
+export function makeInitialState(
+  pieces: Piece[],
+  gameMode: GameMode,
+): GameState {
   return {
     pieces,
-    currentTurn: 'white',
+    currentTurn: "white",
     selectedPiece: null,
     validMoves: [],
     isCheck: false,
     startTime: Date.now(),
     moveCount: { white: 0, black: 0 },
+    moves: [],
     gameOver: false,
     winner: null,
     gameMode,
@@ -45,7 +49,13 @@ interface Params {
   p2pInitialPieces: Piece[] | null;
 }
 
-export function useChessGame({ modeId, navigate, gameMode, isP2PMode, p2pInitialPieces }: Params) {
+export function useChessGame({
+  modeId,
+  navigate,
+  gameMode,
+  isP2PMode,
+  p2pInitialPieces,
+}: Params) {
   const aiRef = useRef<ChessAI | null>(null);
   const gameStateRef = useRef<GameState | null>(null);
 
@@ -54,10 +64,14 @@ export function useChessGame({ modeId, navigate, gameMode, isP2PMode, p2pInitial
       const saved = localStorage.getItem(STORAGE_KEY);
       const parsed = saved ? JSON.parse(saved) : {};
       return { ...DEFAULT_SETTINGS, ...parsed };
-    } catch { return DEFAULT_SETTINGS; }
+    } catch {
+      return DEFAULT_SETTINGS;
+    }
   });
 
-  const [gameState, setGameState] = useState<GameState>(() => makeInitialState([], gameMode));
+  const [gameState, setGameState] = useState<GameState>(() =>
+    makeInitialState([], gameMode),
+  );
   gameStateRef.current = gameState;
 
   // Persist settings
@@ -67,21 +81,32 @@ export function useChessGame({ modeId, navigate, gameMode, isP2PMode, p2pInitial
 
   // Initialise board when route/mode is ready
   useEffect(() => {
-    if (!modeId) { navigate('/'); return; }
-    if (modeId === 'p2p' && isP2PMode && !p2pInitialPieces) return;
+    if (!modeId) {
+      navigate("/");
+      return;
+    }
+    if (modeId === "p2p" && isP2PMode && !p2pInitialPieces) return;
 
-    const pieces = modeId === 'p2p' && p2pInitialPieces
-      ? p2pInitialPieces
-      : getInitialPieces(gameMode);
+    const pieces =
+      modeId === "p2p" && p2pInitialPieces
+        ? p2pInitialPieces
+        : getInitialPieces(gameMode);
 
     setGameState(makeInitialState(pieces, gameMode));
 
     if (!isP2PMode && !aiRef.current) {
-      try { aiRef.current = new ChessAI(); } catch (e) { console.error(e); }
+      try {
+        aiRef.current = new ChessAI();
+      } catch (e) {
+        console.error(e);
+      }
     }
 
     return () => {
-      if (aiRef.current) { aiRef.current.destroy(); aiRef.current = null; }
+      if (aiRef.current) {
+        aiRef.current.destroy();
+        aiRef.current = null;
+      }
     };
   }, [modeId, isP2PMode, p2pInitialPieces]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -92,9 +117,20 @@ export function useChessGame({ modeId, navigate, gameMode, isP2PMode, p2pInitial
     aiRef.current?.setDifficulty(next.aiDifficulty);
   };
 
-  const resetGame = (pieces: Piece[]) => setGameState(makeInitialState(pieces, gameMode));
+  const resetGame = (pieces: Piece[]) =>
+    setGameState(makeInitialState(pieces, gameMode));
 
   const handleReplay = () => resetGame(getInitialPieces(gameMode));
 
-  return { gameState, setGameState, gameStateRef, settings, aiEnabled, aiRef, handleSettingsChange, resetGame, handleReplay };
+  return {
+    gameState,
+    setGameState,
+    gameStateRef,
+    settings,
+    aiEnabled,
+    aiRef,
+    handleSettingsChange,
+    resetGame,
+    handleReplay,
+  };
 }

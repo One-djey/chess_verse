@@ -117,9 +117,7 @@
       "Grande maestro",
       "Super grande maestro",
       "Sovrumano"
-    ],
-    "pieceAppearance": "Aspetto dei pezzi",
-    "language": "Lingua"
+    ]
   },
   "learning": {
     "pinnedPiece": "Questo pezzo non può muoversi — esporrebbe il re allo scacco",
@@ -162,7 +160,9 @@
         "pawn": "pedone"
       },
       "patterns": {
-        "scholarsmate": { "name": "Matto dello Studente" },
+        "scholarsmate": {
+          "name": "Matto dello Studente"
+        },
         "legalsmate": {
           "name": "Matto di Légal",
           "inventor": "Sire de Légal, ~1750"
@@ -175,8 +175,13 @@
           "name": "Matto dell'Opera",
           "inventor": "Paul Morphy, 1858"
         },
-        "arabianmate": { "name": "Matto Arabo", "inventor": "VIII secolo" },
-        "backrankmate": { "name": "Matto di Corridoio" },
+        "arabianmate": {
+          "name": "Matto Arabo",
+          "inventor": "VIII secolo"
+        },
+        "backrankmate": {
+          "name": "Matto di Corridoio"
+        },
         "bodensmate": {
           "name": "Matto di Boden",
           "inventor": "Samuel Boden, 1853"
@@ -193,7 +198,9 @@
           "name": "Matto di Greco",
           "inventor": "G. Greco, ~1620"
         },
-        "hookmate": { "name": "Matto dell'Amo" },
+        "hookmate": {
+          "name": "Matto dell'Amo"
+        },
         "greekgift": {
           "name": "Dono Greco",
           "inventor": "Sacrificio classico"
@@ -202,12 +209,17 @@
           "name": "Attacco del Fegato Fritto",
           "inventor": "G.C. Polerio, 1610"
         },
-        "windmill": { "name": "Mulino", "inventor": "Torre vs Lasker, 1925" },
+        "windmill": {
+          "name": "Mulino",
+          "inventor": "Torre vs Lasker, 1925"
+        },
         "noahsark": {
           "name": "Trappola dell'Arca di Noè",
           "inventor": "Ruy Lopez classico"
         },
-        "elephanttrap": { "name": "Trappola dell'Elefante" },
+        "elephanttrap": {
+          "name": "Trappola dell'Elefante"
+        },
         "laskertrap": {
           "name": "Trappola di Lasker",
           "inventor": "E. Lasker / S. Dubois"
@@ -296,7 +308,7 @@
       "basisTitle": "4. Base giuridica",
       "basisBody": "Il trattamento si basa sul legittimo interesse dell'editore (miglioramento del servizio), i dati essendo strettamente anonimi e non utilizzati per scopi pubblicitari o commerciali. La Modalità di Consenso di Google è configurata con analytics_storage: granted e tutti i segnali pubblicitari disabilitati (ad_storage: denied).",
       "cookiesTitle": "5. Cookie",
-      "cookiesBody1": "ChessVerse utilizza la memoria locale del browser (localStorage) per memorizzare le preferenze di gioco (difficoltà dell'IA, orientamento della scacchiera, lingua dell'interfaccia). Questi dati rimangono nel browser e non vengono mai trasmessi ai nostri server.",
+      "cookiesBody1": "ChessVerse utilizza la memoria locale del browser (localStorage) per memorizzare le preferenze di gioco (difficoltà dell'IA, orientamento della scacchiera, lingua dell'interfaccia). Questi dati rimangono nel browser e non vengono mai trasmessi ai nostri server. Le statistiche di gioco (partite giocate, risultati, attività giornaliera) sono memorizzate localmente tramite la chiave <code>chessverse_stats</code> per alimentare la tua pagina profilo.",
       "cookiesBody2": "Google Analytics 4 può depositare cookie tecnici per la misurazione anonima dell'audience. Non vengono utilizzati cookie pubblicitari o di personalizzazione.",
       "p2pTitle": "6. Modalità multiplayer (P2P)",
       "p2pBody": "In modalità multiplayer, la connessione tra i giocatori viene stabilita peer-to-peer tramite WebRTC (libreria Trystero). I dati di gioco transitano direttamente tra i browser dei giocatori, senza passare per i nostri server. Nessuna partita viene registrata.",
@@ -349,5 +361,127 @@
       "lawBody": "Le presenti Condizioni sono soggette alla legge francese. In caso di controversia, e in assenza di risoluzione amichevole, i tribunali competenti di Nizza avranno giurisdizione esclusiva.",
       "contactTitle": "8. Contatto"
     }
+  },
+  "profile": {
+    "title": "Il Mio Profilo",
+    "stats": "Statistiche",
+    "achievements": "Obiettivi",
+    "totalGames": "Partite giocate",
+    "local": "Locale",
+    "p2p": "Multigiocatore",
+    "ai": "vs IA",
+    "wins": "Vittorie",
+    "losses": "Sconfitte",
+    "draws": "Pareggi",
+    "surrenders": "Rese",
+    "winRate": "Percentuale vittorie",
+    "winStreak": "Serie migliore",
+    "currentStreak": "Serie attuale",
+    "totalTime": "Tempo di gioco totale",
+    "avgTime": "Durata media",
+    "favoritePiece": "Pezzo preferito",
+    "leastFavoritePiece": "Punto debole",
+    "favoriteMode": "Modalità preferita",
+    "eloRank": "Rango IA",
+    "activity": "Attività",
+    "noGames": "Nessuna partita registrata. Gioca una partita per vedere le tue statistiche!",
+    "ranks": {
+      "beginner": "Principiante",
+      "novice": "Novizio",
+      "apprentice": "Apprendista",
+      "knight": "Cavaliere",
+      "strategist": "Stratega",
+      "master": "Maestro",
+      "grandmaster": "Grande Maestro",
+      "legend": "Leggenda"
+    },
+    "badges": {
+      "firstStep": "Primo passo",
+      "firstStepDesc": "Gioca la tua prima partita",
+      "veteran": "Veterano",
+      "veteranDesc": "Giocare 100 partite",
+      "explorer": "Esploratore",
+      "explorerDesc": "Provare tutte e 4 le modalità di gioco",
+      "bilingue": "Poliglotta",
+      "bilingueDesc": "Giocare in 2 lingue diverse",
+      "serialWinner": "Vincitore seriale",
+      "serialWinnerDesc": "Vincere 20 partite",
+      "onFire": "In fiamme",
+      "onFireDesc": "Vincere 3 partite consecutive",
+      "unstoppable": "Inarrestabile",
+      "unstoppableDesc": "Vincere 10 partite consecutive",
+      "quickWin": "Fulmine",
+      "quickWinDesc": "Vincere una partita in meno di 10 mosse",
+      "diplomat": "Diplomatico",
+      "diplomatDesc": "Ottenere il primo pareggio",
+      "scholarsMate": "Matto del pastore",
+      "scholarsMateDesc": "Vincere con il matto del pastore (sequenza esatta)",
+      "coronation": "Incoronazione",
+      "coronationDesc": "Promuovere un pedone a regina",
+      "assisted": "Assistito",
+      "assistedDesc": "Seguire 100 suggerimenti di mossa",
+      "aiHunter": "Cacciatore di IA",
+      "aiHunterDesc": "Battere l'IA al livello di difficoltà 15",
+      "p2pPioneer": "Pioniere P2P",
+      "p2pPioneerDesc": "Giocare la tua prima partita online",
+      "chaosFan": "Fan del caos",
+      "chaosFanDesc": "Giocare 10 partite in modalità Tutto casuale",
+      "assimilationFan": "Fan dell'Assimilazione",
+      "assimilationFanDesc": "Giocare 10 partite in modalità Assimilazione",
+      "borderlessTraveler": "Viaggiatore senza confini",
+      "borderlessTravelerDesc": "Giocare 10 partite in modalità Senza confini",
+      "nightOwl": "Nottambulo",
+      "nightOwlDesc": "Giocare 10 partite dopo le 22",
+      "earlyBird": "Mattiniero",
+      "earlyBirdDesc": "Giocare una partita prima delle 8",
+      "marathon": "Maratona",
+      "marathonDesc": "Accumulare 42 ore di gioco",
+      "whatElse": "What Else?",
+      "whatElseDesc": "Sostenere il progetto con un caffè",
+      "contributor": "Contributore",
+      "contributorDesc": "Inviare un feedback tramite il modulo",
+      "coward": "Codardo",
+      "cowardDesc": "Arrendersi 10 volte",
+      "assiduous": "Assiduo",
+      "assiduousDesc": "Giocare 7 giorni di fila"
+    },
+    "pieces": {
+      "queen": "Regina",
+      "rook": "Torre",
+      "bishop": "Alfiere",
+      "knight": "Cavallo",
+      "king": "Re",
+      "pawn": "Pedone"
+    },
+    "months": {
+      "jan": "Gen",
+      "feb": "Feb",
+      "mar": "Mar",
+      "apr": "Apr",
+      "may": "Mag",
+      "jun": "Giu",
+      "jul": "Lug",
+      "aug": "Ago",
+      "sep": "Set",
+      "oct": "Ott",
+      "nov": "Nov",
+      "dec": "Dic"
+    },
+    "days": {
+      "mon": "L",
+      "wed": "M",
+      "fri": "V"
+    },
+    "activityNoGames": "Nessuna partita",
+    "game": "partita",
+    "games": "partite",
+    "less": "Meno",
+    "more": "Più",
+    "unlocked": "✓ Sbloccato",
+    "favoritePieceHint": "la più mossa",
+    "leastFavoritePieceHint": "la più catturata",
+    "movesMade": "mosse",
+    "timesCaptured": "catture",
+    "level": "Liv."
   }
 }

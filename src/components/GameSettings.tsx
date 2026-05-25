@@ -15,6 +15,7 @@ import { useSkin } from "../context/SkinContext";
 import { SKINS, getPieceImageSrc } from "../utils/pieceImage";
 import FeedbackModal from "./FeedbackModal";
 import type { LocalSettings } from "../hooks/useChessGame";
+import { recordCoffeeDonation } from "../services/statsService";
 
 // Mirrors the key and defaults from useChessGame — kept in sync manually
 const SETTINGS_STORAGE_KEY = "chess_settings";
@@ -442,6 +443,7 @@ export default function GameSettings({
                     href={`https://donate.stripe.com/eVq3cueo0dkNfVlfovbEA00?locale=${i18n.resolvedLanguage}`}
                     target="_blank"
                     rel="noopener noreferrer"
+                    onClick={recordCoffeeDonation}
                     className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 text-sm font-medium text-amber-700 rounded-lg border border-amber-200 bg-amber-50 hover:bg-amber-100 transition"
                   >
                     <Coffee size={15} />

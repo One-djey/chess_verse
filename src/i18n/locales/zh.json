@@ -117,9 +117,7 @@
       "特级大师",
       "超级特级大师",
       "超人"
-    ],
-    "pieceAppearance": "棋子外观",
-    "language": "语言"
+    ]
   },
   "learning": {
     "pinnedPiece": "此棋子无法移动 — 否则将使王暴露在攻击下",
@@ -162,28 +160,66 @@
         "pawn": "兵"
       },
       "patterns": {
-        "scholarsmate": { "name": "牧师将军" },
-        "legalsmate": { "name": "雷格尔将军", "inventor": "雷格尔爵士, ~1750" },
-        "smotheredmate": { "name": "窒息将军", "inventor": "菲利多尔（归因）" },
-        "operamate": { "name": "歌剧将军", "inventor": "保罗·莫菲, 1858" },
-        "arabianmate": { "name": "阿拉伯将军", "inventor": "8世纪" },
-        "backrankmate": { "name": "底线将军" },
-        "bodensmate": { "name": "博登将军", "inventor": "塞缪尔·博登, 1853" },
+        "scholarsmate": {
+          "name": "牧师将军"
+        },
+        "legalsmate": {
+          "name": "雷格尔将军",
+          "inventor": "雷格尔爵士, ~1750"
+        },
+        "smotheredmate": {
+          "name": "窒息将军",
+          "inventor": "菲利多尔（归因）"
+        },
+        "operamate": {
+          "name": "歌剧将军",
+          "inventor": "保罗·莫菲, 1858"
+        },
+        "arabianmate": {
+          "name": "阿拉伯将军",
+          "inventor": "8世纪"
+        },
+        "backrankmate": {
+          "name": "底线将军"
+        },
+        "bodensmate": {
+          "name": "博登将军",
+          "inventor": "塞缪尔·博登, 1853"
+        },
         "anastasiamate": {
           "name": "阿纳斯塔西亚将军",
           "inventor": "W. 海因斯, 1803"
         },
-        "lollismate": { "name": "洛利将军", "inventor": "G. 洛利, 1763" },
-        "grecomate": { "name": "格列柯将军", "inventor": "G. 格列柯, ~1620" },
-        "hookmate": { "name": "钩形将军" },
-        "greekgift": { "name": "希腊礼物", "inventor": "古典牺牲" },
+        "lollismate": {
+          "name": "洛利将军",
+          "inventor": "G. 洛利, 1763"
+        },
+        "grecomate": {
+          "name": "格列柯将军",
+          "inventor": "G. 格列柯, ~1620"
+        },
+        "hookmate": {
+          "name": "钩形将军"
+        },
+        "greekgift": {
+          "name": "希腊礼物",
+          "inventor": "古典牺牲"
+        },
         "friedliver": {
           "name": "油炸肝攻击",
           "inventor": "G.C. 波莱里奥, 1610"
         },
-        "windmill": { "name": "风车战术", "inventor": "托雷 vs 拉斯克, 1925" },
-        "noahsark": { "name": "诺亚方舟陷阱", "inventor": "古典鲁伊·洛佩斯" },
-        "elephanttrap": { "name": "大象陷阱" },
+        "windmill": {
+          "name": "风车战术",
+          "inventor": "托雷 vs 拉斯克, 1925"
+        },
+        "noahsark": {
+          "name": "诺亚方舟陷阱",
+          "inventor": "古典鲁伊·洛佩斯"
+        },
+        "elephanttrap": {
+          "name": "大象陷阱"
+        },
         "laskertrap": {
           "name": "拉斯克陷阱",
           "inventor": "E. 拉斯克 / S. 杜博伊斯"
@@ -272,7 +308,7 @@
       "basisTitle": "4. 法律依据",
       "basisBody": "处理基于发布者的合法利益（服务改进），数据严格匿名，不用于广告或商业目的。Google 的同意模式配置为 analytics_storage: granted，所有广告信号已禁用（ad_storage: denied）。",
       "cookiesTitle": "5. Cookie",
-      "cookiesBody1": "ChessVerse 使用浏览器本地存储（localStorage）记住您的游戏偏好（AI 难度、棋盘方向、界面语言）。这些数据保留在您的浏览器中，从不传输到我们的服务器。",
+      "cookiesBody1": "ChessVerse 使用浏览器本地存储（localStorage）记住您的游戏偏好（AI 难度、棋盘方向、界面语言）。这些数据保留在您的浏览器中，从不传输到我们的服务器。游戏统计信息（对局数、结果、每日活动）也通过 <code>chessverse_stats</code> 键在本地存储，用于您的档案页面。",
       "cookiesBody2": "Google Analytics 4 可能会设置技术性 Cookie 用于匿名受众测量。不使用广告或个性化 Cookie。",
       "p2pTitle": "6. 多人游戏模式（P2P）",
       "p2pBody": "在多人游戏模式中，玩家之间的连接通过 WebRTC（Trystero 库）以点对点方式建立。游戏数据直接在玩家的浏览器之间传输，不经过我们的服务器。不记录任何游戏。",
@@ -325,5 +361,127 @@
       "lawBody": "本条款受法国法律管辖。如发生争议，在无法友好解决的情况下，尼斯管辖法院将拥有专属管辖权。",
       "contactTitle": "8. 联系方式"
     }
+  },
+  "profile": {
+    "title": "我的档案",
+    "stats": "统计",
+    "achievements": "成就",
+    "totalGames": "对局数",
+    "local": "本地",
+    "p2p": "多人游戏",
+    "ai": "对战AI",
+    "wins": "胜利",
+    "losses": "失败",
+    "draws": "平局",
+    "surrenders": "认输",
+    "winRate": "胜率",
+    "winStreak": "最佳连胜",
+    "currentStreak": "当前连胜",
+    "totalTime": "总游戏时间",
+    "avgTime": "平均时长",
+    "favoritePiece": "最爱棋子",
+    "leastFavoritePiece": "最弱棋子",
+    "favoriteMode": "最爱模式",
+    "eloRank": "AI等级",
+    "activity": "活动记录",
+    "noGames": "暂无对局记录。开始游戏查看你的统计！",
+    "ranks": {
+      "beginner": "初学者",
+      "novice": "新手",
+      "apprentice": "学徒",
+      "knight": "骑士",
+      "strategist": "战略家",
+      "master": "大师",
+      "grandmaster": "特级大师",
+      "legend": "传奇"
+    },
+    "badges": {
+      "firstStep": "第一步",
+      "firstStepDesc": "完成第一场游戏",
+      "veteran": "老兵",
+      "veteranDesc": "完成100场游戏",
+      "explorer": "探索者",
+      "explorerDesc": "尝试所有4种游戏模式",
+      "bilingue": "多语言达人",
+      "bilingueDesc": "用2种不同语言游玩",
+      "serialWinner": "连胜达人",
+      "serialWinnerDesc": "赢得20场胜利",
+      "onFire": "火力全开",
+      "onFireDesc": "连续赢得3场游戏",
+      "unstoppable": "势不可挡",
+      "unstoppableDesc": "连续赢得10场游戏",
+      "quickWin": "闪电战",
+      "quickWinDesc": "在10步内赢得游戏",
+      "diplomat": "外交家",
+      "diplomatDesc": "赢得第一场平局",
+      "scholarsMate": "学者将死",
+      "scholarsMateDesc": "用学者将死获胜（精确步骤）",
+      "coronation": "加冕",
+      "coronationDesc": "将一枚兵升变为皇后",
+      "assisted": "辅助",
+      "assistedDesc": "跟随100次提示建议",
+      "aiHunter": "AI猎手",
+      "aiHunterDesc": "在难度级别15击败AI",
+      "p2pPioneer": "P2P先锋",
+      "p2pPioneerDesc": "进行第一场在线游戏",
+      "chaosFan": "混乱爱好者",
+      "chaosFanDesc": "在全随机模式下进行10场游戏",
+      "assimilationFan": "同化迷",
+      "assimilationFanDesc": "在同化模式下进行10场游戏",
+      "borderlessTraveler": "无界旅行者",
+      "borderlessTravelerDesc": "在无界模式下进行10场游戏",
+      "nightOwl": "夜猫子",
+      "nightOwlDesc": "在晚上10点后进行10场游戏",
+      "earlyBird": "早起鸟",
+      "earlyBirdDesc": "在上午8点前进行游戏",
+      "marathon": "马拉松",
+      "marathonDesc": "累计42小时游戏时间",
+      "whatElse": "What Else?",
+      "whatElseDesc": "用一杯咖啡支持项目",
+      "contributor": "贡献者",
+      "contributorDesc": "通过邮件表单发送反馈",
+      "coward": "懦夫",
+      "cowardDesc": "投降10次",
+      "assiduous": "坚持不懈",
+      "assiduousDesc": "连续7天游玩"
+    },
+    "pieces": {
+      "queen": "后",
+      "rook": "车",
+      "bishop": "象",
+      "knight": "马",
+      "king": "王",
+      "pawn": "兵"
+    },
+    "months": {
+      "jan": "1月",
+      "feb": "2月",
+      "mar": "3月",
+      "apr": "4月",
+      "may": "5月",
+      "jun": "6月",
+      "jul": "7月",
+      "aug": "8月",
+      "sep": "9月",
+      "oct": "10月",
+      "nov": "11月",
+      "dec": "12月"
+    },
+    "days": {
+      "mon": "一",
+      "wed": "三",
+      "fri": "五"
+    },
+    "activityNoGames": "无对局",
+    "game": "局",
+    "games": "局",
+    "less": "少",
+    "more": "多",
+    "unlocked": "✓ 已解锁",
+    "favoritePieceHint": "移动最多",
+    "leastFavoritePieceHint": "被吃最多",
+    "movesMade": "步",
+    "timesCaptured": "次被吃",
+    "level": "等级"
   }
 }

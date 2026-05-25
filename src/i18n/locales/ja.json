@@ -117,9 +117,7 @@
       "グランドマスター",
       "スーパーグランドマスター",
       "超人"
-    ],
-    "pieceAppearance": "駒の外観",
-    "language": "言語"
+    ]
   },
   "learning": {
     "pinnedPiece": "このコマは動けません — 王手がかかります",
@@ -162,7 +160,9 @@
         "pawn": "ポーン"
       },
       "patterns": {
-        "scholarsmate": { "name": "学者のメイト" },
+        "scholarsmate": {
+          "name": "学者のメイト"
+        },
         "legalsmate": {
           "name": "レガルのメイト",
           "inventor": "シール・ド・レガル, ~1750"
@@ -175,8 +175,13 @@
           "name": "オペラのメイト",
           "inventor": "ポール・モーフィー, 1858"
         },
-        "arabianmate": { "name": "アラビアンメイト", "inventor": "8世紀" },
-        "backrankmate": { "name": "バックランクメイト" },
+        "arabianmate": {
+          "name": "アラビアンメイト",
+          "inventor": "8世紀"
+        },
+        "backrankmate": {
+          "name": "バックランクメイト"
+        },
         "bodensmate": {
           "name": "ボーデンのメイト",
           "inventor": "サミュエル・ボーデン, 1853"
@@ -193,7 +198,9 @@
           "name": "グレコのメイト",
           "inventor": "G. グレコ, ~1620"
         },
-        "hookmate": { "name": "フックメイト" },
+        "hookmate": {
+          "name": "フックメイト"
+        },
         "greekgift": {
           "name": "ギリシャの贈り物",
           "inventor": "古典的サクリファイス"
@@ -202,12 +209,17 @@
           "name": "フライドリバーアタック",
           "inventor": "G.C. ポレリオ, 1610"
         },
-        "windmill": { "name": "風車", "inventor": "トーレ vs ラスカー, 1925" },
+        "windmill": {
+          "name": "風車",
+          "inventor": "トーレ vs ラスカー, 1925"
+        },
         "noahsark": {
           "name": "ノアの方舟トラップ",
           "inventor": "古典的ルイ・ロペス"
         },
-        "elephanttrap": { "name": "エレファントトラップ" },
+        "elephanttrap": {
+          "name": "エレファントトラップ"
+        },
         "laskertrap": {
           "name": "ラスカートラップ",
           "inventor": "E. ラスカー / S. デュボワ"
@@ -296,7 +308,7 @@
       "basisTitle": "4. 法的根拠",
       "basisBody": "処理は運営者の正当な利益（サービス改善）に基づいており、データは厳密に匿名であり、広告や商業目的には使用されません。GoogleのConsent Modeはanalytics_storage: grantedに設定され、すべての広告シグナルは無効化されています（ad_storage: denied）。",
       "cookiesTitle": "5. クッキー",
-      "cookiesBody1": "ChessVerseはブラウザのローカルストレージ（localStorage）を使用して、ゲームの設定（AIの難易度、ボードの向き、インターフェースの言語）を記憶します。このデータはブラウザ内に留まり、サーバーに送信されることはありません。",
+      "cookiesBody1": "ChessVerseはブラウザのローカルストレージ（localStorage）を使用して、ゲームの設定（AIの難易度、ボードの向き、インターフェースの言語）を記憶します。このデータはブラウザ内に留まり、サーバーに送信されることはありません。また、ゲーム統計（対戦数、結果、日々のアクティビティ）は、プロフィールページ用に <code>chessverse_stats</code> キーを通じてローカルに保存されます。",
       "cookiesBody2": "Google Analytics 4は匿名のオーディエンス測定のために技術的なクッキーを設定する場合があります。広告やパーソナライゼーション用のクッキーは使用されません。",
       "p2pTitle": "6. マルチプレイヤーモード（P2P）",
       "p2pBody": "マルチプレイヤーモードでは、プレイヤー間の接続はWebRTC（Trysteroライブラリ）を介してピアツーピアで確立されます。ゲームデータはプレイヤーのブラウザ間を直接移動し、サーバーを経由しません。ゲームは記録されません。",
@@ -349,5 +361,127 @@
       "lawBody": "本利用規約はフランス法に準拠します。紛争が生じた場合、友好的な解決がなされない限り、ニースの管轄裁判所が専属的管轄権を有します。",
       "contactTitle": "8. お問い合わせ"
     }
+  },
+  "profile": {
+    "title": "マイプロフィール",
+    "stats": "統計",
+    "achievements": "実績",
+    "totalGames": "対戦数",
+    "local": "ローカル",
+    "p2p": "マルチプレイヤー",
+    "ai": "AI対戦",
+    "wins": "勝利",
+    "losses": "敗北",
+    "draws": "引き分け",
+    "surrenders": "投了",
+    "winRate": "勝率",
+    "winStreak": "最高連勝",
+    "currentStreak": "現在の連勝",
+    "totalTime": "累計プレイ時間",
+    "avgTime": "平均対戦時間",
+    "favoritePiece": "よく使う駒",
+    "leastFavoritePiece": "よく取られる駒",
+    "favoriteMode": "お気に入りモード",
+    "eloRank": "AIランク",
+    "activity": "アクティビティ",
+    "noGames": "対戦記録がありません。ゲームをプレイして統計を確認しよう！",
+    "ranks": {
+      "beginner": "初心者",
+      "novice": "見習い",
+      "apprentice": "修行中",
+      "knight": "騎士",
+      "strategist": "戦略家",
+      "master": "マスター",
+      "grandmaster": "グランドマスター",
+      "legend": "レジェンド"
+    },
+    "badges": {
+      "firstStep": "第一歩",
+      "firstStepDesc": "初めてゲームをプレイする",
+      "veteran": "ベテラン",
+      "veteranDesc": "100試合プレイする",
+      "explorer": "探検家",
+      "explorerDesc": "4つのゲームモードをすべて試す",
+      "bilingue": "多言語使用者",
+      "bilingueDesc": "2つの言語でプレイする",
+      "serialWinner": "連続優勝者",
+      "serialWinnerDesc": "20勝する",
+      "onFire": "炎上中",
+      "onFireDesc": "3連勝する",
+      "unstoppable": "無敵",
+      "unstoppableDesc": "10連勝する",
+      "quickWin": "電光石火",
+      "quickWinDesc": "10手以内でゲームに勝つ",
+      "diplomat": "外交官",
+      "diplomatDesc": "初めて引き分ける",
+      "scholarsMate": "スコラーズメイト",
+      "scholarsMateDesc": "スコラーズメイトで勝つ（正確な手順）",
+      "coronation": "戴冠式",
+      "coronationDesc": "ポーンをクイーンに昇格させる",
+      "assisted": "アシスト",
+      "assistedDesc": "ヒントを100回フォローする",
+      "aiHunter": "AIハンター",
+      "aiHunterDesc": "難易度レベル15でAIを倒す",
+      "p2pPioneer": "P2Pパイオニア",
+      "p2pPioneerDesc": "初めてオンラインゲームをプレイする",
+      "chaosFan": "カオス好き",
+      "chaosFanDesc": "全ランダムモードで10試合プレイする",
+      "assimilationFan": "同化ファン",
+      "assimilationFanDesc": "同化モードで10試合プレイする",
+      "borderlessTraveler": "ボーダレストラベラー",
+      "borderlessTravelerDesc": "ボーダレスモードで10試合プレイする",
+      "nightOwl": "夜更かし",
+      "nightOwlDesc": "22時以降に10試合プレイする",
+      "earlyBird": "早起き鳥",
+      "earlyBirdDesc": "午前8時前にゲームをプレイする",
+      "marathon": "マラソン",
+      "marathonDesc": "プレイ時間を42時間積み重ねる",
+      "whatElse": "What Else?",
+      "whatElseDesc": "コーヒーでプロジェクトを応援する",
+      "contributor": "コントリビューター",
+      "contributorDesc": "メールフォームからフィードバックを送る",
+      "coward": "臆病者",
+      "cowardDesc": "10回降参する",
+      "assiduous": "勤勉家",
+      "assiduousDesc": "7日連続でプレイする"
+    },
+    "pieces": {
+      "queen": "クイーン",
+      "rook": "ルーク",
+      "bishop": "ビショップ",
+      "knight": "ナイト",
+      "king": "キング",
+      "pawn": "ポーン"
+    },
+    "months": {
+      "jan": "1月",
+      "feb": "2月",
+      "mar": "3月",
+      "apr": "4月",
+      "may": "5月",
+      "jun": "6月",
+      "jul": "7月",
+      "aug": "8月",
+      "sep": "9月",
+      "oct": "10月",
+      "nov": "11月",
+      "dec": "12月"
+    },
+    "days": {
+      "mon": "月",
+      "wed": "水",
+      "fri": "金"
+    },
+    "activityNoGames": "ゲームなし",
+    "game": "ゲーム",
+    "games": "ゲーム",
+    "less": "少",
+    "more": "多",
+    "unlocked": "✓ 解除",
+    "favoritePieceHint": "最も動かした",
+    "leastFavoritePieceHint": "最も取られた",
+    "movesMade": "手",
+    "timesCaptured": "回取られた",
+    "level": "Lv."
   }
 }

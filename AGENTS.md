@@ -1,4 +1,4 @@
-# ChessVerse — Claude Context
+# ChessVerse — Codex Context
 
 ## Stack
 
@@ -6,30 +6,27 @@ React 18 + TypeScript + Vite + Tailwind CSS. No backend. P2P via Trystero (WebRT
 
 ## Key paths
 
-| What                 | Where                                                                                                        |
-| -------------------- | ------------------------------------------------------------------------------------------------------------ |
-| Routing              | `src/App.tsx`                                                                                                |
-| Shared nav bar       | `src/components/NavBar.tsx`                                                                                  |
-| Home screen          | `src/components/ModeSelect.tsx`                                                                              |
-| Local mode select    | `src/components/GameModes.tsx` + `GameModeSelect.tsx`                                                        |
-| P2P lobby            | `src/components/P2PLobby.tsx`                                                                                |
-| Game (main logic)    | `src/components/Game.tsx`                                                                                    |
-| Game end modal       | `src/components/GameOver.tsx`                                                                                |
-| Settings modal       | `src/components/GameSettings.tsx`                                                                            |
-| Feedback modal       | `src/components/FeedbackModal.tsx`                                                                           |
-| Chess board/pieces   | `src/utils/chess/board.ts`                                                                                   |
-| Chess move logic     | `src/utils/chess/moves.ts`                                                                                   |
-| Assimilation logic   | `src/utils/chess/assimilation.ts`                                                                            |
-| Chess barrel export  | `src/utils/chess.ts` (re-exports board, moves, and assimilation)                                             |
-| Game state hook      | `src/hooks/useChessGame.ts`                                                                                  |
-| P2P game hook        | `src/hooks/useP2PGame.ts`                                                                                    |
-| P2P context          | `src/context/P2PContext.tsx`                                                                                 |
-| Skin context         | `src/context/SkinContext.tsx`                                                                                |
-| Piece image resolver | `src/utils/pieceImage.ts`                                                                                    |
-| AI service           | `src/services/ChessAI.ts`                                                                                    |
-| Stats service        | `src/services/statsService.ts`                                                                               |
-| Profile page         | `src/components/ProfilePage.tsx`                                                                             |
-| Profile sub-comps    | `src/components/profile/` (ActivityHeatmap, ELOBadge, WinRateRing, PieceStats, ModeDistribution, BadgesGrid) |
+| What                 | Where                                                            |
+| -------------------- | ---------------------------------------------------------------- |
+| Routing              | `src/App.tsx`                                                    |
+| Shared nav bar       | `src/components/NavBar.tsx`                                      |
+| Home screen          | `src/components/ModeSelect.tsx`                                  |
+| Local mode select    | `src/components/GameModes.tsx` + `GameModeSelect.tsx`            |
+| P2P lobby            | `src/components/P2PLobby.tsx`                                    |
+| Game (main logic)    | `src/components/Game.tsx`                                        |
+| Game end modal       | `src/components/GameOver.tsx`                                    |
+| Settings modal       | `src/components/GameSettings.tsx`                                |
+| Feedback modal       | `src/components/FeedbackModal.tsx`                               |
+| Chess board/pieces   | `src/utils/chess/board.ts`                                       |
+| Chess move logic     | `src/utils/chess/moves.ts`                                       |
+| Assimilation logic   | `src/utils/chess/assimilation.ts`                                |
+| Chess barrel export  | `src/utils/chess.ts` (re-exports board, moves, and assimilation) |
+| Game state hook      | `src/hooks/useChessGame.ts`                                      |
+| P2P game hook        | `src/hooks/useP2PGame.ts`                                        |
+| P2P context          | `src/context/P2PContext.tsx`                                     |
+| Skin context         | `src/context/SkinContext.tsx`                                    |
+| Piece image resolver | `src/utils/pieceImage.ts`                                        |
+| AI service           | `src/services/ChessAI.ts`                                        |
 
 ## Routes
 
@@ -37,7 +34,6 @@ React 18 + TypeScript + Vite + Tailwind CSS. No backend. P2P via Trystero (WebRT
 - `/local` → GameModes (local mode lobby)
 - `/p2p` → P2PLobby (host/guest P2P lobby)
 - `/game/:modeId` → Game (`classic`, `borderless`, `all-random`, `assimilation`, or `p2p`)
-- `/profile` → ProfilePage (player stats, heatmap, badges)
 
 ## NavBar
 
@@ -56,7 +52,6 @@ Breadcrumb map:
 | P2PLobby – invite/waiting | `[Multiplayer, Invite]` |
 | Game (local) | `[Local, <mode title>]` |
 | Game (P2P) | `[Multiplayer, <mode title>]` |
-| ProfilePage | `[profile.title]` |
 
 ## Navigation rules
 
@@ -129,5 +124,4 @@ Accessible via a **Support section** at the bottom of the Settings modal (gear i
 
 - `chess_settings` — AI difficulty, flip board toggle
 - `chessverse_language` — UI language
-- `chessverse_stats` — Player stats (see `ChessverseStats` in `statsService.ts`): game counts, win/loss/draw, ELO, heatmap, piece stats, streaks, badge counters. Recorded at the end of every game via `recordGame()` called in `Game.tsx`'s `gameOver` effect.
 - `chessverse_skin` — selected piece skin (`classic` | `fantasy`)

@@ -1,5 +1,11 @@
-export type PieceType = 'pawn' | 'rook' | 'knight' | 'bishop' | 'queen' | 'king';
-export type PieceColor = 'white' | 'black';
+export type PieceType =
+  | "pawn"
+  | "rook"
+  | "knight"
+  | "bishop"
+  | "queen"
+  | "king";
+export type PieceColor = "white" | "black";
 
 export interface Piece {
   id: string;
@@ -28,6 +34,15 @@ export interface GameMode {
   };
 }
 
+/** A record of a single move, appended after each half-move. */
+export interface MoveRecord {
+  piece: Piece;
+  from: Position;
+  to: Position;
+  capturedPiece: Piece | null;
+  wasPromotion: boolean;
+}
+
 export interface GameState {
   pieces: Piece[];
   currentTurn: PieceColor;
@@ -36,9 +51,11 @@ export interface GameState {
   isCheck: boolean;
   startTime: number;
   moveCount: { white: number; black: number };
+  /** Full move history — one entry per half-move (ply). */
+  moves: MoveRecord[];
   gameOver: boolean;
   winner: PieceColor | null;
-  drawReason?: 'stalemate' | 'only-kings';
+  drawReason?: "stalemate" | "only-kings";
   surrenderedBy?: PieceColor;
   gameMode: GameMode;
 }

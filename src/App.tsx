@@ -10,6 +10,7 @@ import ModeSelect from "./components/ModeSelect";
 import GameModes from "./components/GameModes";
 import Game from "./components/Game";
 import P2PLobby from "./components/P2PLobby";
+import ProfilePage from "./components/ProfilePage";
 import MentionsLegales from "./components/legal/MentionsLegales";
 import PolitiqueConfidentialite from "./components/legal/PolitiqueConfidentialite";
 import CGU from "./components/legal/CGU";
@@ -38,6 +39,7 @@ function App() {
               <Route path="/local" element={<GameModes />} />
               <Route path="/p2p" element={<P2PLobby />} />
               <Route path="/game/:modeId" element={<Game />} />
+              <Route path="/profile" element={<ProfilePage />} />
               <Route
                 path="/legal/mentions-legales"
                 element={<MentionsLegales />}

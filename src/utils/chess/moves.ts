@@ -6,6 +6,7 @@ import {
   GameMode,
   CastlingMove,
   GameState,
+  MoveRecord,
 } from "../../types/chess";
 import { BOARD_SIZE } from "./board";
 import { getPieceCapabilities, applyAssimilationCapture } from "./assimilation";
@@ -411,6 +412,19 @@ export function applyMoveToState(
     );
   }
 
+  const wasPromotion =
+    piece.type === "pawn" &&
+    ((piece.color === "white" && target.y === 0) ||
+      (piece.color === "black" && target.y === 7));
+
+  const moveRecord: MoveRecord = {
+    piece,
+    from: piece.position,
+    to: target,
+    capturedPiece: captured ?? null,
+    wasPromotion,
+  };
+
   const nextTurn = switchTurn(prev.currentTurn);
   const moveCount = {
     ...prev.moveCount,
@@ -425,6 +439,7 @@ export function applyMoveToState(
     selectedPiece: null,
     validMoves: [],
     moveCount,
+    moves: [...prev.moves, moveRecord],
     surrenderedBy: undefined,
   };
 

@@ -160,7 +160,9 @@
         "pawn": "pawn"
       },
       "patterns": {
-        "scholarsmate": { "name": "Scholar's Mate" },
+        "scholarsmate": {
+          "name": "Scholar's Mate"
+        },
         "legalsmate": {
           "name": "Légal's Mate",
           "inventor": "Sire de Légal, ~1750"
@@ -169,9 +171,17 @@
           "name": "Smothered Mate",
           "inventor": "Philidor (attr.)"
         },
-        "operamate": { "name": "Opera Mate", "inventor": "Paul Morphy, 1858" },
-        "arabianmate": { "name": "Arabian Mate", "inventor": "8th century" },
-        "backrankmate": { "name": "Back Rank Mate" },
+        "operamate": {
+          "name": "Opera Mate",
+          "inventor": "Paul Morphy, 1858"
+        },
+        "arabianmate": {
+          "name": "Arabian Mate",
+          "inventor": "8th century"
+        },
+        "backrankmate": {
+          "name": "Back Rank Mate"
+        },
         "bodensmate": {
           "name": "Boden's Mate",
           "inventor": "Samuel Boden, 1853"
@@ -180,9 +190,17 @@
           "name": "Anastasia's Mate",
           "inventor": "W. Heinse, 1803"
         },
-        "lollismate": { "name": "Lolli's Mate", "inventor": "G. Lolli, 1763" },
-        "grecomate": { "name": "Greco's Mate", "inventor": "G. Greco, ~1620" },
-        "hookmate": { "name": "Hook Mate" },
+        "lollismate": {
+          "name": "Lolli's Mate",
+          "inventor": "G. Lolli, 1763"
+        },
+        "grecomate": {
+          "name": "Greco's Mate",
+          "inventor": "G. Greco, ~1620"
+        },
+        "hookmate": {
+          "name": "Hook Mate"
+        },
         "greekgift": {
           "name": "Greek Gift",
           "inventor": "Classical sacrifice"
@@ -191,12 +209,17 @@
           "name": "Fried Liver Attack",
           "inventor": "G.C. Polerio, 1610"
         },
-        "windmill": { "name": "Windmill", "inventor": "Torre vs Lasker, 1925" },
+        "windmill": {
+          "name": "Windmill",
+          "inventor": "Torre vs Lasker, 1925"
+        },
         "noahsark": {
           "name": "Noah's Ark Trap",
           "inventor": "Classical Ruy Lopez"
         },
-        "elephanttrap": { "name": "Elephant Trap" },
+        "elephanttrap": {
+          "name": "Elephant Trap"
+        },
         "laskertrap": {
           "name": "Lasker Trap",
           "inventor": "E. Lasker / S. Dubois"
@@ -285,7 +308,7 @@
       "basisTitle": "4. Legal Basis",
       "basisBody": "Processing is based on the legitimate interest of the publisher (service improvement), the data being strictly anonymous and not used for advertising or commercial purposes. Google's Consent Mode is configured with analytics_storage: granted and all advertising signals disabled (ad_storage: denied).",
       "cookiesTitle": "5. Cookies",
-      "cookiesBody1": "ChessVerse uses browser local storage (localStorage) to remember your game preferences (AI difficulty, board orientation, interface language). This data remains in your browser and is never transmitted to our servers.",
+      "cookiesBody1": "ChessVerse uses browser local storage (localStorage) to remember your game preferences (AI difficulty, board orientation, interface language). This data remains in your browser and is never transmitted to our servers. Game statistics (games played, results, daily activity) are also stored locally via the <code>chessverse_stats</code> key to power your profile page.",
       "cookiesBody2": "Google Analytics 4 may set technical cookies for anonymous audience measurement. No advertising or personalisation cookies are used.",
       "p2pTitle": "6. Multiplayer Mode (P2P)",
       "p2pBody": "In multiplayer mode, the connection between players is established peer-to-peer via WebRTC (Trystero library). Game data travels directly between players' browsers, without passing through our servers. No games are recorded.",
@@ -338,5 +361,127 @@
       "lawBody": "These Terms are governed by French law. In the event of a dispute, and in the absence of amicable resolution, the competent courts of Nice shall have exclusive jurisdiction.",
       "contactTitle": "8. Contact"
     }
+  },
+  "profile": {
+    "title": "My Profile",
+    "stats": "Statistics",
+    "achievements": "Achievements",
+    "totalGames": "Games played",
+    "local": "Local",
+    "p2p": "Multiplayer",
+    "ai": "vs AI",
+    "wins": "Wins",
+    "losses": "Losses",
+    "draws": "Draws",
+    "surrenders": "Surrenders",
+    "winRate": "Win rate",
+    "winStreak": "Best streak",
+    "currentStreak": "Current streak",
+    "totalTime": "Total play time",
+    "avgTime": "Avg. game duration",
+    "favoritePiece": "Favorite piece",
+    "leastFavoritePiece": "Biggest liability",
+    "favoriteMode": "Favorite mode",
+    "eloRank": "AI Rank",
+    "activity": "Activity",
+    "noGames": "No games recorded yet. Play a game to see your stats!",
+    "ranks": {
+      "beginner": "Beginner",
+      "novice": "Novice",
+      "apprentice": "Apprentice",
+      "knight": "Knight",
+      "strategist": "Strategist",
+      "master": "Master",
+      "grandmaster": "Grand Master",
+      "legend": "Legend"
+    },
+    "badges": {
+      "firstStep": "First Step",
+      "firstStepDesc": "Play your first game",
+      "veteran": "Veteran",
+      "veteranDesc": "Play 100 games",
+      "explorer": "Explorer",
+      "explorerDesc": "Try all 4 game modes",
+      "bilingue": "Polyglot",
+      "bilingueDesc": "Play in 2 different languages",
+      "serialWinner": "Serial Winner",
+      "serialWinnerDesc": "Win 20 games",
+      "onFire": "On Fire",
+      "onFireDesc": "Win 3 games in a row",
+      "unstoppable": "Unstoppable",
+      "unstoppableDesc": "Win 10 games in a row",
+      "quickWin": "Lightning Fast",
+      "quickWinDesc": "Win a game in under 10 moves",
+      "diplomat": "Diplomat",
+      "diplomatDesc": "Draw your first game",
+      "scholarsMate": "Scholar's Mate",
+      "scholarsMateDesc": "Win with the Scholar's Mate (exact sequence)",
+      "coronation": "Coronation",
+      "coronationDesc": "Promote a pawn to queen",
+      "assisted": "Assisted",
+      "assistedDesc": "Follow 100 hint suggestions",
+      "aiHunter": "AI Hunter",
+      "aiHunterDesc": "Beat the AI at difficulty level 15",
+      "p2pPioneer": "P2P Pioneer",
+      "p2pPioneerDesc": "Play your first online game",
+      "chaosFan": "Chaos Fan",
+      "chaosFanDesc": "Play 10 All-Random games",
+      "assimilationFan": "Assimilation Fan",
+      "assimilationFanDesc": "Play 10 Assimilation games",
+      "borderlessTraveler": "Borderless Traveler",
+      "borderlessTravelerDesc": "Play 10 Borderless games",
+      "nightOwl": "Night Owl",
+      "nightOwlDesc": "Play 10 games after 10 PM",
+      "earlyBird": "Early Bird",
+      "earlyBirdDesc": "Play a game before 8 AM",
+      "marathon": "Marathon",
+      "marathonDesc": "Accumulate 42 hours of play",
+      "whatElse": "What Else?",
+      "whatElseDesc": "Support the project with a coffee",
+      "contributor": "Contributor",
+      "contributorDesc": "Send feedback via the mail form",
+      "coward": "Coward",
+      "cowardDesc": "Surrender 10 times",
+      "assiduous": "Assiduous",
+      "assiduousDesc": "Play 7 days in a row"
+    },
+    "pieces": {
+      "queen": "Queen",
+      "rook": "Rook",
+      "bishop": "Bishop",
+      "knight": "Knight",
+      "king": "King",
+      "pawn": "Pawn"
+    },
+    "months": {
+      "jan": "Jan",
+      "feb": "Feb",
+      "mar": "Mar",
+      "apr": "Apr",
+      "may": "May",
+      "jun": "Jun",
+      "jul": "Jul",
+      "aug": "Aug",
+      "sep": "Sep",
+      "oct": "Oct",
+      "nov": "Nov",
+      "dec": "Dec"
+    },
+    "days": {
+      "mon": "M",
+      "wed": "W",
+      "fri": "F"
+    },
+    "activityNoGames": "No games",
+    "game": "game",
+    "games": "games",
+    "less": "Less",
+    "more": "More",
+    "unlocked": "✓ Unlocked",
+    "favoritePieceHint": "most moved",
+    "leastFavoritePieceHint": "most captured",
+    "movesMade": "moves",
+    "timesCaptured": "captures",
+    "level": "Lv."
   }
 }

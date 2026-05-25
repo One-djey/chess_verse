@@ -160,7 +160,9 @@
         "pawn": "pion"
       },
       "patterns": {
-        "scholarsmate": { "name": "Coup du Berger" },
+        "scholarsmate": {
+          "name": "Coup du Berger"
+        },
         "legalsmate": {
           "name": "Mat de Légal",
           "inventor": "Sire de Légal, ~1750"
@@ -173,8 +175,13 @@
           "name": "Mat de l'Opéra",
           "inventor": "Paul Morphy, 1858"
         },
-        "arabianmate": { "name": "Mat Arabe", "inventor": "VIIIe siècle" },
-        "backrankmate": { "name": "Mat de Couloir" },
+        "arabianmate": {
+          "name": "Mat Arabe",
+          "inventor": "VIIIe siècle"
+        },
+        "backrankmate": {
+          "name": "Mat de Couloir"
+        },
         "bodensmate": {
           "name": "Mat de Boden",
           "inventor": "Samuel Boden, 1853"
@@ -183,17 +190,36 @@
           "name": "Mat d'Anastasie",
           "inventor": "W. Heinse, 1803"
         },
-        "lollismate": { "name": "Mat de Lolli", "inventor": "G. Lolli, 1763" },
-        "grecomate": { "name": "Mat de Greco", "inventor": "G. Greco, ~1620" },
-        "hookmate": { "name": "Mat du Crochet" },
-        "greekgift": { "name": "Don Grec", "inventor": "Sacrifice classique" },
-        "friedliver": { "name": "Foie Frit", "inventor": "G.C. Polerio, 1610" },
-        "windmill": { "name": "Moulin", "inventor": "Torre vs Lasker, 1925" },
+        "lollismate": {
+          "name": "Mat de Lolli",
+          "inventor": "G. Lolli, 1763"
+        },
+        "grecomate": {
+          "name": "Mat de Greco",
+          "inventor": "G. Greco, ~1620"
+        },
+        "hookmate": {
+          "name": "Mat du Crochet"
+        },
+        "greekgift": {
+          "name": "Don Grec",
+          "inventor": "Sacrifice classique"
+        },
+        "friedliver": {
+          "name": "Foie Frit",
+          "inventor": "G.C. Polerio, 1610"
+        },
+        "windmill": {
+          "name": "Moulin",
+          "inventor": "Torre vs Lasker, 1925"
+        },
         "noahsark": {
           "name": "Piège de Noé",
           "inventor": "Ruy Lopez classique"
         },
-        "elephanttrap": { "name": "Piège de l'Éléphant" },
+        "elephanttrap": {
+          "name": "Piège de l'Éléphant"
+        },
         "laskertrap": {
           "name": "Piège de Lasker",
           "inventor": "E. Lasker / S. Dubois"
@@ -282,7 +308,7 @@
       "basisTitle": "4. Base légale",
       "basisBody": "Le traitement repose sur l'intérêt légitime de l'éditeur (amélioration du service), les données étant strictement anonymes et non utilisées à des fins publicitaires ou commerciales. Le Consent Mode de Google est configuré avec analytics_storage: granted et tous les signaux publicitaires désactivés (ad_storage: denied).",
       "cookiesTitle": "5. Cookies",
-      "cookiesBody1": "ChessVerse utilise le stockage local du navigateur (localStorage) pour mémoriser vos préférences de jeu (difficulté de l'IA, orientation du plateau, langue de l'interface). Ces données restent dans votre navigateur et ne sont jamais transmises à nos serveurs.",
+      "cookiesBody1": "ChessVerse utilise le stockage local du navigateur (localStorage) pour mémoriser vos préférences de jeu (difficulté de l'IA, orientation du plateau, langue de l'interface). Ces données restent dans votre navigateur et ne sont jamais transmises à nos serveurs. Les statistiques de jeu (parties jouées, résultats, activité quotidienne) sont également stockées localement via la clé <code>chessverse_stats</code> pour alimenter votre page profil.",
       "cookiesBody2": "Google Analytics 4 peut déposer des cookies techniques à des fins de mesure d'audience anonyme. Aucun cookie publicitaire ou de personnalisation n'est utilisé.",
       "p2pTitle": "6. Mode multijoueur (P2P)",
       "p2pBody": "En mode multijoueur, la connexion entre joueurs est établie en pair-à-pair via WebRTC (bibliothèque Trystero). Les données de jeu transitent directement entre les navigateurs des joueurs, sans passer par nos serveurs. Aucune partie n'est enregistrée.",
@@ -335,5 +361,127 @@
       "lawBody": "Les présentes CGU sont soumises au droit français. En cas de litige, et à défaut de résolution amiable, les tribunaux compétents du ressort de Nice seront seuls compétents.",
       "contactTitle": "8. Contact"
     }
+  },
+  "profile": {
+    "title": "Mon Profil",
+    "stats": "Statistiques",
+    "achievements": "Succès",
+    "totalGames": "Parties jouées",
+    "local": "Local",
+    "p2p": "Multijoueur",
+    "ai": "vs IA",
+    "wins": "Victoires",
+    "losses": "Défaites",
+    "draws": "Nulles",
+    "surrenders": "Abandons",
+    "winRate": "Taux de victoire",
+    "winStreak": "Meilleure série",
+    "currentStreak": "Série actuelle",
+    "totalTime": "Temps de jeu total",
+    "avgTime": "Durée moyenne",
+    "favoritePiece": "Pièce préférée",
+    "leastFavoritePiece": "Pièce sacrifiée",
+    "favoriteMode": "Mode préféré",
+    "eloRank": "Rang IA",
+    "activity": "Activité",
+    "noGames": "Aucune partie enregistrée. Jouez une partie pour voir vos stats !",
+    "ranks": {
+      "beginner": "Débutant",
+      "novice": "Novice",
+      "apprentice": "Apprenti",
+      "knight": "Chevalier",
+      "strategist": "Stratège",
+      "master": "Maître",
+      "grandmaster": "Grand Maître",
+      "legend": "Légende"
+    },
+    "badges": {
+      "firstStep": "Premier pas",
+      "firstStepDesc": "Jouer une première partie",
+      "veteran": "Vétéran",
+      "veteranDesc": "Jouer 100 parties",
+      "explorer": "Explorateur",
+      "explorerDesc": "Essayer les 4 modes de jeu",
+      "bilingue": "Polyglotte",
+      "bilingueDesc": "Jouer dans 2 langues différentes",
+      "serialWinner": "Gagnant en série",
+      "serialWinnerDesc": "Remporter 20 victoires",
+      "onFire": "En feu",
+      "onFireDesc": "Gagner 3 parties d'affilée",
+      "unstoppable": "Inarrêtable",
+      "unstoppableDesc": "Gagner 10 parties d'affilée",
+      "quickWin": "Éclair",
+      "quickWinDesc": "Gagner une partie en moins de 10 coups",
+      "diplomat": "Diplomate",
+      "diplomatDesc": "Obtenir votre premier match nul",
+      "scholarsMate": "Coup du berger",
+      "scholarsMateDesc": "Gagner avec le coup du berger (séquence exacte)",
+      "coronation": "Couronnement",
+      "coronationDesc": "Promouvoir un pion en reine",
+      "assisted": "Assisté",
+      "assistedDesc": "Suivre 100 suggestions de coup",
+      "aiHunter": "Chasseur d'IA",
+      "aiHunterDesc": "Battre l'IA au niveau de difficulté 15",
+      "p2pPioneer": "Pionnier P2P",
+      "p2pPioneerDesc": "Jouer votre première partie en ligne",
+      "chaosFan": "Fan du chaos",
+      "chaosFanDesc": "Jouer 10 parties en mode Tout aléatoire",
+      "assimilationFan": "Fan d'Assimilation",
+      "assimilationFanDesc": "Jouer 10 parties en mode Assimilation",
+      "borderlessTraveler": "Voyageur sans frontières",
+      "borderlessTravelerDesc": "Jouer 10 parties en mode Sans frontières",
+      "nightOwl": "Noctambule",
+      "nightOwlDesc": "Jouer 10 parties après 22h",
+      "earlyBird": "Lève-tôt",
+      "earlyBirdDesc": "Jouer une partie avant 8h du matin",
+      "marathon": "Marathon",
+      "marathonDesc": "Cumuler 42 heures de jeu",
+      "whatElse": "What Else ?",
+      "whatElseDesc": "Soutenir le projet avec un café",
+      "contributor": "Contributeur",
+      "contributorDesc": "Envoyer un retour via le formulaire de feedback",
+      "coward": "Lâche",
+      "cowardDesc": "Abandonner 10 parties",
+      "assiduous": "Assidu",
+      "assiduousDesc": "Jouer 7 jours d'affilée"
+    },
+    "pieces": {
+      "queen": "Dame",
+      "rook": "Tour",
+      "bishop": "Fou",
+      "knight": "Cavalier",
+      "king": "Roi",
+      "pawn": "Pion"
+    },
+    "months": {
+      "jan": "Jan",
+      "feb": "Fév",
+      "mar": "Mar",
+      "apr": "Avr",
+      "may": "Mai",
+      "jun": "Juin",
+      "jul": "Juil",
+      "aug": "Août",
+      "sep": "Sep",
+      "oct": "Oct",
+      "nov": "Nov",
+      "dec": "Déc"
+    },
+    "days": {
+      "mon": "L",
+      "wed": "M",
+      "fri": "V"
+    },
+    "activityNoGames": "Aucune partie",
+    "game": "partie",
+    "games": "parties",
+    "less": "Moins",
+    "more": "Plus",
+    "unlocked": "✓ Débloqué",
+    "favoritePieceHint": "la plus jouée",
+    "leastFavoritePieceHint": "la plus capturée",
+    "movesMade": "coups",
+    "timesCaptured": "captures",
+    "level": "Niv."
   }
 }
