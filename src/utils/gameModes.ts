@@ -32,4 +32,11 @@ export const gameModes: GameMode[] = [
     image: "/ressources/modes/assimilation.webp",
     rules: { borderless: false, randomPieces: false, assimilation: true },
   },
+  {
+    id: "coliseum",
+    title: "Coliseum",
+    description: "Battle on a unique procedurally-generated arena.",
+    image: "/ressources/modes/coliseum.webp",
+    rules: { coliseum: true },
+  },
 ];

@@ -34,6 +34,8 @@ interface GameSettingsProps {
   /** Pass null/undefined to show language-only (e.g. from non-game screens) */
   settings?: LocalSettings | null;
   onSettingsChange?: (settings: LocalSettings) => void;
+  /** Game mode ID — used to hide game settings for Coliseum */
+  gameMode?: string;
 }
 
 // Flag emoji per language code
@@ -161,13 +163,17 @@ export default function GameSettings({
   onClose,
   settings,
   onSettingsChange,
+  gameMode,
 }: GameSettingsProps) {
   const { t, i18n } = useTranslation();
   const { canInstall, triggerInstall } = useInstall();
   const { skin, setSkin } = useSkin();
+  const isColiseum = gameMode === "coliseum";
   // feedbackOpen lives outside the isOpen guard so it survives Settings closing
   const [feedbackOpen, setFeedbackOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<Tab>("partie");
+  const [activeTab, setActiveTab] = useState<Tab>(
+    isColiseum ? "assistance" : "partie",
+  );
 
   const hasGameSettings = settings != null && onSettingsChange != null;
 
@@ -191,7 +197,9 @@ export default function GameSettings({
       };
 
   const TABS: { id: Tab; label: string }[] = [
-    { id: "partie", label: t("gameSettings.tab.partie") },
+    ...(!isColiseum
+      ? [{ id: "partie" as Tab, label: t("gameSettings.tab.partie") }]
+      : []),
     { id: "assistance", label: t("gameSettings.tab.assistance") },
     { id: "apparence", label: t("gameSettings.tab.apparence") },
   ];
@@ -331,14 +339,16 @@ export default function GameSettings({
                       })
                     }
                   />
-                  <CardToggle
-                    label={t("learning.showHint")}
-                    desc={t("learning.showHintDesc")}
-                    checked={effectiveSettings.showHint}
-                    onChange={(v) =>
-                      handleChange({ ...effectiveSettings, showHint: v })
-                    }
-                  />
+                  {!isColiseum && (
+                    <CardToggle
+                      label={t("learning.showHint")}
+                      desc={t("learning.showHintDesc")}
+                      checked={effectiveSettings.showHint}
+                      onChange={(v) =>
+                        handleChange({ ...effectiveSettings, showHint: v })
+                      }
+                    />
+                  )}
                   <CardToggle
                     label={t("learning.moveAnnotations")}
                     desc={t("learning.moveAnnotationsDesc")}

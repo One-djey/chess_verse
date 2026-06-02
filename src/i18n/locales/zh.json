@@ -35,6 +35,10 @@
     "assimilation": {
       "title": "同化",
       "description": "棋子吃掉对方棋子后，将永久获得其移动能力。"
+    },
+    "coliseum": {
+      "title": "斗兽场",
+      "description": "每场对局都在独一无二的有机形状棋盘上进行——没有两场是相同的。"
     }
   },
   "p2p": {
@@ -401,7 +405,7 @@
       "veteran": "老兵",
       "veteranDesc": "完成100场游戏",
       "explorer": "探索者",
-      "explorerDesc": "尝试所有4种游戏模式",
+      "explorerDesc": "尝试所有5种游戏模式",
       "bilingue": "多语言达人",
       "bilingueDesc": "用2种不同语言游玩",
       "serialWinner": "连胜达人",
@@ -430,6 +434,8 @@
       "assimilationFanDesc": "在同化模式下进行10场游戏",
       "borderlessTraveler": "无界旅行者",
       "borderlessTravelerDesc": "在无界模式下进行10场游戏",
+      "gladiator": "角斗士",
+      "gladiatorDesc": "在斗兽场游戏10局",
       "nightOwl": "夜猫子",
       "nightOwlDesc": "在晚上10点后进行10场游戏",
       "earlyBird": "早起鸟",

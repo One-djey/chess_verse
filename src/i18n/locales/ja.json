@@ -35,6 +35,10 @@
     "assimilation": {
       "title": "同化",
       "description": "駒が相手の駒を取ると、その駒の移動能力を永久に習得します。"
+    },
+    "coliseum": {
+      "title": "コロッセオ",
+      "description": "毎回ユニークな有機的形状のボードで対局。同じ盤面は二度と現れない。"
     }
   },
   "p2p": {
@@ -401,7 +405,7 @@
       "veteran": "ベテラン",
       "veteranDesc": "100試合プレイする",
       "explorer": "探検家",
-      "explorerDesc": "4つのゲームモードをすべて試す",
+      "explorerDesc": "5つのゲームモードをすべて試す",
       "bilingue": "多言語使用者",
       "bilingueDesc": "2つの言語でプレイする",
       "serialWinner": "連続優勝者",
@@ -430,6 +434,8 @@
       "assimilationFanDesc": "同化モードで10試合プレイする",
       "borderlessTraveler": "ボーダレストラベラー",
       "borderlessTravelerDesc": "ボーダレスモードで10試合プレイする",
+      "gladiator": "グラディエーター",
+      "gladiatorDesc": "コロッセオで10試合プレイする",
       "nightOwl": "夜更かし",
       "nightOwlDesc": "22時以降に10試合プレイする",
       "earlyBird": "早起き鳥",

@@ -23,6 +23,7 @@ const PolitiqueConfidentialite = React.lazy(
   () => import("./components/legal/PolitiqueConfidentialite"),
 );
 const CGU = React.lazy(() => import("./components/legal/CGU"));
+const ColiseumGame = React.lazy(() => import("./components/ColiseumGame"));
 
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -50,6 +51,7 @@ function App() {
                 <Route path="/" element={<ModeSelect />} />
                 <Route path="/local" element={<GameModes />} />
                 <Route path="/p2p" element={<P2PLobby />} />
+                <Route path="/game/coliseum" element={<ColiseumGame />} />
                 <Route path="/game/:modeId" element={<Game />} />
                 <Route path="/profile" element={<ProfilePage />} />
                 <Route

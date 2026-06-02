@@ -31,6 +31,7 @@ export interface GameMode {
     borderless?: boolean;
     randomPieces?: boolean;
     assimilation?: boolean;
+    coliseum?: boolean;
   };
 }
 

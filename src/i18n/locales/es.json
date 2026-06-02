@@ -35,6 +35,10 @@
     "assimilation": {
       "title": "Asimilación",
       "description": "Cuando una pieza captura a otra, adquiere permanentemente sus capacidades de movimiento."
+    },
+    "coliseum": {
+      "title": "Coliseo",
+      "description": "Cada partida transcurre en un tablero único de formas orgánicas. Nunca habrá dos iguales."
     }
   },
   "p2p": {
@@ -401,7 +405,7 @@
       "veteran": "Veterano",
       "veteranDesc": "Jugar 100 partidas",
       "explorer": "Explorador",
-      "explorerDesc": "Probar los 4 modos de juego",
+      "explorerDesc": "Probar los 5 modos de juego",
       "bilingue": "Políglota",
       "bilingueDesc": "Jugar en 2 idiomas diferentes",
       "serialWinner": "Ganador en serie",
@@ -430,6 +434,8 @@
       "assimilationFanDesc": "Jugar 10 partidas en modo Asimilación",
       "borderlessTraveler": "Viajero sin fronteras",
       "borderlessTravelerDesc": "Jugar 10 partidas en modo Sin fronteras",
+      "gladiator": "Gladiador",
+      "gladiatorDesc": "Jugar 10 partidas en el Coliseo",
       "nightOwl": "Noctámbulo",
       "nightOwlDesc": "Jugar 10 partidas después de las 22h",
       "earlyBird": "Madrugador",

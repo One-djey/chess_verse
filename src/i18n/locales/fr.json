@@ -35,6 +35,10 @@
     "assimilation": {
       "title": "Assimilation",
       "description": "Quand une pièce en capture une autre, elle acquiert définitivement ses capacités de déplacement."
+    },
+    "coliseum": {
+      "title": "Colisée",
+      "description": "Chaque partie se déroule sur un plateau unique aux formes organiques. Aucune n'est identique."
     }
   },
   "p2p": {
@@ -401,7 +405,7 @@
       "veteran": "Vétéran",
       "veteranDesc": "Jouer 100 parties",
       "explorer": "Explorateur",
-      "explorerDesc": "Essayer les 4 modes de jeu",
+      "explorerDesc": "Essayer les 5 modes de jeu",
       "bilingue": "Polyglotte",
       "bilingueDesc": "Jouer dans 2 langues différentes",
       "serialWinner": "Gagnant en série",
@@ -430,6 +434,8 @@
       "assimilationFanDesc": "Jouer 10 parties en mode Assimilation",
       "borderlessTraveler": "Voyageur sans frontières",
       "borderlessTravelerDesc": "Jouer 10 parties en mode Sans frontières",
+      "gladiator": "Gladiateur",
+      "gladiatorDesc": "Jouer 10 parties au Colisée",
       "nightOwl": "Noctambule",
       "nightOwlDesc": "Jouer 10 parties après 22h",
       "earlyBird": "Lève-tôt",

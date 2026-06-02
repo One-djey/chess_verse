@@ -35,6 +35,10 @@
     "assimilation": {
       "title": "Assimilazione",
       "description": "Quando un pezzo cattura un altro, acquisisce definitivamente le sue capacità di movimento."
+    },
+    "coliseum": {
+      "title": "Colosseo",
+      "description": "Ogni partita si svolge su una scacchiera unica dalle forme organiche. Non ce ne sono due uguali."
     }
   },
   "p2p": {
@@ -401,7 +405,7 @@
       "veteran": "Veterano",
       "veteranDesc": "Giocare 100 partite",
       "explorer": "Esploratore",
-      "explorerDesc": "Provare tutte e 4 le modalità di gioco",
+      "explorerDesc": "Provare tutte e 5 le modalità di gioco",
       "bilingue": "Poliglotta",
       "bilingueDesc": "Giocare in 2 lingue diverse",
       "serialWinner": "Vincitore seriale",
@@ -430,6 +434,8 @@
       "assimilationFanDesc": "Giocare 10 partite in modalità Assimilazione",
       "borderlessTraveler": "Viaggiatore senza confini",
       "borderlessTravelerDesc": "Giocare 10 partite in modalità Senza confini",
+      "gladiator": "Gladiatore",
+      "gladiatorDesc": "Giocare 10 partite al Colosseo",
       "nightOwl": "Nottambulo",
       "nightOwlDesc": "Giocare 10 partite dopo le 22",
       "earlyBird": "Mattiniero",

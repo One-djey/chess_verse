@@ -35,6 +35,10 @@
     "assimilation": {
       "title": "استيعاب",
       "description": "عندما تأخذ قطعة قطعة أخرى، تكتسب قدراتها الحركية بشكل دائم."
+    },
+    "coliseum": {
+      "title": "المدرج",
+      "description": "كل مباراة تدور على رقعة فريدة ذات أشكال عضوية — لا توجد مباراتان متشابهتان."
     }
   },
   "p2p": {
@@ -401,7 +405,7 @@
       "veteran": "المخضرم",
       "veteranDesc": "لعب 100 مباراة",
       "explorer": "مستكشف",
-      "explorerDesc": "جرّب الأنماط الأربعة للعبة",
+      "explorerDesc": "جرّب الأنماط الخمسة للعبة",
       "bilingue": "متعدد اللغات",
       "bilingueDesc": "العب بلغتين مختلفتين",
       "serialWinner": "الفائز المتسلسل",
@@ -430,6 +434,8 @@
       "assimilationFanDesc": "لعب 10 مباريات بنمط الاستيعاب",
       "borderlessTraveler": "المسافر بلا حدود",
       "borderlessTravelerDesc": "لعب 10 مباريات بنمط بلا حدود",
+      "gladiator": "محارب المصارعة",
+      "gladiatorDesc": "العب 10 مباريات في المدرج",
       "nightOwl": "بومة الليل",
       "nightOwlDesc": "لعب 10 مباريات بعد الساعة 22",
       "earlyBird": "الباكر",

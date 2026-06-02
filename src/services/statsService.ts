@@ -74,6 +74,10 @@ export interface ChessverseStats {
   currentDayStreak: number; // current consecutive days with at least one game
   maxDayStreak: number; // all-time best consecutive-day streak
   lastPlayedDate: string | null; // 'YYYY-MM-DD' of the last day a game was played
+
+  // Coliseum mode counters
+  coliseumGames: number; // total Coliseum games played
+  coliseumWins: number; // total Coliseum wins
 }
 
 // ── Constants ─────────────────────────────────────────────────────────────────
@@ -112,6 +116,8 @@ const DEFAULT_STATS: ChessverseStats = {
   currentDayStreak: 0,
   maxDayStreak: 0,
   lastPlayedDate: null,
+  coliseumGames: 0,
+  coliseumWins: 0,
 };
 
 // ── ELO rank system ───────────────────────────────────────────────────────────
@@ -303,10 +309,10 @@ export const BADGES: Badge[] = [
     id: "explorer",
     i18nKey: "profile.badges.explorer",
     icon: "🌈",
-    isUnlocked: (s) => s.modesPlayed.length >= 4,
+    isUnlocked: (s) => s.modesPlayed.length >= 5,
     progress: (s) => ({
-      current: Math.min(s.modesPlayed.length, 4),
-      target: 4,
+      current: Math.min(s.modesPlayed.length, 5),
+      target: 5,
     }),
   },
   {
@@ -349,6 +355,13 @@ export const BADGES: Badge[] = [
       current: Math.min(s.modeGameCount["borderless"] ?? 0, 10),
       target: 10,
     }),
+  },
+  {
+    id: "gladiator",
+    i18nKey: "profile.badges.gladiator",
+    icon: "⚔️",
+    isUnlocked: (s) => s.coliseumGames >= 10,
+    progress: (s) => ({ current: Math.min(s.coliseumGames, 10), target: 10 }),
   },
   // ── Difficile — engagement long terme ─────────────────────────────────────
   {
@@ -530,6 +543,10 @@ export function recordGame(game: GameRecord): void {
   if (game.hour >= 22) stats.nightGames += 1;
   if (game.hour < 8) stats.morningGames += 1;
   if (game.mode === "all-random") stats.allRandomGames += 1;
+  if (game.mode === "coliseum") {
+    stats.coliseumGames += 1;
+    if (isWin) stats.coliseumWins += 1;
+  }
   if (!stats.modesPlayed.includes(game.mode)) {
     stats.modesPlayed = [...stats.modesPlayed, game.mode];
   }

@@ -2,6 +2,7 @@ import React, { useRef, useEffect, useState, useCallback } from "react";
 import { Piece, Position, GameMode, PieceColor } from "../types/chess";
 import { findCastlingMove } from "../utils/chess";
 import { PieceSkin, getPieceImageSrc } from "../utils/pieceImage";
+import { getPieceShadowFilter } from "../utils/boardRender";
 
 interface ChessBoardProps {
   pieces: Piece[];
@@ -233,7 +234,11 @@ export default function ChessBoard({
   return (
     <div
       className="bg-white shadow-xl rounded-lg p-4"
-      style={{ width: 'min(80vh, calc(100vw - 1rem))', maxWidth: '800px', aspectRatio: '1 / 1' }}
+      style={{
+        width: "min(80vh, calc(100vw - 1rem))",
+        maxWidth: "800px",
+        aspectRatio: "1 / 1",
+      }}
     >
       <div
         className="grid grid-cols-8 grid-rows-8 h-full relative"
@@ -292,7 +297,8 @@ export default function ChessBoard({
                     normHintTo.x === x &&
                     normHintTo.y === y;
 
-                  const isDangerous = dangerousValidMoves?.has(`${x},${y}`) ?? false;
+                  const isDangerous =
+                    dangerousValidMoves?.has(`${x},${y}`) ?? false;
 
                   // Color priority: hint dest purple > castling purple > danger orange > safe blue
                   const colorClass = isHintDest
@@ -471,37 +477,27 @@ export default function ChessBoard({
             const isPlayable =
               piece.color === currentTurn &&
               (!lockedColor || piece.color === lockedColor);
-            const hasGlow =
-              isPlayable &&
-              movablePieceIds.has(piece.id);
+            const hasGlow = isPlayable && movablePieceIds.has(piece.id);
             const isAssimilated =
               gameMode.rules?.assimilation &&
               (piece.acquiredTypes?.length ?? 0) > 0;
             const dp = toDisplay(piece.position.x, piece.position.y);
 
-            // Glow priority (highest → lowest):
-            //   red (check king) > purple (hint) > orange (endangered) >
-            //   blue (selected) > green (assimilation) > blue (playable)
-            const isEndangered = endangeredPieceIds?.has(piece.id) ?? false;
-            const isHintPiece =
-              hintMove &&
-              piece.position.x === hintMove.from.x &&
-              piece.position.y === hintMove.from.y;
-            const shadowFilter = (() => {
-              if (piece.color === currentTurn && isCheck && piece.type === "king")
-                return "drop-shadow(0 0 6px rgba(239,68,68,1))";   // red — check
-              if (isHintPiece)
-                return "drop-shadow(0 0 6px rgba(168,85,247,1))";  // purple — hint
-              if (isEndangered && !isSelected)
-                return "drop-shadow(0 0 6px rgba(249,115,22,1))";  // orange — danger
-              if (isSelected)
-                return "drop-shadow(0 0 6px rgba(59,130,246,1))";  // blue — selected
-              if (isAssimilated)
-                return "drop-shadow(0 0 4px rgba(74,222,128,1))";  // green — assimilation
-              if (hasGlow)
-                return "drop-shadow(0 0 4px rgba(59,130,246,1))";  // blue — playable
-              return "drop-shadow(0 0 0px transparent)";
-            })();
+            const shadowFilter = getPieceShadowFilter({
+              piece,
+              currentTurn,
+              isCheck,
+              selectedPieceId: selectedPiece?.id ?? null,
+              endangeredPieceIds,
+              movablePieceIds,
+              hintFromId:
+                hintMove &&
+                piece.position.x === hintMove.from.x &&
+                piece.position.y === hintMove.from.y
+                  ? piece.id
+                  : null,
+              isAssimilated: (piece.acquiredTypes?.length ?? 0) > 0,
+            });
 
             return (
               // Outer div: GPU-composited position via transform — no layout reflow on move

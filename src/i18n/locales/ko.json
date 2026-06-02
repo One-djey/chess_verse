@@ -35,6 +35,10 @@
     "assimilation": {
       "title": "동화",
       "description": "말이 상대 말을 잡으면 그 말의 이동 능력을 영구적으로 습득합니다."
+    },
+    "coliseum": {
+      "title": "콜로세움",
+      "description": "매 게임 독특한 유기적 형태의 보드에서 펼쳐지는 대국 — 똑같은 판은 없다."
     }
   },
   "p2p": {
@@ -401,7 +405,7 @@
       "veteran": "베테랑",
       "veteranDesc": "100게임 플레이하기",
       "explorer": "탐험가",
-      "explorerDesc": "4가지 게임 모드 모두 체험하기",
+      "explorerDesc": "5가지 게임 모드 모두 체험하기",
       "bilingue": "다국어 사용자",
       "bilingueDesc": "2가지 언어로 게임하기",
       "serialWinner": "연속 승자",
@@ -430,6 +434,8 @@
       "assimilationFanDesc": "동화 모드 10게임 플레이하기",
       "borderlessTraveler": "무경계 여행자",
       "borderlessTravelerDesc": "무경계 모드 10게임 플레이하기",
+      "gladiator": "검투사",
+      "gladiatorDesc": "콜로세움에서 10경기 플레이하기",
       "nightOwl": "야행성",
       "nightOwlDesc": "오후 10시 이후에 10게임 플레이하기",
       "earlyBird": "일찍 일어나는 새",

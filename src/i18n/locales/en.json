@@ -35,6 +35,10 @@
     "assimilation": {
       "title": "Assimilation",
       "description": "When a piece captures another, it permanently acquires its movement abilities."
+    },
+    "coliseum": {
+      "title": "Coliseum",
+      "description": "Every game takes place on a unique board with organic shapes — no two matches are ever the same."
     }
   },
   "p2p": {
@@ -401,7 +405,7 @@
       "veteran": "Veteran",
       "veteranDesc": "Play 100 games",
       "explorer": "Explorer",
-      "explorerDesc": "Try all 4 game modes",
+      "explorerDesc": "Try all 5 game modes",
       "bilingue": "Polyglot",
       "bilingueDesc": "Play in 2 different languages",
       "serialWinner": "Serial Winner",
@@ -430,6 +434,8 @@
       "assimilationFanDesc": "Play 10 Assimilation games",
       "borderlessTraveler": "Borderless Traveler",
       "borderlessTravelerDesc": "Play 10 Borderless games",
+      "gladiator": "Gladiator",
+      "gladiatorDesc": "Play 10 Coliseum games",
       "nightOwl": "Night Owl",
       "nightOwlDesc": "Play 10 games after 10 PM",
       "earlyBird": "Early Bird",

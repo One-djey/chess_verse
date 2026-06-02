@@ -28,6 +28,8 @@ interface NavBarProps {
   }) => void;
   /** Shows a "View Result" button when the game is over and the modal is dismissed */
   onShowResult?: () => void;
+  /** Game mode ID — passed to GameSettings */
+  gameMode?: string;
 }
 
 export default function NavBar({
@@ -36,6 +38,7 @@ export default function NavBar({
   gameSettings,
   onGameSettingsChange,
   onShowResult,
+  gameMode,
 }: NavBarProps) {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const navigate = useNavigate();
@@ -115,6 +118,7 @@ export default function NavBar({
         onClose={() => setIsSettingsOpen(false)}
         settings={gameSettings ?? null}
         onSettingsChange={onGameSettingsChange}
+        gameMode={gameMode}
       />
     </>
   );
