@@ -38,7 +38,8 @@
     },
     "coliseum": {
       "title": "Coliseo",
-      "description": "Cada partida transcurre en un tablero único de formas orgánicas. Nunca habrá dos iguales."
+      "description": "Cada partida transcurre en un tablero único de formas orgánicas. Nunca habrá dos iguales.",
+      "localOnlyBanner": "El Coliseo es solo para pasar y jugar — no hay IA disponible en este modo."
     }
   },
   "p2p": {

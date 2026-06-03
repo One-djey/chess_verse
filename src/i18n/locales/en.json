@@ -38,7 +38,8 @@
     },
     "coliseum": {
       "title": "Coliseum",
-      "description": "Every game takes place on a unique board with organic shapes — no two matches are ever the same."
+      "description": "Every game takes place on a unique board with organic shapes — no two matches are ever the same.",
+      "localOnlyBanner": "Coliseum is pass-and-play only — no AI opponent available in this mode."
     }
   },
   "p2p": {

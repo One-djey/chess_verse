@@ -1,6 +1,7 @@
 import { useMemo, useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { Users, X } from "lucide-react";
 import NavBar from "./NavBar";
 import GameOver from "./GameOver";
 import ColiseumBoard from "./ColiseumBoard";
@@ -72,6 +73,7 @@ function ColiseumUI({
   const { t } = useTranslation();
   const { skin } = useSkin();
   const [gameOverVisible, setGameOverVisible] = useState(true);
+  const [bannerDismissed, setBannerDismissed] = useState(false);
   const [settings, setSettings] = useState<LocalSettings>(() => {
     try {
       return {
@@ -232,6 +234,22 @@ function ColiseumUI({
         />
       )}
 
+      {!isP2PMode && !bannerDismissed && (
+        <div className="bg-amber-50 border-b border-amber-200 text-amber-800 px-4 py-2 flex items-center justify-between gap-2 text-sm">
+          <div className="flex items-center gap-2">
+            <Users size={15} className="shrink-0 text-amber-600" />
+            <span>{t("modes.coliseum.localOnlyBanner")}</span>
+          </div>
+          <button
+            onClick={() => setBannerDismissed(true)}
+            className="shrink-0 text-amber-500 hover:text-amber-700 transition-colors"
+            aria-label="Dismiss"
+          >
+            <X size={15} />
+          </button>
+        </div>
+      )}
+
       <div className="flex-1 flex items-center justify-center p-2 overflow-hidden">
         {generating ? (
           <div className="text-gray-500 text-lg animate-pulse font-medium">
@@ -298,6 +316,7 @@ function ColiseumUI({
 
 function ColiseumGameLocal() {
   const navigate = useNavigate();
+  const [gameKey, setGameKey] = useState(0);
   const {
     state,
     generating,
@@ -310,15 +329,21 @@ function ColiseumGameLocal() {
     getTotalMoveCount,
   } = useColiseumGame();
 
+  const handleReplay = useCallback(() => {
+    regenerate();
+    setGameKey((k) => k + 1);
+  }, [regenerate]);
+
   return (
     <ColiseumUI
+      key={gameKey}
       state={state}
       generating={generating}
       handlePieceSelect={handlePieceSelect}
       handleDeselect={handleDeselect}
       handleMove={handleMove}
       handleSurrender={handleSurrender}
-      onReplay={regenerate}
+      onReplay={handleReplay}
       getDuration={getDuration}
       getTotalMoveCount={getTotalMoveCount}
       returnPath="/local"

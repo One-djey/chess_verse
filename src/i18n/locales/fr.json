@@ -38,7 +38,8 @@
     },
     "coliseum": {
       "title": "Colisée",
-      "description": "Chaque partie se déroule sur un plateau unique aux formes organiques. Aucune n'est identique."
+      "description": "Chaque partie se déroule sur un plateau unique aux formes organiques. Aucune n'est identique.",
+      "localOnlyBanner": "Le Colisée se joue en local uniquement — pas d'adversaire IA disponible dans ce mode."
     }
   },
   "p2p": {

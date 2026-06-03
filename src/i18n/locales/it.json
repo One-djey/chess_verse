@@ -38,7 +38,8 @@
     },
     "coliseum": {
       "title": "Colosseo",
-      "description": "Ogni partita si svolge su una scacchiera unica dalle forme organiche. Non ce ne sono due uguali."
+      "description": "Ogni partita si svolge su una scacchiera unica dalle forme organiche. Non ce ne sono due uguali.",
+      "localOnlyBanner": "Il Colosseo è solo in modalità passa e gioca — nessun avversario IA disponibile in questa modalità."
     }
   },
   "p2p": {
