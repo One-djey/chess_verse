@@ -8,8 +8,11 @@ import {
 import type { Room } from "@trystero-p2p/core";
 import { P2PConnectionState, P2PRole } from "../types/p2p";
 import { PieceColor, GameMode, Piece } from "../types/chess";
+import { Arena } from "../types/coliseum";
 import { joinRoom, makeRoomActions } from "../services/TrysteroService";
 import { getInitialPieces } from "../utils/chess";
+import { generateColiseumArena } from "../utils/chess/coliseumGenerator";
+import { arenaToChessPieces } from "../hooks/useColiseumGame";
 import { PieceSkin } from "../utils/pieceImage";
 
 export interface P2PContextValue {
@@ -19,6 +22,7 @@ export interface P2PContextValue {
   connectionState: P2PConnectionState;
   gameMode: GameMode | null;
   initialPieces: Piece[] | null;
+  initialArena: Arena | null;
   peerSkin: PieceSkin | null;
   room: Room | null;
   actions: ReturnType<typeof makeRoomActions> | null;
@@ -47,6 +51,7 @@ export function P2PProvider({ children }: { children: ReactNode }) {
     useState<P2PConnectionState>("idle");
   const [gameMode, setGameMode] = useState<GameMode | null>(null);
   const [initialPieces, setInitialPieces] = useState<Piece[] | null>(null);
+  const [initialArena, setInitialArena] = useState<Arena | null>(null);
   const [peerSkin, setPeerSkin] = useState<PieceSkin | null>(null);
 
   const roomRef = useRef<Room | null>(null);
@@ -55,7 +60,8 @@ export function P2PProvider({ children }: { children: ReactNode }) {
 
   /**
    * HOST: creates room, registers onGuestReady + onPeerJoin SYNCHRONOUSLY.
-   * Sends sync_state + color_assign (with hostSkin) on peer join.
+   * For coliseum mode: generates arena, sends arena_init + sync_state + color_assign.
+   * For other modes: sends sync_state + color_assign.
    * Navigates only after receiving guest_ready (which carries guestSkin).
    */
   const startRoom = useCallback(
@@ -83,8 +89,17 @@ export function P2PProvider({ children }: { children: ReactNode }) {
       });
 
       room.onPeerJoin(() => {
-        const pieces = getInitialPieces(mode);
-        setInitialPieces(pieces);
+        let pieces: Piece[];
+        if (mode.rules?.coliseum) {
+          const arena = generateColiseumArena(2);
+          pieces = arenaToChessPieces(arena);
+          setInitialArena(arena);
+          setInitialPieces(pieces);
+          actions.sendArenaInit({ type: "arena_init", arena });
+        } else {
+          pieces = getInitialPieces(mode);
+          setInitialPieces(pieces);
+        }
         setConnectionState("connected");
 
         actions.sendSyncState({ type: "sync_state", pieces, seq: 0 });
@@ -105,6 +120,7 @@ export function P2PProvider({ children }: { children: ReactNode }) {
 
   /**
    * GUEST: joins room, registers onColorAssign + onSyncState SYNCHRONOUSLY.
+   * For coliseum mode: also waits for arena_init before sending guest_ready.
    * Reads hostSkin from color_assign → setPeerSkin.
    * Sends guest_ready (with own skin) just before navigating.
    */
@@ -127,11 +143,17 @@ export function P2PProvider({ children }: { children: ReactNode }) {
       setConnectionState("connecting");
       forceUpdate((n) => n + 1);
 
-      const received = { color: false, sync: false };
+      const isColiseum = mode?.rules?.coliseum === true;
+      const received = { color: false, sync: false, arena: !isColiseum };
       const navigatedRef = { value: false };
 
       const tryNavigate = () => {
-        if (received.color && received.sync && !navigatedRef.value) {
+        if (
+          received.color &&
+          received.sync &&
+          received.arena &&
+          !navigatedRef.value
+        ) {
           navigatedRef.value = true;
           actions.sendGuestReady({ type: "guest_ready", skin });
           onConnected();
@@ -152,6 +174,14 @@ export function P2PProvider({ children }: { children: ReactNode }) {
         tryNavigate();
       });
 
+      if (isColiseum) {
+        actions.onArenaInit((msg) => {
+          setInitialArena(msg.arena);
+          received.arena = true;
+          tryNavigate();
+        });
+      }
+
       room.onPeerLeave(() => setConnectionState("disconnected"));
     },
     [],
@@ -167,6 +197,7 @@ export function P2PProvider({ children }: { children: ReactNode }) {
     setConnectionState("idle");
     setGameMode(null);
     setInitialPieces(null);
+    setInitialArena(null);
     setPeerSkin(null);
     forceUpdate((n) => n + 1);
   }, []);
@@ -180,6 +211,7 @@ export function P2PProvider({ children }: { children: ReactNode }) {
         connectionState,
         gameMode,
         initialPieces,
+        initialArena,
         peerSkin,
         room: roomRef.current,
         actions: actionsRef.current,

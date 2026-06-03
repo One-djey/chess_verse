@@ -40,21 +40,23 @@ export default function ColiseumBoard({
   const rows = arena.grid.length;
   const cols = arena.grid[0]?.length ?? rows;
 
-  const [imagesLoaded, setImagesLoaded] = useState(false);
+  const [imagesLoaded, setImagesLoaded] = useState(true);
   const [hoveredPos, setHoveredPos] = useState<{ x: number; y: number } | null>(
     null,
   );
 
-  // Reset fade-in when skin changes
+  // Brief fade-out/in on skin change; fallback ensures visibility even with cached images
   useEffect(() => {
     setImagesLoaded(false);
+    const timer = setTimeout(() => setImagesLoaded(true), 80);
+    return () => clearTimeout(timer);
   }, [skin]);
 
   return (
     <div
       className="relative bg-white shadow-xl rounded-lg overflow-hidden select-none"
       style={{
-        width: `min(80vmin, 700px)`,
+        width: `min(80vmin, 700px, calc((100vh - 8rem) * ${cols} / ${rows}))`,
         aspectRatio: `${cols} / ${rows}`,
       }}
     >

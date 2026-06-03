@@ -10,7 +10,7 @@ import {
 } from "../utils/chess/coliseumMoves";
 import { recordGame } from "../services/statsService";
 
-function arenaToChessPieces(arena: Arena): Piece[] {
+export function arenaToChessPieces(arena: Arena): Piece[] {
   const COLORS: ("white" | "black")[] = ["white", "black"];
   return arena.pieces.map((ap, i) => ({
     id: `coliseum-${ap.player}-${ap.piece}-${i}`,
@@ -185,7 +185,13 @@ export function useColiseumGame() {
       isQuickWin: isWin && totalMoves < 10,
       language: localStorage.getItem("chessverse_language") ?? undefined,
     });
-  }, [state.gameOver, state.winner, state.surrenderedBy, state.moveCount, state.moves]);
+  }, [
+    state.gameOver,
+    state.winner,
+    state.surrenderedBy,
+    state.moveCount,
+    state.moves,
+  ]);
 
   return {
     state,

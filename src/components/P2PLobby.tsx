@@ -97,7 +97,7 @@ export default function P2PLobby() {
       joinedRef.current = true;
       joinExistingRoom(roomParam, guestMode, skin, () => {
         navigatingToGameRef.current = true;
-        navigate("/game/p2p");
+        navigate(guestMode?.rules?.coliseum ? "/game/coliseum" : "/game/p2p");
       });
     }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
@@ -118,7 +118,7 @@ export default function P2PLobby() {
     setRoomId(id);
     startRoom(id, mode, skin, () => {
       navigatingToGameRef.current = true;
-      navigate("/game/p2p");
+      navigate(mode.rules?.coliseum ? "/game/coliseum" : "/game/p2p");
     });
   };
 
@@ -155,7 +155,9 @@ export default function P2PLobby() {
   if (isGuest) {
     return (
       <div className="min-h-screen bg-gray-100 flex flex-col">
-        <NavBar breadcrumbs={[{ label: t("modeSelect.multiplayer") }]} />
+        <NavBar
+          breadcrumbs={[{ label: t("modeSelect.multiplayer"), path: "/p2p" }]}
+        />
 
         <div className="flex-1 flex items-center justify-center p-8">
           <ModeInfoCard mode={gameMode}>
@@ -221,7 +223,7 @@ export default function P2PLobby() {
       <div className="min-h-screen bg-gray-100 flex flex-col">
         <NavBar
           breadcrumbs={[
-            { label: t("modeSelect.multiplayer") },
+            { label: t("modeSelect.multiplayer"), path: "/p2p" },
             { label: t("nav.invite") },
           ]}
         />

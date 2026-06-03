@@ -314,6 +314,13 @@ export default function Game() {
   // Only pieces with at least one legal move get the blue glow.
   const movablePieceIds = React.useMemo<Set<string>>(() => {
     const ids = new Set<string>();
+    if (
+      p2p.isP2PMode &&
+      p2p.playerColor &&
+      chess.gameState.currentTurn !== p2p.playerColor
+    ) {
+      return ids;
+    }
     chess.gameState.pieces
       .filter((p) => p.color === chess.gameState.currentTurn)
       .forEach((p) => {
@@ -329,6 +336,8 @@ export default function Game() {
     chess.gameState.pieces,
     chess.gameState.currentTurn,
     chess.gameState.gameMode,
+    p2p.isP2PMode,
+    p2p.playerColor,
   ]);
 
   // ── Danger indicator ──────────────────────────────────────────────────────
@@ -719,10 +728,10 @@ export default function Game() {
     : t("modeSelect.local");
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="h-screen overflow-hidden bg-gray-100 flex flex-col">
       <NavBar
         breadcrumbs={[
-          { label: playTypeLabel },
+          { label: playTypeLabel, path: p2p.isP2PMode ? "/p2p" : "/local" },
           { label: t(`modes.${chess.gameState.gameMode.id}.title`) },
         ]}
         onSurrender={!chess.gameState.gameOver ? handleResign : undefined}
@@ -746,7 +755,7 @@ export default function Game() {
         />
       )}
 
-      <div className="flex flex-col items-center justify-center p-2 sm:p-8 gap-3">
+      <div className="flex-1 flex flex-col items-center justify-center p-2 sm:p-4 gap-3 overflow-hidden">
         <ChessBoard
           pieces={chess.gameState.pieces}
           currentTurn={chess.gameState.currentTurn}

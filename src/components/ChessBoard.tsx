@@ -48,11 +48,13 @@ export default function ChessBoard({
   peerSkin,
 }: ChessBoardProps) {
   const pieceRefs = useRef<Map<string, { x: number; y: number }>>(new Map());
-  const [imagesLoaded, setImagesLoaded] = useState(false);
+  const [imagesLoaded, setImagesLoaded] = useState(true);
 
-  // Reset fade-in when skin changes
+  // Brief fade-out/in on skin change; fallback ensures visibility even with cached images
   useEffect(() => {
     setImagesLoaded(false);
+    const timer = setTimeout(() => setImagesLoaded(true), 80);
+    return () => clearTimeout(timer);
   }, [skin]);
 
   const getSkinForPiece = (piece: Piece): PieceSkin => {
@@ -474,13 +476,6 @@ export default function ChessBoard({
             const isSelected =
               selectedPiece?.position.x === piece.position.x &&
               selectedPiece?.position.y === piece.position.y;
-            const isPlayable =
-              piece.color === currentTurn &&
-              (!lockedColor || piece.color === lockedColor);
-            const hasGlow = isPlayable && movablePieceIds.has(piece.id);
-            const isAssimilated =
-              gameMode.rules?.assimilation &&
-              (piece.acquiredTypes?.length ?? 0) > 0;
             const dp = toDisplay(piece.position.x, piece.position.y);
 
             const shadowFilter = getPieceShadowFilter({

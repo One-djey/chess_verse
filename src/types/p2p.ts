@@ -1,5 +1,6 @@
 import { PieceColor, Position, Piece } from "./chess";
 import { PieceSkin } from "../utils/pieceImage";
+import { Arena } from "./coliseum";
 
 export type P2PRole = "host" | "guest";
 
@@ -71,6 +72,9 @@ export type RematchDeclineMessage = { type: "rematch_decline" };
 // Host → Guest: authoritative board reset
 export type RematchStartMessage = { type: "rematch_start"; pieces: Piece[] };
 
+// Host → Guest: Coliseum arena data (sent before sync_state for coliseum mode)
+export type ArenaInitMessage = { type: "arena_init"; arena: Arena };
+
 export type RematchState = "idle" | "requested" | "offered" | "starting";
 
 export type P2PMessage =
@@ -84,4 +88,5 @@ export type P2PMessage =
   | RematchRequestMessage
   | RematchAcceptMessage
   | RematchDeclineMessage
-  | RematchStartMessage;
+  | RematchStartMessage
+  | ArenaInitMessage;
