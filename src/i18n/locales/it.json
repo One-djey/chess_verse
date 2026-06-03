@@ -11,8 +11,8 @@
     "local": "Locale",
     "localDesc": "Gioca contro l'IA o a turni con un amico sullo stesso dispositivo.",
     "multiplayer": "Multigiocatore",
-    "multiplayerDesc": "Sfida un amico da remoto — nessun server necessario.",
-    "offline": "Offline — multigiocatore non disponibile"
+    "multiplayerDesc": "Sfida un amico da remoto, senza server.",
+    "offline": "Offline: multigiocatore non disponibile"
   },
   "gameModeSelect": {
     "title": "Scegli la modalità di gioco",
@@ -26,11 +26,11 @@
     },
     "borderless": {
       "title": "Senza confini",
-      "description": "I pezzi possono attraversare i bordi della scacchiera, creando possibilità strategiche uniche."
+      "description": "I pezzi attraversano i bordi e ricompaiono dall'altro lato."
     },
     "all-random": {
       "title": "Tutto casuale",
-      "description": "I pezzi vengono posizionati casualmente all'inizio, creando un'esperienza unica ogni volta."
+      "description": "I pezzi vengono posizionati casualmente all'inizio. Improvvisa dalla prima mossa."
     },
     "assimilation": {
       "title": "Assimilazione",
@@ -38,8 +38,8 @@
     },
     "coliseum": {
       "title": "Colosseo",
-      "description": "Ogni partita si svolge su una scacchiera unica dalle forme organiche. Non ce ne sono due uguali.",
-      "localOnlyBanner": "Il Colosseo è solo in modalità passa e gioca — nessun avversario IA disponibile in questa modalità."
+      "description": "Una scacchiera a forma organica diversa per ogni partita.",
+      "localOnlyBanner": "Il Colosseo è solo locale. Nessun avversario IA in questa modalità."
     }
   },
   "p2p": {
@@ -81,7 +81,7 @@
     "victory": "Vittoria!",
     "white": "Bianco",
     "black": "Nero",
-    "stalemate": "Stallo — nessuna mossa legale",
+    "stalemate": "Stallo: nessuna mossa legale",
     "onlyKings": "Rimangono solo i re",
     "duration": "Durata",
     "movesPlayed": "Mosse giocate",
@@ -125,8 +125,8 @@
     ]
   },
   "learning": {
-    "pinnedPiece": "Questo pezzo non può muoversi — esporrebbe il re allo scacco",
-    "blockedPiece": "Questo pezzo è bloccato — nessuna mossa disponibile",
+    "pinnedPiece": "Questo pezzo non può muoversi: esporrebbe il re allo scacco",
+    "blockedPiece": "Questo pezzo è bloccato: nessuna mossa disponibile",
     "checkBlockedPiece": "Questo pezzo non può risolvere lo scacco",
     "settingsTitle": "Apprendimento e assistenza",
     "dangerIndicator": "Indicatore di pericolo",
@@ -247,7 +247,7 @@
     "ar": "العربية"
   },
   "install": {
-    "message": "Installa ChessVerse per un accesso rapido",
+    "message": "Gioca offline con ChessVerse!",
     "cta": "Installa"
   },
   "feedback": {

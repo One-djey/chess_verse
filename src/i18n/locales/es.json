@@ -11,8 +11,8 @@
     "local": "Local",
     "localDesc": "Juega contra la IA o pasa el dispositivo a tu amigo.",
     "multiplayer": "Multijugador",
-    "multiplayerDesc": "Desafía a un amigo remotamente — sin servidor.",
-    "offline": "Sin conexión — multijugador no disponible"
+    "multiplayerDesc": "Desafía a un amigo a distancia, sin servidor.",
+    "offline": "Sin conexión: multijugador no disponible"
   },
   "gameModeSelect": {
     "title": "Elige tu modo de juego",
@@ -26,11 +26,11 @@
     },
     "borderless": {
       "title": "Sin fronteras",
-      "description": "Las piezas pueden cruzar los bordes del tablero, creando posibilidades estratégicas únicas."
+      "description": "Las piezas cruzan los bordes y reaparecen en el lado opuesto."
     },
     "all-random": {
       "title": "Todo aleatorio",
-      "description": "Las piezas se colocan aleatoriamente al inicio, creando una experiencia única cada vez."
+      "description": "Las piezas se colocan de forma aleatoria al inicio. Improvisa desde el primer movimiento."
     },
     "assimilation": {
       "title": "Asimilación",
@@ -38,8 +38,8 @@
     },
     "coliseum": {
       "title": "Coliseo",
-      "description": "Cada partida transcurre en un tablero único de formas orgánicas. Nunca habrá dos iguales.",
-      "localOnlyBanner": "El Coliseo es solo para pasar y jugar — no hay IA disponible en este modo."
+      "description": "El tablero cambia de forma en cada partida. Ninguna igual a la anterior.",
+      "localOnlyBanner": "El Coliseo es solo para juego local: sin IA disponible."
     }
   },
   "p2p": {
@@ -81,7 +81,7 @@
     "victory": "¡Victoria!",
     "white": "Blancas",
     "black": "Negras",
-    "stalemate": "Ahogado — sin movimientos legales",
+    "stalemate": "Ahogado: sin movimientos legales",
     "onlyKings": "Solo quedan los reyes",
     "duration": "Duración",
     "movesPlayed": "Movimientos jugados",
@@ -125,8 +125,8 @@
     ]
   },
   "learning": {
-    "pinnedPiece": "Esta pieza no puede moverse — pondría al rey en jaque",
-    "blockedPiece": "Esta pieza está bloqueada — no hay movimientos disponibles",
+    "pinnedPiece": "Esta pieza no puede moverse: pondría al rey en jaque",
+    "blockedPiece": "Esta pieza está bloqueada: sin movimientos disponibles",
     "checkBlockedPiece": "Esta pieza no puede resolver el jaque",
     "settingsTitle": "Aprendizaje y asistencia",
     "dangerIndicator": "Indicador de peligro",
@@ -247,7 +247,7 @@
     "ar": "العربية"
   },
   "install": {
-    "message": "Instala ChessVerse para acceso rápido",
+    "message": "¡Juega sin conexión!",
     "cta": "Instalar"
   },
   "feedback": {

@@ -12,7 +12,7 @@
     "localDesc": "AI와 대결하거나 같은 기기에서 친구와 번갈아 플레이하세요.",
     "multiplayer": "멀티플레이어",
     "multiplayerDesc": "서버 없이 원격으로 친구에게 도전하세요.",
-    "offline": "오프라인 — 멀티플레이어 사용 불가"
+    "offline": "오프라인: 멀티플레이어 사용 불가"
   },
   "gameModeSelect": {
     "title": "게임 모드 선택",
@@ -26,11 +26,11 @@
     },
     "borderless": {
       "title": "경계 없음",
-      "description": "말이 보드 가장자리를 넘어 이동할 수 있어 독특한 전략적 가능성을 만들어냅니다."
+      "description": "말이 보드 끝을 넘으면 반대편에서 나타납니다."
     },
     "all-random": {
       "title": "완전 랜덤",
-      "description": "게임 시작 시 말이 무작위로 배치되어 매번 독특한 경험을 제공합니다."
+      "description": "게임 시작 시 말이 무작위로 배치됩니다. 첫 수부터 즉흥 전략."
     },
     "assimilation": {
       "title": "동화",
@@ -38,8 +38,8 @@
     },
     "coliseum": {
       "title": "콜로세움",
-      "description": "매 게임 독특한 유기적 형태의 보드에서 펼쳐지는 대국 — 똑같은 판은 없다.",
-      "localOnlyBanner": "콜로세움은 패스 앤 플레이 전용입니다 — 이 모드에서는 AI 상대를 이용할 수 없습니다."
+      "description": "매 게임 다른 형태의 유기적 보드에서 펼쳐집니다.",
+      "localOnlyBanner": "콜로세움은 로컬 전용입니다. 이 모드에서는 AI 상대를 이용할 수 없습니다."
     }
   },
   "p2p": {
@@ -81,7 +81,7 @@
     "victory": "승리!",
     "white": "백",
     "black": "흑",
-    "stalemate": "스테일메이트 — 합법적인 이동 없음",
+    "stalemate": "스테일메이트: 합법적인 이동 없음",
     "onlyKings": "킹만 남아 있습니다",
     "duration": "시간",
     "movesPlayed": "진행한 수",
@@ -125,8 +125,8 @@
     ]
   },
   "learning": {
-    "pinnedPiece": "이 기물은 움직일 수 없습니다 — 왕이 노출됩니다",
-    "blockedPiece": "이 기물은 막혀 있습니다 — 사용 가능한 이동이 없습니다",
+    "pinnedPiece": "이 기물은 움직일 수 없습니다. 왕이 노출됩니다.",
+    "blockedPiece": "이 기물은 막혀 있습니다. 이동 불가.",
     "checkBlockedPiece": "이 기물로는 체크를 해소할 수 없습니다",
     "settingsTitle": "학습 및 지원",
     "dangerIndicator": "위험 표시기",
@@ -247,7 +247,7 @@
     "ar": "العربية"
   },
   "install": {
-    "message": "빠른 접근을 위해 ChessVerse를 설치하세요",
+    "message": "오프라인으로 즐기세요!",
     "cta": "설치"
   },
   "feedback": {

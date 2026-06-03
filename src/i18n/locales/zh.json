@@ -12,7 +12,7 @@
     "localDesc": "与AI对战，或在同一设备上与朋友轮流游戏。",
     "multiplayer": "多人游戏",
     "multiplayerDesc": "远程挑战朋友，无需服务器。",
-    "offline": "离线 — 多人游戏不可用"
+    "offline": "离线：多人游戏不可用"
   },
   "gameModeSelect": {
     "title": "选择游戏模式",
@@ -26,11 +26,11 @@
     },
     "borderless": {
       "title": "无边界",
-      "description": "棋子可以越过棋盘边缘，创造独特的战略可能性。"
+      "description": "棋子越过边界后从对面重新出现。"
     },
     "all-random": {
       "title": "全随机",
-      "description": "游戏开始时棋子随机放置，每次都带来独特体验。"
+      "description": "游戏开始时棋子随机摆放，每局都要临场应对。"
     },
     "assimilation": {
       "title": "同化",
@@ -38,8 +38,8 @@
     },
     "coliseum": {
       "title": "斗兽场",
-      "description": "每场对局都在独一无二的有机形状棋盘上进行——没有两场是相同的。",
-      "localOnlyBanner": "斗兽场仅支持传递式本地对战——此模式下无 AI 对手。"
+      "description": "每场对局棋盘形态各异，充满变数。",
+      "localOnlyBanner": "斗兽场仅支持本地对战，此模式无 AI 对手。"
     }
   },
   "p2p": {
@@ -81,7 +81,7 @@
     "victory": "胜利！",
     "white": "白方",
     "black": "黑方",
-    "stalemate": "逼和 — 无合法移动",
+    "stalemate": "逼和：无合法走法",
     "onlyKings": "仅剩国王",
     "duration": "时长",
     "movesPlayed": "走棋数",
@@ -125,8 +125,8 @@
     ]
   },
   "learning": {
-    "pinnedPiece": "此棋子无法移动 — 否则将使王暴露在攻击下",
-    "blockedPiece": "此棋子被阻挡 — 没有可用的移动",
+    "pinnedPiece": "此棋子被牵制，无法移动",
+    "blockedPiece": "此棋子被阻挡，无路可走",
     "checkBlockedPiece": "此棋子无法解除将军状态",
     "settingsTitle": "学习与辅助",
     "dangerIndicator": "危险指示器",
@@ -247,7 +247,7 @@
     "ar": "العربية"
   },
   "install": {
-    "message": "安装 ChessVerse 以快速访问",
+    "message": "离线畅玩 ChessVerse！",
     "cta": "安装"
   },
   "feedback": {

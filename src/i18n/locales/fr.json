@@ -26,11 +26,11 @@
     },
     "borderless": {
       "title": "Sans frontières",
-      "description": "Les pièces peuvent traverser les bords du plateau, créant des possibilités stratégiques uniques."
+      "description": "Les pièces franchissent les bords et réapparaissent de l'autre côté."
     },
     "all-random": {
       "title": "Tout aléatoire",
-      "description": "Les pièces sont placées aléatoirement au départ, pour une expérience unique à chaque partie."
+      "description": "Les pièces sont placées aléatoirement au départ. À vous d'improviser."
     },
     "assimilation": {
       "title": "Assimilation",
@@ -38,8 +38,8 @@
     },
     "coliseum": {
       "title": "Colisée",
-      "description": "Chaque partie se déroule sur un plateau unique aux formes organiques. Aucune n'est identique.",
-      "localOnlyBanner": "Le Colisée se joue en local uniquement — pas d'adversaire IA disponible dans ce mode."
+      "description": "Un plateau aux formes organiques tiré au sort à chaque partie.",
+      "localOnlyBanner": "Le Colisée se joue en local uniquement. Pas d'adversaire IA dans ce mode."
     }
   },
   "p2p": {
@@ -247,7 +247,7 @@
     "ar": "العربية"
   },
   "install": {
-    "message": "Installez ChessVerse pour un accès rapide",
+    "message": "Jouez à ChessVerse hors-ligne !",
     "cta": "Installer"
   },
   "feedback": {

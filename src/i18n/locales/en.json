@@ -26,11 +26,11 @@
     },
     "borderless": {
       "title": "Borderless",
-      "description": "Pieces can cross the edges of the board, creating unique strategic possibilities."
+      "description": "Pieces that leave the board reappear on the opposite side."
     },
     "all-random": {
       "title": "All Random",
-      "description": "Pieces are randomly placed at the start, creating a unique experience every time."
+      "description": "Pieces are placed randomly at the start. Improvise from move one."
     },
     "assimilation": {
       "title": "Assimilation",
@@ -38,7 +38,7 @@
     },
     "coliseum": {
       "title": "Coliseum",
-      "description": "Every game takes place on a unique board with organic shapes — no two matches are ever the same.",
+      "description": "A new organic board shape every game. No two matches alike.",
       "localOnlyBanner": "Coliseum is pass-and-play only — no AI opponent available in this mode."
     }
   },
@@ -247,7 +247,7 @@
     "ar": "العربية"
   },
   "install": {
-    "message": "Install ChessVerse for quick access",
+    "message": "Play ChessVerse offline!",
     "cta": "Install"
   },
   "feedback": {

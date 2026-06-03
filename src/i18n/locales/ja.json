@@ -12,7 +12,7 @@
     "localDesc": "AIと対戦、または同じ端末で友達とプレイ。",
     "multiplayer": "マルチプレイヤー",
     "multiplayerDesc": "サーバー不要でリモートの友達に挑戦。",
-    "offline": "オフライン — マルチプレイヤー利用不可"
+    "offline": "オフライン：マルチプレイヤー利用不可"
   },
   "gameModeSelect": {
     "title": "ゲームモードを選択",
@@ -26,11 +26,11 @@
     },
     "borderless": {
       "title": "ボーダーレス",
-      "description": "駒がボードの端を越えて移動でき、ユニークな戦略的可能性を生み出します。"
+      "description": "端を越えた駒は反対側から現れます。"
     },
     "all-random": {
       "title": "オールランダム",
-      "description": "開始時に駒がランダムに配置され、毎回ユニークな体験が生まれます。"
+      "description": "開始時に駒がランダムに配置される。毎回即興の展開。"
     },
     "assimilation": {
       "title": "同化",
@@ -38,8 +38,8 @@
     },
     "coliseum": {
       "title": "コロッセオ",
-      "description": "毎回ユニークな有機的形状のボードで対局。同じ盤面は二度と現れない。",
-      "localOnlyBanner": "コロッセオはパス＆プレイ専用です — このモードではAI対戦は利用できません。"
+      "description": "毎回異なる有機的形状のボードで対局する。",
+      "localOnlyBanner": "コロッセオはローカル専用です。このモードではAI対戦は利用できません。"
     }
   },
   "p2p": {
@@ -81,7 +81,7 @@
     "victory": "勝利！",
     "white": "白",
     "black": "黒",
-    "stalemate": "ステールメート — 合法手なし",
+    "stalemate": "ステールメート：合法手なし",
     "onlyKings": "キングのみ残っています",
     "duration": "対局時間",
     "movesPlayed": "手数",
@@ -125,8 +125,8 @@
     ]
   },
   "learning": {
-    "pinnedPiece": "このコマは動けません — 王手がかかります",
-    "blockedPiece": "このコマは動けません — 利用可能な手がありません",
+    "pinnedPiece": "このコマは動けません（王手がかかります）",
+    "blockedPiece": "このコマは動けません（手がありません）",
     "checkBlockedPiece": "このコマを動かしても王手を解消できません",
     "settingsTitle": "学習とアシスト",
     "dangerIndicator": "危険インジケーター",
@@ -247,7 +247,7 @@
     "ar": "العربية"
   },
   "install": {
-    "message": "ChessVerseをインストールしてすぐアクセス",
+    "message": "オフラインで遊ぼう！",
     "cta": "インストール"
   },
   "feedback": {
