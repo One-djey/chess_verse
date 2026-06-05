@@ -3,6 +3,8 @@ import { Piece, Position, GameMode, PieceColor } from "../types/chess";
 import { findCastlingMove } from "../utils/chess";
 import { PieceSkin, getPieceImageSrc } from "../utils/pieceImage";
 import { getPieceShadowFilter } from "../utils/boardRender";
+import { useBoardSkin } from "../hooks/useBoardSkin";
+import { getBoardSkinDef } from "../utils/boardSkin";
 
 interface ChessBoardProps {
   pieces: Piece[];
@@ -56,6 +58,9 @@ export default function ChessBoard({
     const timer = setTimeout(() => setImagesLoaded(true), 80);
     return () => clearTimeout(timer);
   }, [skin]);
+
+  const { boardSkin } = useBoardSkin();
+  const boardSkinDef = getBoardSkinDef(boardSkin);
 
   const getSkinForPiece = (piece: Piece): PieceSkin => {
     if (peerSkin && lockedColor) {
@@ -235,7 +240,7 @@ export default function ChessBoard({
 
   return (
     <div
-      className="bg-white shadow-xl rounded-lg p-4"
+      className="[container-type:inline-size]"
       style={{
         width: "min(80vh, calc(100vw - 1rem))",
         maxWidth: "800px",
@@ -243,129 +248,94 @@ export default function ChessBoard({
       }}
     >
       <div
-        className="grid grid-cols-8 grid-rows-8 h-full relative"
-        style={{
-          transform: squishing ? "scaleX(0)" : "scaleX(1)",
-          transition: squishing
-            ? "transform 0.22s ease-in"
-            : "transform 0.22s ease-out",
-        }}
+        className={`relative rounded-lg overflow-hidden w-full h-full ${boardSkinDef.border ? "bg-transparent" : "bg-white shadow-xl"}`}
+        style={{ padding: boardSkinDef.borderInset ?? "1.75rem" }}
       >
-        {/* Board squares */}
-        <div className="absolute inset-0 grid grid-cols-8 grid-rows-8 z-0">
-          {Array(8)
-            .fill(null)
-            .map((_, dy) =>
-              Array(8)
-                .fill(null)
-                .map((_, dx) => {
-                  const { x, y } = fromDisplay(dx, dy);
-                  const isLight = (x + y) % 2 === 0;
-                  const borderGlow = getBorderGlow(x, y);
-
-                  return (
-                    <div
-                      key={`${dx}-${dy}`}
-                      className={`
-                        w-full h-full relative
-                        ${isLight ? "bg-gray-200" : "bg-gray-600"}
-                        transition-colors duration-200
-                      `}
-                    >
-                      {borderGlow && <div className={borderGlow} />}
-                    </div>
-                  );
-                }),
-            )}
-        </div>
-
-        {/* Valid moves overlay */}
-        <div className="absolute inset-0 z-10">
-          {Array(8)
-            .fill(null)
-            .map((_, dy) =>
-              Array(8)
-                .fill(null)
-                .map((_, dx) => {
-                  const { x, y } = fromDisplay(dx, dy);
-                  const isValidMove = isValidMovePosition(x, y);
-                  const isCastling = isCastlingMove(x, y);
-                  if (!isValidMove && !isCastling) return null;
-
-                  // Is this the hint destination AND the hinted piece is selected?
-                  const isHintDest =
-                    hintPieceSelected &&
-                    normHintTo &&
-                    normHintTo.x === x &&
-                    normHintTo.y === y;
-
-                  const isDangerous =
-                    dangerousValidMoves?.has(`${x},${y}`) ?? false;
-
-                  // Color priority: hint dest purple > castling purple > danger orange > safe blue
-                  const colorClass = isHintDest
-                    ? "bg-purple-500 bg-opacity-60"
-                    : isCastling
-                      ? "bg-purple-400 bg-opacity-40"
-                      : isDangerous
-                        ? "bg-orange-400 bg-opacity-50"
-                        : "bg-blue-400 bg-opacity-40";
-
-                  return (
-                    <div
-                      key={`overlay-${dx}-${dy}`}
-                      className={`absolute cursor-pointer ${colorClass}`}
-                      style={{
-                        left: `${dx * 12.5}%`,
-                        top: `${dy * 12.5}%`,
-                        width: "12.5%",
-                        height: "12.5%",
-                      }}
-                      onClick={() => {
-                        const originalMove = validMoves.find((move) => {
-                          const normalized = {
-                            x: ((move.x % 8) + 8) % 8,
-                            y: ((move.y % 8) + 8) % 8,
-                          };
-                          return normalized.x === x && normalized.y === y;
-                        });
-                        if (originalMove) onMove(originalMove);
-                      }}
-                    />
-                  );
-                }),
-            )}
-        </div>
-
-        {/* Interactive squares layer */}
         <div
-          className="absolute inset-0 grid grid-cols-8 grid-rows-8 z-20"
-          onMouseLeave={() => setHoveredSquare(null)}
+          className="grid grid-cols-8 grid-rows-8 h-full relative"
+          style={{
+            transform: squishing ? "scaleX(0)" : "scaleX(1)",
+            transition: squishing
+              ? "transform 0.22s ease-in"
+              : "transform 0.22s ease-out",
+          }}
         >
-          {Array(8)
-            .fill(null)
-            .map((_, dy) =>
-              Array(8)
-                .fill(null)
-                .map((_, dx) => {
-                  const { x, y } = fromDisplay(dx, dy);
-                  const piece = pieces.find(
-                    (p) => p.position.x === x && p.position.y === y,
-                  );
-                  const isValidMove = isValidMovePosition(x, y);
-                  const isPlayable =
-                    piece?.color === currentTurn &&
-                    (!lockedColor || piece.color === lockedColor);
+          {/* Board squares */}
+          <div className="absolute inset-0 grid grid-cols-8 grid-rows-8 z-0">
+            {Array(8)
+              .fill(null)
+              .map((_, dy) =>
+                Array(8)
+                  .fill(null)
+                  .map((_, dx) => {
+                    const { x, y } = fromDisplay(dx, dy);
+                    const isLight = (x + y) % 2 === 0;
+                    const borderGlow = getBorderGlow(x, y);
 
-                  return (
-                    <div
-                      key={`interactive-${dx}-${dy}`}
-                      className="w-full h-full"
-                      onMouseEnter={() => setHoveredSquare({ x, y })}
-                      onClick={() => {
-                        if (piece && isPlayable) {
-                          onPieceSelect(piece);
-                        } else if (isValidMove) {
+                    return (
+                      <div
+                        key={`${dx}-${dy}`}
+                        className={`w-full h-full relative transition-colors duration-200${!boardSkinDef.lightSquare ? ` ${isLight ? "bg-gray-200" : "bg-gray-600"}` : ""}`}
+                        style={
+                          boardSkinDef.lightSquare
+                            ? {
+                                backgroundImage: `url(${isLight ? boardSkinDef.lightSquare : boardSkinDef.darkSquare})`,
+                                backgroundSize: "cover",
+                                backgroundPosition: "center",
+                              }
+                            : undefined
+                        }
+                      >
+                        {borderGlow && <div className={borderGlow} />}
+                      </div>
+                    );
+                  }),
+              )}
+          </div>
+
+          {/* Valid moves overlay */}
+          <div className="absolute inset-0 z-10">
+            {Array(8)
+              .fill(null)
+              .map((_, dy) =>
+                Array(8)
+                  .fill(null)
+                  .map((_, dx) => {
+                    const { x, y } = fromDisplay(dx, dy);
+                    const isValidMove = isValidMovePosition(x, y);
+                    const isCastling = isCastlingMove(x, y);
+                    if (!isValidMove && !isCastling) return null;
+
+                    // Is this the hint destination AND the hinted piece is selected?
+                    const isHintDest =
+                      hintPieceSelected &&
+                      normHintTo &&
+                      normHintTo.x === x &&
+                      normHintTo.y === y;
+
+                    const isDangerous =
+                      dangerousValidMoves?.has(`${x},${y}`) ?? false;
+
+                    // Color priority: hint dest purple > castling purple > danger orange > safe blue
+                    const colorClass = isHintDest
+                      ? "bg-purple-500 bg-opacity-60"
+                      : isCastling
+                        ? "bg-purple-400 bg-opacity-40"
+                        : isDangerous
+                          ? "bg-orange-400 bg-opacity-50"
+                          : "bg-blue-400 bg-opacity-40";
+
+                    return (
+                      <div
+                        key={`overlay-${dx}-${dy}`}
+                        className={`absolute cursor-pointer ${colorClass}`}
+                        style={{
+                          left: `${dx * 12.5}%`,
+                          top: `${dy * 12.5}%`,
+                          width: "12.5%",
+                          height: "12.5%",
+                        }}
+                        onClick={() => {
                           const originalMove = validMoves.find((move) => {
                             const normalized = {
                               x: ((move.x % 8) + 8) % 8,
@@ -374,176 +344,233 @@ export default function ChessBoard({
                             return normalized.x === x && normalized.y === y;
                           });
                           if (originalMove) onMove(originalMove);
-                        }
-                      }}
-                    />
-                  );
-                }),
-            )}
-        </div>
+                        }}
+                      />
+                    );
+                  }),
+              )}
+          </div>
 
-        {/* Assimilation tooltip */}
-        {tooltipPiece &&
-          (() => {
-            const dp = toDisplay(
-              tooltipPiece.position.x,
-              tooltipPiece.position.y,
-            );
-            const showBelow = dp.y <= 1;
+          {/* Interactive squares layer */}
+          <div
+            className="absolute inset-0 grid grid-cols-8 grid-rows-8 z-20"
+            onMouseLeave={() => setHoveredSquare(null)}
+          >
+            {Array(8)
+              .fill(null)
+              .map((_, dy) =>
+                Array(8)
+                  .fill(null)
+                  .map((_, dx) => {
+                    const { x, y } = fromDisplay(dx, dy);
+                    const piece = pieces.find(
+                      (p) => p.position.x === x && p.position.y === y,
+                    );
+                    const isValidMove = isValidMovePosition(x, y);
+                    const isPlayable =
+                      piece?.color === currentTurn &&
+                      (!lockedColor || piece.color === lockedColor);
 
-            // Arrow: always pinned to the piece's column center (percentages resolve vs the grid)
-            const arrowLeftPct = (dp.x + 0.5) * 12.5;
-            const arrowTopPct = showBelow ? (dp.y + 1) * 12.5 : dp.y * 12.5;
-            const arrowTransform = showBelow
-              ? "translateX(-50%)"
-              : "translateX(-50%) translateY(-100%)";
-            const arrowBorder: React.CSSProperties = showBelow
-              ? {
-                  borderLeft: "6px solid transparent",
-                  borderRight: "6px solid transparent",
-                  borderBottom: "6px solid white",
-                }
-              : {
-                  borderLeft: "6px solid transparent",
-                  borderRight: "6px solid transparent",
-                  borderTop: "6px solid white",
+                    return (
+                      <div
+                        key={`interactive-${dx}-${dy}`}
+                        className="w-full h-full"
+                        onMouseEnter={() => setHoveredSquare({ x, y })}
+                        onClick={() => {
+                          if (piece && isPlayable) {
+                            onPieceSelect(piece);
+                          } else if (isValidMove) {
+                            const originalMove = validMoves.find((move) => {
+                              const normalized = {
+                                x: ((move.x % 8) + 8) % 8,
+                                y: ((move.y % 8) + 8) % 8,
+                              };
+                              return normalized.x === x && normalized.y === y;
+                            });
+                            if (originalMove) onMove(originalMove);
+                          }
+                        }}
+                      />
+                    );
+                  }),
+              )}
+          </div>
+
+          {/* Assimilation tooltip */}
+          {tooltipPiece &&
+            (() => {
+              const dp = toDisplay(
+                tooltipPiece.position.x,
+                tooltipPiece.position.y,
+              );
+              const showBelow = dp.y <= 1;
+
+              // Arrow: always pinned to the piece's column center (percentages resolve vs the grid)
+              const arrowLeftPct = (dp.x + 0.5) * 12.5;
+              const arrowTopPct = showBelow ? (dp.y + 1) * 12.5 : dp.y * 12.5;
+              const arrowTransform = showBelow
+                ? "translateX(-50%)"
+                : "translateX(-50%) translateY(-100%)";
+              const arrowBorder: React.CSSProperties = showBelow
+                ? {
+                    borderLeft: "6px solid transparent",
+                    borderRight: "6px solid transparent",
+                    borderBottom: "6px solid white",
+                  }
+                : {
+                    borderLeft: "6px solid transparent",
+                    borderRight: "6px solid transparent",
+                    borderTop: "6px solid white",
+                  };
+
+              // Bubble: edge-anchored horizontally to avoid overflow
+              const bubbleTopPct = showBelow ? (dp.y + 1) * 12.5 : dp.y * 12.5;
+              const bubbleTransformY = showBelow
+                ? "translateY(6px)"
+                : "translateY(calc(-100% - 6px))";
+              let bubbleStyle: React.CSSProperties;
+              if (dp.x <= 1) {
+                bubbleStyle = {
+                  left: `${dp.x * 12.5}%`,
+                  top: `${bubbleTopPct}%`,
+                  transform: bubbleTransformY,
+                  width: "max-content",
                 };
+              } else if (dp.x >= 6) {
+                bubbleStyle = {
+                  right: `${(7 - dp.x) * 12.5}%`,
+                  top: `${bubbleTopPct}%`,
+                  transform: bubbleTransformY,
+                  width: "max-content",
+                };
+              } else {
+                bubbleStyle = {
+                  left: `${(dp.x + 0.5) * 12.5}%`,
+                  top: `${bubbleTopPct}%`,
+                  transform: `translateX(-50%) ${bubbleTransformY}`,
+                  width: "max-content",
+                };
+              }
 
-            // Bubble: edge-anchored horizontally to avoid overflow
-            const bubbleTopPct = showBelow ? (dp.y + 1) * 12.5 : dp.y * 12.5;
-            const bubbleTransformY = showBelow
-              ? "translateY(6px)"
-              : "translateY(calc(-100% - 6px))";
-            let bubbleStyle: React.CSSProperties;
-            if (dp.x <= 1) {
-              bubbleStyle = {
-                left: `${dp.x * 12.5}%`,
-                top: `${bubbleTopPct}%`,
-                transform: bubbleTransformY,
-                width: "max-content",
-              };
-            } else if (dp.x >= 6) {
-              bubbleStyle = {
-                right: `${(7 - dp.x) * 12.5}%`,
-                top: `${bubbleTopPct}%`,
-                transform: bubbleTransformY,
-                width: "max-content",
-              };
-            } else {
-              bubbleStyle = {
-                left: `${(dp.x + 0.5) * 12.5}%`,
-                top: `${bubbleTopPct}%`,
-                transform: `translateX(-50%) ${bubbleTransformY}`,
-                width: "max-content",
-              };
-            }
+              return (
+                <>
+                  <div
+                    className="absolute z-40 pointer-events-none w-0 h-0"
+                    style={{
+                      left: `${arrowLeftPct}%`,
+                      top: `${arrowTopPct}%`,
+                      transform: arrowTransform,
+                      ...arrowBorder,
+                    }}
+                  />
+                  <div
+                    className="absolute z-40 pointer-events-none bg-white rounded-xl shadow-xl border border-gray-100 px-2.5 py-2 flex gap-2 items-center"
+                    style={bubbleStyle}
+                  >
+                    {tooltipPiece.acquiredTypes!.map((type) => (
+                      <img
+                        key={type}
+                        src={getPieceImageSrc(
+                          tooltipPiece.color,
+                          type,
+                          getSkinForPiece(tooltipPiece),
+                        )}
+                        alt={type}
+                        className="w-7 h-7"
+                      />
+                    ))}
+                  </div>
+                </>
+              );
+            })()}
 
-            return (
-              <>
+          {/* Pieces layer */}
+          <div className="absolute inset-0 z-30 pointer-events-none">
+            {pieces.map((piece) => {
+              const isSelected =
+                selectedPiece?.position.x === piece.position.x &&
+                selectedPiece?.position.y === piece.position.y;
+              const dp = toDisplay(piece.position.x, piece.position.y);
+
+              const shadowFilter = getPieceShadowFilter({
+                piece,
+                currentTurn,
+                isCheck,
+                selectedPieceId: selectedPiece?.id ?? null,
+                endangeredPieceIds,
+                movablePieceIds,
+                hintFromId:
+                  hintMove &&
+                  piece.position.x === hintMove.from.x &&
+                  piece.position.y === hintMove.from.y
+                    ? piece.id
+                    : null,
+                isAssimilated: (piece.acquiredTypes?.length ?? 0) > 0,
+              });
+
+              return (
+                // Outer div: GPU-composited position via transform — no layout reflow on move
                 <div
-                  className="absolute z-40 pointer-events-none w-0 h-0"
+                  key={piece.id}
+                  className="absolute"
                   style={{
-                    left: `${arrowLeftPct}%`,
-                    top: `${arrowTopPct}%`,
-                    transform: arrowTransform,
-                    ...arrowBorder,
+                    width: "12.5%",
+                    height: "12.5%",
+                    left: 0,
+                    top: 0,
+                    transform: `translate(${dp.x * 100}%, ${dp.y * 100}%)`,
+                    transition: "transform 300ms ease-in-out",
                   }}
-                />
-                <div
-                  className="absolute z-40 pointer-events-none bg-white rounded-xl shadow-xl border border-gray-100 px-2.5 py-2 flex gap-2 items-center"
-                  style={bubbleStyle}
                 >
-                  {tooltipPiece.acquiredTypes!.map((type) => (
-                    <img
-                      key={type}
-                      src={getPieceImageSrc(
-                        tooltipPiece.color,
-                        type,
-                        getSkinForPiece(tooltipPiece),
-                      )}
-                      alt={type}
-                      className="w-7 h-7"
-                    />
-                  ))}
-                </div>
-              </>
-            );
-          })()}
-
-        {/* Pieces layer */}
-        <div className="absolute inset-0 z-30 pointer-events-none">
-          {pieces.map((piece) => {
-            const isSelected =
-              selectedPiece?.position.x === piece.position.x &&
-              selectedPiece?.position.y === piece.position.y;
-            const dp = toDisplay(piece.position.x, piece.position.y);
-
-            const shadowFilter = getPieceShadowFilter({
-              piece,
-              currentTurn,
-              isCheck,
-              selectedPieceId: selectedPiece?.id ?? null,
-              endangeredPieceIds,
-              movablePieceIds,
-              hintFromId:
-                hintMove &&
-                piece.position.x === hintMove.from.x &&
-                piece.position.y === hintMove.from.y
-                  ? piece.id
-                  : null,
-              isAssimilated: (piece.acquiredTypes?.length ?? 0) > 0,
-            });
-
-            return (
-              // Outer div: GPU-composited position via transform — no layout reflow on move
-              <div
-                key={piece.id}
-                className="absolute"
-                style={{
-                  width: "12.5%",
-                  height: "12.5%",
-                  left: 0,
-                  top: 0,
-                  transform: `translate(${dp.x * 100}%, ${dp.y * 100}%)`,
-                  transition: "transform 300ms ease-in-out",
-                }}
-              >
-                {/* Inner div: scale + filter + opacity, isolated from position animation */}
-                <div
-                  className={`
+                  {/* Inner div: scale + filter + opacity, isolated from position animation */}
+                  <div
+                    className={`
                     w-full h-full flex items-center justify-center
                     select-none hover:scale-110
                     ${isSelected ? "scale-110" : ""}
                     ${imagesLoaded ? "opacity-100" : "opacity-0"}
                   `}
-                  style={{
-                    filter: shadowFilter,
-                    transition:
-                      "transform 300ms ease-in-out, filter 80ms ease-in-out",
-                  }}
-                >
-                  <img
-                    src={getPieceImageSrc(
-                      piece.color,
-                      piece.type,
-                      getSkinForPiece(piece),
-                    )}
-                    alt={`${piece.color} ${piece.type}`}
                     style={{
-                      width: "80%",
-                      height: "80%",
-                      transform:
-                        rotateBlackPieces && piece.color === "black"
-                          ? "rotate(180deg)"
-                          : undefined,
+                      filter: shadowFilter,
+                      transition:
+                        "transform 300ms ease-in-out, filter 80ms ease-in-out",
                     }}
-                    onLoad={handleImageLoad}
-                  />
+                  >
+                    <img
+                      src={getPieceImageSrc(
+                        piece.color,
+                        piece.type,
+                        getSkinForPiece(piece),
+                      )}
+                      alt={`${piece.color} ${piece.type}`}
+                      style={{
+                        width: "80%",
+                        height: "80%",
+                        transform:
+                          rotateBlackPieces && piece.color === "black"
+                            ? "rotate(180deg)"
+                            : undefined,
+                      }}
+                      onLoad={handleImageLoad}
+                    />
+                  </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
+
+        {/* Board border overlay — covers the full outer container (incl. padding) */}
+        {boardSkinDef.border && (
+          <div
+            className="absolute inset-0 pointer-events-none"
+            style={{
+              backgroundImage: `url(${boardSkinDef.border})`,
+              backgroundSize: "100% 100%",
+              zIndex: 50,
+            }}
+          />
+        )}
       </div>
     </div>
   );

@@ -105,6 +105,7 @@
     "beginner": "Principiante",
     "superhuman": "Sobrehumano",
     "pieceAppearance": "Apariencia de piezas",
+    "boardAppearance": "Apariencia del tablero",
     "language": "Idioma",
     "tab": {
       "partie": "Partida",
@@ -234,7 +235,11 @@
   },
   "skins": {
     "classic": "Clásico",
-    "fantasy": "Fantasy"
+    "fantasy": "Fantasy",
+    "board": {
+      "default": "Por defecto",
+      "royal-arena": "Arena Real"
+    }
   },
   "languages": {
     "en": "English",

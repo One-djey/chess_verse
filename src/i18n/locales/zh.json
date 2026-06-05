@@ -105,6 +105,7 @@
     "beginner": "初学者",
     "superhuman": "超人",
     "pieceAppearance": "棋子外观",
+    "boardAppearance": "棋盘外观",
     "language": "语言",
     "tab": {
       "partie": "游戏",
@@ -234,7 +235,11 @@
   },
   "skins": {
     "classic": "经典",
-    "fantasy": "幻想"
+    "fantasy": "幻想",
+    "board": {
+      "default": "默认",
+      "royal-arena": "皇家竞技场"
+    }
   },
   "languages": {
     "en": "English",

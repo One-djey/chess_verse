@@ -105,6 +105,7 @@
     "beginner": "초보",
     "superhuman": "초인",
     "pieceAppearance": "말 외관",
+    "boardAppearance": "보드 외관",
     "language": "언어",
     "tab": {
       "partie": "게임",
@@ -234,7 +235,11 @@
   },
   "skins": {
     "classic": "클래식",
-    "fantasy": "판타지"
+    "fantasy": "판타지",
+    "board": {
+      "default": "기본",
+      "royal-arena": "로열 아레나"
+    }
   },
   "languages": {
     "en": "English",

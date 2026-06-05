@@ -105,6 +105,7 @@
     "beginner": "Principiante",
     "superhuman": "Sovrumano",
     "pieceAppearance": "Aspetto dei pezzi",
+    "boardAppearance": "Aspetto della scacchiera",
     "language": "Lingua",
     "tab": {
       "partie": "Partita",
@@ -234,7 +235,11 @@
   },
   "skins": {
     "classic": "Classico",
-    "fantasy": "Fantasy"
+    "fantasy": "Fantasy",
+    "board": {
+      "default": "Predefinito",
+      "royal-arena": "Arena Reale"
+    }
   },
   "languages": {
     "en": "English",

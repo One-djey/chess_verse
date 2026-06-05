@@ -491,10 +491,16 @@ function tryGenerate(
   if (totalCells < minTotal || totalCells > maxTotal) return null;
 
   // 11. Find spawn zones
+  // For 2 players: force top/bottom (−π/2 and +π/2) so camps mirror standard chess orientation
   const sectorWidth = Math.PI / numPlayers;
   const spawnZones: [number, number][] = [];
   for (let i = 0; i < numPlayers; i++) {
-    const angle = (2 * Math.PI * i) / numPlayers;
+    const angle =
+      numPlayers === 2
+        ? i === 0
+          ? -Math.PI / 2
+          : Math.PI / 2
+        : (2 * Math.PI * i) / numPlayers;
     const spawn = findEdgeSpawn(grid, angle, sectorWidth);
     if (!spawn) return null;
     spawnZones.push(spawn);
@@ -619,22 +625,35 @@ function trimArena(arena: Arena): Arena {
 
   if (maxRow === -1) return arena;
 
-  // Keep 1-cell dead border for visual breathing room
-  const r0 = Math.max(0, minRow - 1);
-  const r1 = Math.min(H - 1, maxRow + 1);
-  const c0 = Math.max(0, minCol - 1);
-  const c1 = Math.min(W - 1, maxCol + 1);
+  const trimH = maxRow - minRow + 1;
+  const trimW = maxCol - minCol + 1;
+  const S = Math.max(trimH, trimW);
+  const padTop = Math.floor((S - trimH) / 2);
+  const padBottom = S - trimH - padTop;
+  const padLeft = Math.floor((S - trimW) / 2);
+  const padRight = S - trimW - padLeft;
 
-  const newGrid = arena.grid
-    .slice(r0, r1 + 1)
-    .map((row) => row.slice(c0, c1 + 1));
+  const emptyRow = () => new Array(S).fill(0);
+  const innerRows = arena.grid
+    .slice(minRow, maxRow + 1)
+    .map((row) => [
+      ...new Array(padLeft).fill(0),
+      ...row.slice(minCol, maxCol + 1),
+      ...new Array(padRight).fill(0),
+    ]);
+  const newGrid = [
+    ...Array.from({ length: padTop }, emptyRow),
+    ...innerRows,
+    ...Array.from({ length: padBottom }, emptyRow),
+  ];
+
   const newSpawnZones = arena.spawnZones.map(
-    ([y, x]) => [y - r0, x - c0] as [number, number],
+    ([y, x]) => [y - minRow + padTop, x - minCol + padLeft] as [number, number],
   );
   const newPieces = arena.pieces.map((p) => ({
     ...p,
-    y: p.y - r0,
-    x: p.x - c0,
+    y: p.y - minRow + padTop,
+    x: p.x - minCol + padLeft,
   }));
 
   return {

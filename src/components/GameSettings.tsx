@@ -13,6 +13,8 @@ import { SUPPORTED_LANGUAGES, SupportedLanguage } from "../i18n";
 import { useInstall } from "../hooks/useInstall";
 import { useSkin } from "../hooks/useSkin";
 import { SKINS, getPieceImageSrc } from "../utils/pieceImage";
+import { useBoardSkin } from "../hooks/useBoardSkin";
+import { BOARD_SKINS } from "../utils/boardSkin";
 import FeedbackModal from "./FeedbackModal";
 import type { LocalSettings } from "../hooks/useChessGame";
 import { recordCoffeeDonation } from "../services/statsService";
@@ -168,6 +170,7 @@ export default function GameSettings({
   const { t, i18n } = useTranslation();
   const { canInstall, triggerInstall } = useInstall();
   const { skin, setSkin } = useSkin();
+  const { boardSkin, setBoardSkin } = useBoardSkin();
   const isColiseum = gameMode === "coliseum";
   // feedbackOpen lives outside the isOpen guard so it survives Settings closing
   const [feedbackOpen, setFeedbackOpen] = useState(false);
@@ -402,6 +405,62 @@ export default function GameSettings({
                             {t(`skins.${s.id}`)}
                           </span>
                           {skin === s.id && (
+                            <Check
+                              size={14}
+                              className="absolute top-2 right-2 text-blue-600"
+                            />
+                          )}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Board skin picker */}
+                  <div>
+                    <SectionLabel>
+                      {t("gameSettings.boardAppearance")}
+                    </SectionLabel>
+                    <div className="grid grid-cols-2 gap-3">
+                      {BOARD_SKINS.map((bs) => (
+                        <button
+                          key={bs.id}
+                          onClick={() => setBoardSkin(bs.id)}
+                          className={`relative p-3 rounded-lg border-2 transition-all duration-200 text-left ${
+                            boardSkin === bs.id
+                              ? "border-blue-600 bg-blue-50"
+                              : "border-gray-200 hover:border-gray-300"
+                          }`}
+                        >
+                          <div className="grid grid-cols-2 gap-0.5 mb-2 w-12 h-12">
+                            {([true, false, false, true] as const).map(
+                              (isLight, i) =>
+                                bs.lightSquare ? (
+                                  <div
+                                    key={i}
+                                    className="w-full h-full"
+                                    style={{
+                                      backgroundImage: `url(${isLight ? bs.lightSquare : bs.darkSquare})`,
+                                      backgroundSize: "cover",
+                                    }}
+                                  />
+                                ) : (
+                                  <div
+                                    key={i}
+                                    className={`w-full h-full ${isLight ? "bg-gray-200" : "bg-gray-600"}`}
+                                  />
+                                ),
+                            )}
+                          </div>
+                          <span
+                            className={`text-sm font-medium ${
+                              boardSkin === bs.id
+                                ? "text-blue-700"
+                                : "text-gray-600"
+                            }`}
+                          >
+                            {t(`skins.board.${bs.id}`)}
+                          </span>
+                          {boardSkin === bs.id && (
                             <Check
                               size={14}
                               className="absolute top-2 right-2 text-blue-600"

@@ -105,6 +105,7 @@
     "beginner": "مبتدئ",
     "superhuman": "خارق",
     "pieceAppearance": "مظهر القطع",
+    "boardAppearance": "مظهر الرقعة",
     "language": "اللغة",
     "tab": {
       "partie": "اللعبة",
@@ -234,7 +235,11 @@
   },
   "skins": {
     "classic": "كلاسيكي",
-    "fantasy": "فانتازيا"
+    "fantasy": "فانتازيا",
+    "board": {
+      "default": "افتراضي",
+      "royal-arena": "الساحة الملكية"
+    }
   },
   "languages": {
     "en": "English",

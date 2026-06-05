@@ -9,6 +9,7 @@ import { Analytics } from "@vercel/analytics/react";
 import { P2PProvider } from "./context/P2PContext";
 import { InstallProvider } from "./context/InstallContext";
 import { SkinProvider } from "./context/SkinContext";
+import { BoardSkinProvider } from "./context/BoardSkinContext";
 import "./i18n";
 
 const ModeSelect = React.lazy(() => import("./components/ModeSelect"));
@@ -36,39 +37,41 @@ function ScrollToTop() {
 function App() {
   return (
     <SkinProvider>
-      <InstallProvider>
-        <P2PProvider>
-          <Router>
-            <ScrollToTop />
-            <React.Suspense
-              fallback={
-                <div className="min-h-screen bg-gray-100 flex items-center justify-center">
-                  <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
-                </div>
-              }
-            >
-              <Routes>
-                <Route path="/" element={<ModeSelect />} />
-                <Route path="/local" element={<GameModes />} />
-                <Route path="/p2p" element={<P2PLobby />} />
-                <Route path="/game/coliseum" element={<ColiseumGame />} />
-                <Route path="/game/:modeId" element={<Game />} />
-                <Route path="/profile" element={<ProfilePage />} />
-                <Route
-                  path="/legal/mentions-legales"
-                  element={<MentionsLegales />}
-                />
-                <Route
-                  path="/legal/confidentialite"
-                  element={<PolitiqueConfidentialite />}
-                />
-                <Route path="/legal/cgu" element={<CGU />} />
-              </Routes>
-            </React.Suspense>
-          </Router>
-          <Analytics />
-        </P2PProvider>
-      </InstallProvider>
+      <BoardSkinProvider>
+        <InstallProvider>
+          <P2PProvider>
+            <Router>
+              <ScrollToTop />
+              <React.Suspense
+                fallback={
+                  <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+                    <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
+                  </div>
+                }
+              >
+                <Routes>
+                  <Route path="/" element={<ModeSelect />} />
+                  <Route path="/local" element={<GameModes />} />
+                  <Route path="/p2p" element={<P2PLobby />} />
+                  <Route path="/game/coliseum" element={<ColiseumGame />} />
+                  <Route path="/game/:modeId" element={<Game />} />
+                  <Route path="/profile" element={<ProfilePage />} />
+                  <Route
+                    path="/legal/mentions-legales"
+                    element={<MentionsLegales />}
+                  />
+                  <Route
+                    path="/legal/confidentialite"
+                    element={<PolitiqueConfidentialite />}
+                  />
+                  <Route path="/legal/cgu" element={<CGU />} />
+                </Routes>
+              </React.Suspense>
+            </Router>
+            <Analytics />
+          </P2PProvider>
+        </InstallProvider>
+      </BoardSkinProvider>
     </SkinProvider>
   );
 }

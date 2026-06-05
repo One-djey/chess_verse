@@ -105,6 +105,7 @@
     "beginner": "Beginner",
     "superhuman": "Superhuman",
     "pieceAppearance": "Piece Appearance",
+    "boardAppearance": "Board Appearance",
     "language": "Language",
     "tab": {
       "partie": "Game",
@@ -234,7 +235,11 @@
   },
   "skins": {
     "classic": "Classic",
-    "fantasy": "Fantasy"
+    "fantasy": "Fantasy",
+    "board": {
+      "default": "Default",
+      "royal-arena": "Royal Arena"
+    }
   },
   "languages": {
     "en": "English",

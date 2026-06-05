@@ -105,6 +105,7 @@
     "beginner": "初心者",
     "superhuman": "超人",
     "pieceAppearance": "駒の外観",
+    "boardAppearance": "盤の外観",
     "language": "言語",
     "tab": {
       "partie": "ゲーム",
@@ -234,7 +235,11 @@
   },
   "skins": {
     "classic": "クラシック",
-    "fantasy": "ファンタジー"
+    "fantasy": "ファンタジー",
+    "board": {
+      "default": "デフォルト",
+      "royal-arena": "ロイヤルアリーナ"
+    }
   },
   "languages": {
     "en": "English",
