@@ -21,6 +21,8 @@ import {
 import {
   getValidMoves,
   hasRawMoves,
+  hasLegalMoves,
+  isInCheck,
   applyMoveToState,
   normalizePos,
   isSquareUnderAttack,
@@ -201,7 +203,20 @@ export default function Game() {
           currentPieces,
           chess.gameStateRef.current.gameMode,
         );
-        if (fallback) applyMove(fallback);
+        if (fallback) {
+          applyMove(fallback);
+        } else {
+          chess.setGameState((prev) => {
+            if (prev.gameOver) return prev;
+            const inCheck = isInCheck(prev.currentTurn, prev.pieces, prev.gameMode);
+            return {
+              ...prev,
+              gameOver: true,
+              winner: inCheck ? (prev.currentTurn === "white" ? "black" : "white") : null,
+              drawReason: inCheck ? undefined : "stalemate",
+            };
+          });
+        }
         return;
       }
       // Track AI captures: the piece being taken is a human (white) piece
@@ -297,7 +312,20 @@ export default function Game() {
               chess.gameStateRef.current.pieces,
               chess.gameStateRef.current.gameMode,
             );
-            if (fallback) applyMove(fallback);
+            if (fallback) {
+              applyMove(fallback);
+            } else {
+              chess.setGameState((prev) => {
+                if (prev.gameOver) return prev;
+                const inCheck = isInCheck(prev.currentTurn, prev.pieces, prev.gameMode);
+                return {
+                  ...prev,
+                  gameOver: true,
+                  winner: inCheck ? (prev.currentTurn === "white" ? "black" : "white") : null,
+                  drawReason: inCheck ? undefined : "stalemate",
+                };
+              });
+            }
           }
         }
       }
@@ -309,6 +337,35 @@ export default function Game() {
       clearTimeout(id);
     };
   }, [chess.gameState.currentTurn, chess.aiEnabled, chess.gameState.gameOver]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Safety net: catch any checkmate/stalemate that applyMoveToState might have missed.
+  // Runs after every turn change or board update. In P2P the host is authoritative.
+  React.useEffect(() => {
+    if (chess.gameState.gameOver) return;
+    if (chess.gameState.pieces.length === 0) return;
+    if (p2p.isP2PMode) return;
+
+    if (!hasLegalMoves(chess.gameState.currentTurn, chess.gameState.pieces, chess.gameState.gameMode)) {
+      const inCheck = chess.gameState.isCheck;
+      const loser = chess.gameState.currentTurn;
+      chess.setGameState((prev) => {
+        if (prev.gameOver) return prev;
+        return {
+          ...prev,
+          gameOver: true,
+          winner: inCheck ? (loser === "white" ? "black" : "white") : null,
+          drawReason: inCheck ? undefined : "stalemate",
+        };
+      });
+    }
+  }, [ // eslint-disable-line react-hooks/exhaustive-deps
+    chess.gameState.currentTurn,
+    chess.gameState.pieces,
+    chess.gameState.gameMode,
+    chess.gameState.gameOver,
+    p2p.isP2PMode,
+  ]);
+
 
   // ── Movable pieces ────────────────────────────────────────────────────────
   // Only pieces with at least one legal move get the blue glow.
