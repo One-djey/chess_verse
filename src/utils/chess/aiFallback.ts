@@ -161,7 +161,10 @@ export function getSmartFallbackMove(
           p.position.x === norm.x &&
           p.position.y === norm.y,
       );
-      const isSafe = isMoveSafe(piece, to, pieces, gameMode);
+      // getValidMoves already filtered king moves via wouldBeInCheck, which is
+      // functionally identical to isMoveSafe for the king. Skip the redundant call.
+      // piece.type is the base type — a rook with acquired "king" still uses isMoveSafe.
+      const isSafe = piece.type === "king" ? true : isMoveSafe(piece, to, pieces, gameMode);
       candidates.push({ piece, to, isCapture, isSafe });
     }
   }
