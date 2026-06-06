@@ -495,5 +495,14 @@
     "movesMade": "moves",
     "timesCaptured": "captures",
     "level": "Lv."
+  },
+  "aiThinking": {
+    "messages": [
+      "The AI is thinking...",
+      "The AI is considering another move...",
+      "The AI is analyzing strategic plays...",
+      "The AI is exploring all possibilities...",
+      "The AI is evaluating the best options..."
+    ]
   }
 }

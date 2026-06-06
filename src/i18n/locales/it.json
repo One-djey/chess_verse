@@ -495,5 +495,14 @@
     "movesMade": "mosse",
     "timesCaptured": "catture",
     "level": "Liv."
+  },
+  "aiThinking": {
+    "messages": [
+      "L'IA sta pensando...",
+      "L'IA considera un'altra mossa...",
+      "L'IA analizza le mosse strategiche...",
+      "L'IA esplora tutte le possibilità...",
+      "L'IA valuta le migliori opzioni..."
+    ]
   }
 }

@@ -495,5 +495,14 @@
     "movesMade": "coups",
     "timesCaptured": "captures",
     "level": "Niv."
+  },
+  "aiThinking": {
+    "messages": [
+      "L'IA réfléchit...",
+      "L'IA examine une autre approche...",
+      "L'IA analyse les coups stratégiques...",
+      "L'IA explore toutes les possibilités...",
+      "L'IA évalue ses meilleures options..."
+    ]
   }
 }

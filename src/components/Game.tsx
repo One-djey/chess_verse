@@ -172,10 +172,27 @@ export default function Game() {
 
     let cancelled = false;
 
+    const clearAiThinking = () => {
+      if (aiThinkingInitTimerRef.current) {
+        clearTimeout(aiThinkingInitTimerRef.current);
+        aiThinkingInitTimerRef.current = null;
+      }
+      if (aiThinkingIntervalRef.current) {
+        clearInterval(aiThinkingIntervalRef.current);
+        aiThinkingIntervalRef.current = null;
+      }
+      if (aiThinkingLabelIdRef.current) {
+        dismissLabel(aiThinkingLabelIdRef.current);
+        aiThinkingLabelIdRef.current = null;
+      }
+      aiThinkingIndexRef.current = 0;
+    };
+
     const applyMove = (move: {
       from: { x: number; y: number };
       to: { x: number; y: number };
     }) => {
+      clearAiThinking();
       // Don't apply an in-flight AI move if the game is already over
       // (e.g. the player resigned while the engine was computing).
       if (chess.gameStateRef.current.gameOver) return;
@@ -331,10 +348,38 @@ export default function Game() {
       }
     };
 
+    aiThinkingIndexRef.current = 0;
+    aiThinkingInitTimerRef.current = setTimeout(() => {
+      const msgs = t("aiThinking.messages", { returnObjects: true });
+      const messages = Array.isArray(msgs) ? (msgs as string[]) : [];
+      if (messages.length === 0) return;
+      const idx = aiThinkingIndexRef.current % messages.length;
+      aiThinkingLabelIdRef.current = addLabel("ai_thinking", messages[idx]);
+      aiThinkingIndexRef.current++;
+      aiThinkingIntervalRef.current = setInterval(() => {
+        if (aiThinkingLabelIdRef.current) dismissLabel(aiThinkingLabelIdRef.current);
+        const nextIdx = aiThinkingIndexRef.current % messages.length;
+        aiThinkingLabelIdRef.current = addLabel("ai_thinking", messages[nextIdx]);
+        aiThinkingIndexRef.current++;
+      }, 8000);
+    }, 5000);
+
     const id = setTimeout(() => trigger(5), 500);
     return () => {
       cancelled = true;
       clearTimeout(id);
+      if (aiThinkingInitTimerRef.current) {
+        clearTimeout(aiThinkingInitTimerRef.current);
+        aiThinkingInitTimerRef.current = null;
+      }
+      if (aiThinkingIntervalRef.current) {
+        clearInterval(aiThinkingIntervalRef.current);
+        aiThinkingIntervalRef.current = null;
+      }
+      if (aiThinkingLabelIdRef.current) {
+        dismissLabel(aiThinkingLabelIdRef.current);
+        aiThinkingLabelIdRef.current = null;
+      }
     };
   }, [chess.gameState.currentTurn, chess.aiEnabled, chess.gameState.gameOver]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -507,13 +552,21 @@ export default function Game() {
   const [gameLabels, setGameLabels] = React.useState<GameLabelItem[]>([]);
 
   const addLabel = React.useCallback(
-    (variant: LabelVariant, legendaryMeta?: LegendaryMeta) => {
+    (variant: LabelVariant, metaOrMessage?: LegendaryMeta | string): string => {
       labelIdRef.current += 1;
       const id = String(labelIdRef.current);
+      const isMsg = typeof metaOrMessage === "string";
       setGameLabels((prev) => [
         ...prev,
-        { id, variant, createdAt: Date.now(), legendaryMeta },
+        {
+          id,
+          variant,
+          createdAt: Date.now(),
+          legendaryMeta: isMsg ? undefined : metaOrMessage,
+          message: isMsg ? metaOrMessage : undefined,
+        },
       ]);
+      return id;
     },
     [],
   );
@@ -521,6 +574,11 @@ export default function Game() {
   const dismissLabel = React.useCallback((id: string) => {
     setGameLabels((prev) => prev.filter((item) => item.id !== id));
   }, []);
+
+  const aiThinkingInitTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+  const aiThinkingIntervalRef = React.useRef<ReturnType<typeof setInterval> | null>(null);
+  const aiThinkingLabelIdRef = React.useRef<string | null>(null);
+  const aiThinkingIndexRef = React.useRef(0);
 
   const triggerAnnotation = React.useCallback(
     (ctx: MoveContext) => {
