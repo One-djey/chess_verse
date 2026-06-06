@@ -41,8 +41,24 @@ export class ChessAI {
             this.stopPending = false;
             return; // bestmove from stop: belongs to the cancelled search, discard it
           }
-          const [, move] = message.split("bestmove ");
-          const [from, to] = move.split(" ")[0].match(/.{2}/g) || [];
+          const [, rest] = message.split("bestmove ");
+          const moveToken = rest.split(" ")[0];
+
+          // UCI sentinels meaning "no legal move in this position".
+          // Parsing them as algebraic coordinates produces garbage positions and
+          // causes applyMove to silently no-op, freezing the game forever.
+          // Reject so the retry/fallback chain in Game.tsx fires correctly.
+          if (moveToken === "(none)" || moveToken === "0000") {
+            if (this.rejectResolver) {
+              this.rejectResolver(new Error("no legal move"));
+              this.rejectResolver = null;
+            }
+            this.moveResolver = null;
+            this.isSearching = false;
+            return;
+          }
+
+          const [from, to] = moveToken.match(/.{2}/g) || [];
 
           if (this.moveResolver && from && to) {
             this.moveResolver({

@@ -315,6 +315,100 @@ export const findCastlingMove = (
 
 // ── Legal moves ──────────────────────────────────────────────────────────────
 
+/**
+ * Generates candidate target squares from the piece's movement patterns,
+ * without applying validity checks (blockers, king safety, etc.).
+ * Over-generation is acceptable — isValidMove + wouldBeInCheck trim the list.
+ * The invariant is: every square that would pass isValidMove must appear here.
+ */
+function generateMoveCandidates(piece: Piece, gameMode: GameMode): Position[] {
+  const borderless = !!gameMode.rules?.borderless;
+  const xMin = borderless ? -8 : 0;
+  const xMax = borderless ? 15 : 7;
+  const yMin = borderless ? -8 : 0;
+  const yMax = borderless ? 15 : 7;
+
+  const seen = new Set<string>();
+  const result: Position[] = [];
+
+  const add = (x: number, y: number) => {
+    if (x < xMin || x > xMax || y < yMin || y > yMax) return;
+    const key = `${x},${y}`;
+    if (seen.has(key)) return;
+    seen.add(key);
+    result.push({ x, y });
+  };
+
+  const { x: px, y: py } = piece.position;
+  const capabilities = getPieceCapabilities(piece);
+
+  for (const type of capabilities) {
+    switch (type) {
+      case "king": {
+        for (let dx = -1; dx <= 1; dx++)
+          for (let dy = -1; dy <= 1; dy++)
+            if (dx !== 0 || dy !== 0) add(px + dx, py + dy);
+        break;
+      }
+      case "knight": {
+        for (const [dx, dy] of [
+          [2, 1], [2, -1], [-2, 1], [-2, -1],
+          [1, 2], [1, -2], [-1, 2], [-1, -2],
+        ] as [number, number][])
+          add(px + dx, py + dy);
+        break;
+      }
+      case "pawn": {
+        const dir = piece.color === "white" ? -1 : 1;
+        // Must use py === startRank, not !piece.hasMoved — matches isValidMoveForSingleType exactly.
+        const startRank = piece.color === "white" ? 6 : 1;
+        add(px, py + dir);
+        if (py === startRank) add(px, py + 2 * dir);
+        add(px - 1, py + dir);
+        add(px + 1, py + dir);
+        break;
+      }
+      case "rook": {
+        for (let x = xMin; x <= xMax; x++) if (x !== px) add(x, py);
+        for (let y = yMin; y <= yMax; y++) if (y !== py) add(px, y);
+        break;
+      }
+      case "bishop": {
+        for (const [dx, dy] of [
+          [1, 1], [1, -1], [-1, 1], [-1, -1],
+        ] as [number, number][]) {
+          let x = px + dx, y = py + dy;
+          while (x >= xMin && x <= xMax && y >= yMin && y <= yMax) {
+            add(x, y);
+            x += dx;
+            y += dy;
+          }
+        }
+        break;
+      }
+      case "queen": {
+        // Straight lines (rook-like)
+        for (let x = xMin; x <= xMax; x++) if (x !== px) add(x, py);
+        for (let y = yMin; y <= yMax; y++) if (y !== py) add(px, y);
+        // Diagonals (bishop-like)
+        for (const [dx, dy] of [
+          [1, 1], [1, -1], [-1, 1], [-1, -1],
+        ] as [number, number][]) {
+          let x = px + dx, y = py + dy;
+          while (x >= xMin && x <= xMax && y >= yMin && y <= yMax) {
+            add(x, y);
+            x += dx;
+            y += dy;
+          }
+        }
+        break;
+      }
+    }
+  }
+
+  return result;
+}
+
 export const getValidMoves = (
   piece: Piece,
   pieces: Piece[],
@@ -325,16 +419,14 @@ export const getValidMoves = (
       ? getCastlingMoves(piece, pieces, gameMode).map((m) => m.kingTarget)
       : [];
 
-  const range = gameMode.rules?.borderless ? 16 : 8;
+  const candidates = generateMoveCandidates(piece, gameMode);
   const regular: Position[] = [];
-  for (let x = -8; x < range; x++) {
-    for (let y = -8; y < range; y++) {
-      if (
-        isValidMove(piece, { x, y }, pieces, gameMode) &&
-        !wouldBeInCheck(piece, { x, y }, pieces, gameMode)
-      )
-        regular.push({ x, y });
-    }
+  for (const { x, y } of candidates) {
+    if (
+      isValidMove(piece, { x, y }, pieces, gameMode) &&
+      !wouldBeInCheck(piece, { x, y }, pieces, gameMode)
+    )
+      regular.push({ x, y });
   }
   return [...castling, ...regular];
 };
@@ -354,11 +446,8 @@ export const hasRawMoves = (
   pieces: Piece[],
   gameMode: GameMode,
 ): boolean => {
-  const range = gameMode.rules?.borderless ? 16 : 8;
-  for (let x = -8; x < range; x++) {
-    for (let y = -8; y < range; y++) {
-      if (isValidMove(piece, { x, y }, pieces, gameMode)) return true;
-    }
+  for (const { x, y } of generateMoveCandidates(piece, gameMode)) {
+    if (isValidMove(piece, { x, y }, pieces, gameMode)) return true;
   }
   return false;
 };
