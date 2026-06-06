@@ -870,7 +870,7 @@ export default function Game() {
         />
       )}
 
-      <div className="flex-1 flex flex-col items-center justify-center p-2 sm:p-4 gap-3 overflow-hidden">
+      <div className="flex-1 flex flex-col items-center justify-center p-2 sm:p-4">
         <ChessBoard
           pieces={chess.gameState.pieces}
           currentTurn={chess.gameState.currentTurn}
@@ -891,7 +891,12 @@ export default function Game() {
           peerSkin={p2p.peerSkin ?? undefined}
         />
 
-        <GameLabels items={gameLabels} onDismiss={dismissLabel} />
+        {/* Zero-height overlay: labels float below the board without shifting it */}
+        <div style={{ height: 0, overflow: 'visible', width: '100%' }}>
+          <div style={{ paddingTop: '12px' }}>
+            <GameLabels items={gameLabels} onDismiss={dismissLabel} />
+          </div>
+        </div>
       </div>
 
       {chess.gameState.gameOver && gameOverVisible && (
