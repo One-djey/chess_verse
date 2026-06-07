@@ -495,5 +495,14 @@
     "movesMade": "movimientos",
     "timesCaptured": "capturas",
     "level": "Niv."
+  },
+  "aiThinking": {
+    "messages": [
+      "La IA está pensando...",
+      "La IA considera otro movimiento...",
+      "La IA analiza jugadas estratégicas...",
+      "La IA explora todas las posibilidades...",
+      "La IA evalúa las mejores opciones..."
+    ]
   }
 }

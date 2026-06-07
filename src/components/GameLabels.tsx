@@ -10,6 +10,7 @@ import {
   TrendingUp,
   ArrowLeftRight,
   Trophy,
+  Brain,
 } from "lucide-react";
 
 export type AnnotationVariant =
@@ -23,7 +24,7 @@ export type AnnotationVariant =
 
 export type AlertVariant = "pinnedPiece" | "blockedPiece" | "checkBlockedPiece";
 
-export type LabelVariant = AnnotationVariant | AlertVariant | "legendary";
+export type LabelVariant = AnnotationVariant | AlertVariant | "legendary" | "ai_thinking";
 
 export interface LegendaryMeta {
   patternId: string;
@@ -38,6 +39,7 @@ export interface GameLabelItem {
   variant: LabelVariant;
   createdAt: number;
   legendaryMeta?: LegendaryMeta;
+  message?: string;
 }
 
 const LABEL_PRIORITY: Record<LabelVariant, number> = {
@@ -52,20 +54,22 @@ const LABEL_PRIORITY: Record<LabelVariant, number> = {
   castling: 30,
   pinnedPiece: 25,
   blockedPiece: 20,
+  ai_thinking: 15,
 };
 
 const LABEL_TIMEOUT: Record<LabelVariant, number> = {
-  legendary: 8000,
-  check: 4000,
-  discoveredCheck: 4000,
-  fork: 4000,
-  pin: 4000,
-  capture: 4000,
-  promotion: 4000,
-  castling: 4000,
-  checkBlockedPiece: 3000,
-  pinnedPiece: 3000,
-  blockedPiece: 3000,
+  legendary: 9000,
+  check: 6000,
+  discoveredCheck: 6000,
+  fork: 6000,
+  pin: 6000,
+  capture: 6000,
+  promotion: 6000,
+  castling: 6000,
+  checkBlockedPiece: 5500,
+  pinnedPiece: 5500,
+  blockedPiece: 5500,
+  ai_thinking: 60000,
 };
 
 const ALERT_VARIANTS = new Set<LabelVariant>([
@@ -123,6 +127,7 @@ function SingleLabel({
 
   const isAlert = ALERT_VARIANTS.has(item.variant);
   const isLegendary = item.variant === "legendary";
+  const isAiThinking = item.variant === "ai_thinking";
 
   let containerClass: string;
   let dismissClass: string;
@@ -130,20 +135,31 @@ function SingleLabel({
   if (isLegendary) {
     containerClass =
       "flex items-start gap-2 px-4 py-2.5 bg-white border border-amber-300 rounded-lg shadow-md text-sm text-amber-800";
-    dismissClass = "ml-2 text-amber-400 hover:text-amber-600 mt-0.5";
+    dismissClass = "ml-auto text-amber-400 hover:text-amber-600 mt-0.5 flex-shrink-0";
+  } else if (isAiThinking) {
+    containerClass =
+      "flex items-center gap-2 px-4 py-2.5 bg-blue-50 border border-blue-200 rounded-lg shadow-md text-sm text-blue-700";
+    dismissClass = "ml-auto text-blue-400 hover:text-blue-600 flex-shrink-0";
   } else if (isAlert) {
     containerClass =
       "flex items-center gap-2 px-4 py-2.5 bg-white border border-orange-200 rounded-lg shadow-md text-sm text-orange-700";
-    dismissClass = "ml-2 text-orange-400 hover:text-orange-600";
+    dismissClass = "ml-auto text-orange-400 hover:text-orange-600 flex-shrink-0";
   } else {
     containerClass =
       "flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-200 rounded-lg shadow-md text-sm text-gray-700";
-    dismissClass = "ml-2 text-gray-400 hover:text-gray-600";
+    dismissClass = "ml-auto text-gray-400 hover:text-gray-600 flex-shrink-0";
   }
 
   let body: React.ReactNode;
 
-  if (isLegendary && item.legendaryMeta) {
+  if (isAiThinking) {
+    body = (
+      <>
+        <Brain size={16} className="flex-shrink-0 text-blue-500 animate-pulse" />
+        <span className="italic">{item.message ?? ""}</span>
+      </>
+    );
+  } else if (isLegendary && item.legendaryMeta) {
     const meta = item.legendaryMeta;
     const square = squareLabel(meta.move.to.x, meta.move.to.y);
     const pieceName = t(`learning.legendary.pieces.${meta.pieceType}`, {
@@ -235,7 +251,7 @@ export default function GameLabels({
     .slice(0, MAX_VISIBLE);
 
   return (
-    <div className="relative" style={{ minHeight: "44px" }}>
+    <div className="relative w-full max-w-sm mx-auto" style={{ minHeight: "44px" }}>
       {sorted.map((item, index) => {
         const isFirst = index === 0;
         const yOffset = index * 8;
