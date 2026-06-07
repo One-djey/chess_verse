@@ -24,7 +24,11 @@ export type AnnotationVariant =
 
 export type AlertVariant = "pinnedPiece" | "blockedPiece" | "checkBlockedPiece";
 
-export type LabelVariant = AnnotationVariant | AlertVariant | "legendary" | "ai_thinking";
+export type LabelVariant =
+  | AnnotationVariant
+  | AlertVariant
+  | "legendary"
+  | "ai_thinking";
 
 export interface LegendaryMeta {
   patternId: string;
@@ -34,12 +38,21 @@ export interface LegendaryMeta {
   pieceType: string;
 }
 
+export interface CaptureContext {
+  pieceName: string;
+  pieceColor: string;
+  capturedName: string;
+  capturedColor: string;
+  square: string;
+}
+
 export interface GameLabelItem {
   id: string;
   variant: LabelVariant;
   createdAt: number;
   legendaryMeta?: LegendaryMeta;
   message?: string;
+  captureContext?: CaptureContext;
 }
 
 const LABEL_PRIORITY: Record<LabelVariant, number> = {
@@ -135,7 +148,8 @@ function SingleLabel({
   if (isLegendary) {
     containerClass =
       "flex items-start gap-2 px-4 py-2.5 bg-white border border-amber-300 rounded-lg shadow-md text-sm text-amber-800";
-    dismissClass = "ml-auto text-amber-400 hover:text-amber-600 mt-0.5 flex-shrink-0";
+    dismissClass =
+      "ml-auto text-amber-400 hover:text-amber-600 mt-0.5 flex-shrink-0";
   } else if (isAiThinking) {
     containerClass =
       "flex items-center gap-2 px-4 py-2.5 bg-blue-50 border border-blue-200 rounded-lg shadow-md text-sm text-blue-700";
@@ -143,7 +157,8 @@ function SingleLabel({
   } else if (isAlert) {
     containerClass =
       "flex items-center gap-2 px-4 py-2.5 bg-white border border-orange-200 rounded-lg shadow-md text-sm text-orange-700";
-    dismissClass = "ml-auto text-orange-400 hover:text-orange-600 flex-shrink-0";
+    dismissClass =
+      "ml-auto text-orange-400 hover:text-orange-600 flex-shrink-0";
   } else {
     containerClass =
       "flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-200 rounded-lg shadow-md text-sm text-gray-700";
@@ -155,7 +170,10 @@ function SingleLabel({
   if (isAiThinking) {
     body = (
       <>
-        <Brain size={16} className="flex-shrink-0 text-blue-500 animate-pulse" />
+        <Brain
+          size={16}
+          className="flex-shrink-0 text-blue-500 animate-pulse"
+        />
         <span className="italic">{item.message ?? ""}</span>
       </>
     );
@@ -203,7 +221,10 @@ function SingleLabel({
   } else {
     const v = item.variant as AnnotationVariant;
     const Icon = TACTIC_ICONS[v];
-    const desc = t(`learning.tactics.${v}Desc`);
+    const desc =
+      v === "capture" && item.captureContext
+        ? t("learning.tactics.captureDesc", item.captureContext)
+        : t(`learning.tactics.${v}Desc`);
     body = (
       <>
         <Icon size={16} className="flex-shrink-0 text-gray-500" />
@@ -251,7 +272,10 @@ export default function GameLabels({
     .slice(0, MAX_VISIBLE);
 
   return (
-    <div className="relative w-full max-w-sm mx-auto" style={{ minHeight: "44px" }}>
+    <div
+      className="relative w-full max-w-sm mx-auto"
+      style={{ minHeight: "44px" }}
+    >
       {sorted.map((item, index) => {
         const isFirst = index === 0;
         const yOffset = index * 8;
