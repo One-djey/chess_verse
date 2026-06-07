@@ -251,7 +251,7 @@ export default function GameLabels({
     .slice(0, MAX_VISIBLE);
 
   return (
-    <div className="relative" style={{ minHeight: "44px" }}>
+    <div className="relative w-fit mx-auto" style={{ minHeight: "44px" }}>
       {sorted.map((item, index) => {
         const isFirst = index === 0;
         const yOffset = index * 8;
