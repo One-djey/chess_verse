@@ -1,7 +1,9 @@
 import { useState, useEffect, useRef } from "react";
-import { GameState, Piece, GameMode } from "../types/chess";
+import { GameState, Piece, GameMode, Position } from "../types/chess";
 import { getInitialPieces } from "../utils/chess";
 import { ChessAI } from "../services/ChessAI";
+
+export type PendingPromotion = { piece: Piece; target: Position };
 
 export type LocalSettings = {
   aiEnabled: boolean;
@@ -74,6 +76,9 @@ export function useChessGame({
   );
   gameStateRef.current = gameState;
 
+  const [pendingPromotion, setPendingPromotion] =
+    useState<PendingPromotion | null>(null);
+
   // Persist settings
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
@@ -132,5 +137,7 @@ export function useChessGame({
     handleSettingsChange,
     resetGame,
     handleReplay,
+    pendingPromotion,
+    setPendingPromotion,
   };
 }

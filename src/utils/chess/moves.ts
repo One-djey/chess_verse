@@ -352,8 +352,14 @@ function generateMoveCandidates(piece: Piece, gameMode: GameMode): Position[] {
       }
       case "knight": {
         for (const [dx, dy] of [
-          [2, 1], [2, -1], [-2, 1], [-2, -1],
-          [1, 2], [1, -2], [-1, 2], [-1, -2],
+          [2, 1],
+          [2, -1],
+          [-2, 1],
+          [-2, -1],
+          [1, 2],
+          [1, -2],
+          [-1, 2],
+          [-1, -2],
         ] as [number, number][])
           add(px + dx, py + dy);
         break;
@@ -375,9 +381,13 @@ function generateMoveCandidates(piece: Piece, gameMode: GameMode): Position[] {
       }
       case "bishop": {
         for (const [dx, dy] of [
-          [1, 1], [1, -1], [-1, 1], [-1, -1],
+          [1, 1],
+          [1, -1],
+          [-1, 1],
+          [-1, -1],
         ] as [number, number][]) {
-          let x = px + dx, y = py + dy;
+          let x = px + dx,
+            y = py + dy;
           while (x >= xMin && x <= xMax && y >= yMin && y <= yMax) {
             add(x, y);
             x += dx;
@@ -392,9 +402,13 @@ function generateMoveCandidates(piece: Piece, gameMode: GameMode): Position[] {
         for (let y = yMin; y <= yMax; y++) if (y !== py) add(px, y);
         // Diagonals (bishop-like)
         for (const [dx, dy] of [
-          [1, 1], [1, -1], [-1, 1], [-1, -1],
+          [1, 1],
+          [1, -1],
+          [-1, 1],
+          [-1, -1],
         ] as [number, number][]) {
-          let x = px + dx, y = py + dy;
+          let x = px + dx,
+            y = py + dy;
           while (x >= xMin && x <= xMax && y >= yMin && y <= yMax) {
             add(x, y);
             x += dx;
@@ -459,6 +473,7 @@ export function applyMoveToState(
   prev: GameState,
   piece: Piece,
   rawTarget: Position,
+  promotionType?: PieceType,
 ): GameState {
   const target = normalizePos(rawTarget.x, rawTarget.y);
   const castling = findCastlingMove(piece, target, prev.pieces, prev.gameMode);
@@ -475,7 +490,7 @@ export function applyMoveToState(
       p.type === "pawn" &&
       ((p.color === "white" && target.y === 0) ||
         (p.color === "black" && target.y === 7))
-        ? "queen"
+        ? (promotionType ?? "queen")
         : undefined;
     let updated: Piece = {
       ...p,

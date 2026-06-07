@@ -1,4 +1,4 @@
-import { PieceColor, Position, Piece } from "./chess";
+import { PieceColor, PieceType, Position, Piece } from "./chess";
 import { PieceSkin } from "../utils/pieceImage";
 import { Arena } from "./coliseum";
 
@@ -24,6 +24,7 @@ export type MoveProposalMessage = {
   pieceId: string;
   from: Position;
   to: Position;
+  promotionType?: PieceType;
 };
 
 // Host → Guest: authoritative confirmed move with sequence number
@@ -33,6 +34,7 @@ export type MoveConfirmMessage = {
   from: Position;
   to: Position;
   seq: number;
+  promotionType?: PieceType;
 };
 
 // Host → Guest: proposed move was invalid

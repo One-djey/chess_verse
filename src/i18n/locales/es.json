@@ -496,6 +496,15 @@
     "timesCaptured": "capturas",
     "level": "Niv."
   },
+  "promotion": {
+    "choosePiece": "Promover a:"
+  },
+  "chess": {
+    "colors": {
+      "white": "blanco",
+      "black": "negro"
+    }
+  },
   "aiThinking": {
     "messages": [
       "La IA está pensando...",

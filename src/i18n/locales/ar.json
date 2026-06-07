@@ -496,6 +496,15 @@
     "timesCaptured": "مرات الأسر",
     "level": "مستوى"
   },
+  "promotion": {
+    "choosePiece": "ترقية إلى:"
+  },
+  "chess": {
+    "colors": {
+      "white": "أبيض",
+      "black": "أسود"
+    }
+  },
   "aiThinking": {
     "messages": [
       "الذكاء الاصطناعي يفكر...",

@@ -496,6 +496,15 @@
     "timesCaptured": "次被吃",
     "level": "等级"
   },
+  "promotion": {
+    "choosePiece": "升变为："
+  },
+  "chess": {
+    "colors": {
+      "white": "白方",
+      "black": "黑方"
+    }
+  },
   "aiThinking": {
     "messages": [
       "AI正在思考...",

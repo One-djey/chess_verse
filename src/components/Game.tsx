@@ -2,10 +2,12 @@ import React from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import GameLabels, {
+  CaptureContext,
   GameLabelItem,
   LabelVariant,
   LegendaryMeta,
 } from "./GameLabels";
+import { PromotionPicker } from "./PromotionPicker";
 import { detectLegendaryPattern } from "../utils/chess/legendaryPatterns";
 import ChessBoard from "./ChessBoard";
 import GameOver from "./GameOver";
@@ -191,6 +193,7 @@ export default function Game() {
     const applyMove = (move: {
       from: { x: number; y: number };
       to: { x: number; y: number };
+      promotionType?: PieceType;
     }) => {
       clearAiThinking();
       // Don't apply an in-flight AI move if the game is already over
@@ -225,11 +228,19 @@ export default function Game() {
         } else {
           chess.setGameState((prev) => {
             if (prev.gameOver) return prev;
-            const inCheck = isInCheck(prev.currentTurn, prev.pieces, prev.gameMode);
+            const inCheck = isInCheck(
+              prev.currentTurn,
+              prev.pieces,
+              prev.gameMode,
+            );
             return {
               ...prev,
               gameOver: true,
-              winner: inCheck ? (prev.currentTurn === "white" ? "black" : "white") : null,
+              winner: inCheck
+                ? prev.currentTurn === "white"
+                  ? "black"
+                  : "white"
+                : null,
               drawReason: inCheck ? undefined : "stalemate",
             };
           });
@@ -249,7 +260,12 @@ export default function Game() {
           (sessionStatsRef.current.piecesLost[t] ?? 0) + 1;
       }
       chess.setGameState((prev) => {
-        const nextState = applyMoveToState(prev, piece, move.to);
+        const nextState = applyMoveToState(
+          prev,
+          piece,
+          move.to,
+          move.promotionType,
+        );
         const capturedPiece =
           prev.pieces.find(
             (p) =>
@@ -334,11 +350,19 @@ export default function Game() {
             } else {
               chess.setGameState((prev) => {
                 if (prev.gameOver) return prev;
-                const inCheck = isInCheck(prev.currentTurn, prev.pieces, prev.gameMode);
+                const inCheck = isInCheck(
+                  prev.currentTurn,
+                  prev.pieces,
+                  prev.gameMode,
+                );
                 return {
                   ...prev,
                   gameOver: true,
-                  winner: inCheck ? (prev.currentTurn === "white" ? "black" : "white") : null,
+                  winner: inCheck
+                    ? prev.currentTurn === "white"
+                      ? "black"
+                      : "white"
+                    : null,
                   drawReason: inCheck ? undefined : "stalemate",
                 };
               });
@@ -357,9 +381,13 @@ export default function Game() {
       aiThinkingLabelIdRef.current = addLabel("ai_thinking", messages[idx]);
       aiThinkingIndexRef.current++;
       aiThinkingIntervalRef.current = setInterval(() => {
-        if (aiThinkingLabelIdRef.current) dismissLabel(aiThinkingLabelIdRef.current);
+        if (aiThinkingLabelIdRef.current)
+          dismissLabel(aiThinkingLabelIdRef.current);
         const nextIdx = aiThinkingIndexRef.current % messages.length;
-        aiThinkingLabelIdRef.current = addLabel("ai_thinking", messages[nextIdx]);
+        aiThinkingLabelIdRef.current = addLabel(
+          "ai_thinking",
+          messages[nextIdx],
+        );
         aiThinkingIndexRef.current++;
       }, 8000);
     }, 5000);
@@ -390,7 +418,13 @@ export default function Game() {
     if (chess.gameState.pieces.length === 0) return;
     if (p2p.isP2PMode) return;
 
-    if (!hasLegalMoves(chess.gameState.currentTurn, chess.gameState.pieces, chess.gameState.gameMode)) {
+    if (
+      !hasLegalMoves(
+        chess.gameState.currentTurn,
+        chess.gameState.pieces,
+        chess.gameState.gameMode,
+      )
+    ) {
       const inCheck = chess.gameState.isCheck;
       const loser = chess.gameState.currentTurn;
       chess.setGameState((prev) => {
@@ -403,14 +437,14 @@ export default function Game() {
         };
       });
     }
-  }, [ // eslint-disable-line react-hooks/exhaustive-deps
+  }, [
+    // eslint-disable-line react-hooks/exhaustive-deps
     chess.gameState.currentTurn,
     chess.gameState.pieces,
     chess.gameState.gameMode,
     chess.gameState.gameOver,
     p2p.isP2PMode,
   ]);
-
 
   // ── Movable pieces ────────────────────────────────────────────────────────
   // Only pieces with at least one legal move get the blue glow.
@@ -552,7 +586,11 @@ export default function Game() {
   const [gameLabels, setGameLabels] = React.useState<GameLabelItem[]>([]);
 
   const addLabel = React.useCallback(
-    (variant: LabelVariant, metaOrMessage?: LegendaryMeta | string): string => {
+    (
+      variant: LabelVariant,
+      metaOrMessage?: LegendaryMeta | string,
+      captureContext?: CaptureContext,
+    ): string => {
       labelIdRef.current += 1;
       const id = String(labelIdRef.current);
       const isMsg = typeof metaOrMessage === "string";
@@ -564,6 +602,7 @@ export default function Game() {
           createdAt: Date.now(),
           legendaryMeta: isMsg ? undefined : metaOrMessage,
           message: isMsg ? metaOrMessage : undefined,
+          captureContext,
         },
       ]);
       return id;
@@ -575,8 +614,12 @@ export default function Game() {
     setGameLabels((prev) => prev.filter((item) => item.id !== id));
   }, []);
 
-  const aiThinkingInitTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
-  const aiThinkingIntervalRef = React.useRef<ReturnType<typeof setInterval> | null>(null);
+  const aiThinkingInitTimerRef = React.useRef<ReturnType<
+    typeof setTimeout
+  > | null>(null);
+  const aiThinkingIntervalRef = React.useRef<ReturnType<
+    typeof setInterval
+  > | null>(null);
   const aiThinkingLabelIdRef = React.useRef<string | null>(null);
   const aiThinkingIndexRef = React.useRef(0);
 
@@ -584,9 +627,23 @@ export default function Game() {
     (ctx: MoveContext) => {
       if (!chess.settings.showMoveAnnotations) return;
       const tag = detectTactic(ctx);
-      if (tag) addLabel(tag as LabelVariant);
+      if (!tag) return;
+      if (tag === "capture" && ctx.capturedPiece) {
+        const sq = `${String.fromCharCode(97 + ctx.to.x)}${8 - ctx.to.y}`;
+        addLabel("capture", undefined, {
+          pieceName: t(`profile.pieces.${ctx.piece.type}`).toLowerCase(),
+          pieceColor: t(`chess.colors.${ctx.piece.color}`),
+          capturedName: t(
+            `profile.pieces.${ctx.capturedPiece.type}`,
+          ).toLowerCase(),
+          capturedColor: t(`chess.colors.${ctx.capturedPiece.color}`),
+          square: sq,
+        });
+      } else {
+        addLabel(tag as LabelVariant);
+      }
     },
-    [chess.settings.showMoveAnnotations, addLabel],
+    [chess.settings.showMoveAnnotations, addLabel, t],
   );
 
   // ── Analytics ─────────────────────────────────────────────────────────────
@@ -661,6 +718,7 @@ export default function Game() {
 
   // ── User action handlers ───────────────────────────────────────────────────
   const handlePieceSelect = (piece: Piece) => {
+    if (chess.pendingPromotion) return;
     if (
       p2p.isP2PMode
         ? piece.color !== p2p.playerColor
@@ -693,10 +751,136 @@ export default function Game() {
     }));
   };
 
+  const applyMoveWithAnnotations = (
+    piece: Piece,
+    target: Position,
+    promotionType?: PieceType,
+  ) => {
+    chess.setGameState((prev) => {
+      const nextState = applyMoveToState(prev, piece, target, promotionType);
+      const capturedPiece =
+        prev.pieces.find(
+          (p) =>
+            p.color !== piece.color &&
+            p.position.x === target.x &&
+            p.position.y === target.y,
+        ) ?? null;
+      triggerAnnotation({
+        piece,
+        from: piece.position,
+        to: target,
+        capturedPiece,
+        wasPromotion:
+          piece.type === "pawn" && (target.y === 0 || target.y === 7),
+        wasCastling:
+          piece.type === "king" && Math.abs(piece.position.x - target.x) === 2,
+        prevPieces: prev.pieces,
+        nextPieces: nextState.pieces,
+        gameMode: prev.gameMode,
+      });
+      if (chess.settings.showMoveAnnotations) {
+        const movingColor = prev.currentTurn;
+        const gm = prev.gameMode;
+        const nextPieces = nextState.pieces;
+        setTimeout(() => {
+          const nextColor: PieceColor =
+            movingColor === "white" ? "black" : "white";
+          const nextHint = detectLegendaryPattern(nextPieces, nextColor, gm);
+          if (nextHint && nextHint.movesAway === 1) {
+            addLabel("legendary", nextHint);
+            return;
+          }
+          const post = detectLegendaryPattern(nextPieces, movingColor, gm);
+          if (post && post.movesAway === 2) addLabel("legendary", post);
+        }, 0);
+      }
+      return nextState;
+    });
+  };
+
+  const confirmPromotion = (type: PieceType) => {
+    const pending = chess.pendingPromotion;
+    if (!pending) return;
+    chess.setPendingPromotion(null);
+    const { piece, target } = pending;
+    wasPromotedRef.current = true;
+
+    if (p2p.isP2PMode && p2p.role === "guest") {
+      p2p.actions?.sendMoveProposal({
+        type: "move_proposal",
+        pieceId: piece.id,
+        from: piece.position,
+        to: target,
+        promotionType: type,
+      });
+      return;
+    }
+
+    if (p2p.isP2PMode && p2p.role === "host") {
+      p2pGame.seqRef.current++;
+      p2p.actions?.sendMoveConfirm({
+        type: "move_confirm",
+        pieceId: piece.id,
+        from: piece.position,
+        to: target,
+        seq: p2pGame.seqRef.current,
+        promotionType: type,
+      });
+    }
+
+    applyMoveWithAnnotations(piece, target, type);
+  };
+
   const handleMove = (target: Position) => {
     const { selectedPiece } = chess.gameState;
     if (!selectedPiece) return;
+    if (chess.pendingPromotion) return;
     const norm = normalizePos(target.x, target.y);
+
+    // ── Track hint following ──
+    if (
+      hintMove &&
+      selectedPiece.position.x === hintMove.from.x &&
+      selectedPiece.position.y === hintMove.from.y &&
+      norm.x === hintMove.to.x &&
+      norm.y === hintMove.to.y
+    ) {
+      hintsFollowedRef.current += 1;
+    }
+
+    // ── Track piece stats (non-pawn only) ──
+    if (selectedPiece.type !== "pawn") {
+      const t = selectedPiece.type as PieceType;
+      sessionStatsRef.current.pieceMoves[t] =
+        (sessionStatsRef.current.pieceMoves[t] ?? 0) + 1;
+    }
+    const capturedForStats = chess.gameState.pieces.find(
+      (p) =>
+        p.color !== selectedPiece.color &&
+        p.position.x === norm.x &&
+        p.position.y === norm.y,
+    );
+    if (capturedForStats && capturedForStats.type !== "pawn") {
+      const t = capturedForStats.type as PieceType;
+      sessionStatsRef.current.piecesLost[t] =
+        (sessionStatsRef.current.piecesLost[t] ?? 0) + 1;
+    }
+
+    // ── Intercept human pawn promotion — show picker before applying ──
+    const isHumanPromotion =
+      selectedPiece.type === "pawn" &&
+      ((selectedPiece.color === "white" && norm.y === 0) ||
+        (selectedPiece.color === "black" && norm.y === 7));
+
+    if (isHumanPromotion) {
+      chess.setPendingPromotion({ piece: selectedPiece, target: norm });
+      chess.setGameState((prev) => ({
+        ...prev,
+        selectedPiece: null,
+        validMoves: [],
+      }));
+      return;
+    }
 
     if (p2p.isP2PMode && p2p.role === "guest") {
       p2p.actions?.sendMoveProposal({
@@ -724,85 +908,7 @@ export default function Game() {
       });
     }
 
-    // ── Track hint following ──
-    if (
-      hintMove &&
-      selectedPiece.position.x === hintMove.from.x &&
-      selectedPiece.position.y === hintMove.from.y &&
-      norm.x === hintMove.to.x &&
-      norm.y === hintMove.to.y
-    ) {
-      hintsFollowedRef.current += 1;
-    }
-
-    // ── Track pawn promotion by player ──
-    const isPlayerPromotion =
-      selectedPiece.type === "pawn" &&
-      ((selectedPiece.color === "white" && norm.y === 0) ||
-        (selectedPiece.color === "black" && norm.y === 7));
-    if (isPlayerPromotion) wasPromotedRef.current = true;
-
-    // ── Track piece stats (non-pawn only) ──
-    // pieceMoves: the piece being moved by the human player
-    if (selectedPiece.type !== "pawn") {
-      const t = selectedPiece.type as PieceType;
-      sessionStatsRef.current.pieceMoves[t] =
-        (sessionStatsRef.current.pieceMoves[t] ?? 0) + 1;
-    }
-    // piecesLost: opponent pieces being captured (= pieces the mover takes from opponent)
-    const capturedForStats = chess.gameState.pieces.find(
-      (p) =>
-        p.color !== selectedPiece.color &&
-        p.position.x === norm.x &&
-        p.position.y === norm.y,
-    );
-    if (capturedForStats && capturedForStats.type !== "pawn") {
-      const t = capturedForStats.type as PieceType;
-      sessionStatsRef.current.piecesLost[t] =
-        (sessionStatsRef.current.piecesLost[t] ?? 0) + 1;
-    }
-
-    chess.setGameState((prev) => {
-      const nextState = applyMoveToState(prev, selectedPiece, norm);
-      const capturedPiece =
-        prev.pieces.find(
-          (p) =>
-            p.color !== selectedPiece.color &&
-            p.position.x === norm.x &&
-            p.position.y === norm.y,
-        ) ?? null;
-      triggerAnnotation({
-        piece: selectedPiece,
-        from: selectedPiece.position,
-        to: norm,
-        capturedPiece,
-        wasPromotion:
-          selectedPiece.type === "pawn" && (norm.y === 0 || norm.y === 7),
-        wasCastling:
-          selectedPiece.type === "king" &&
-          Math.abs(selectedPiece.position.x - norm.x) === 2,
-        prevPieces: prev.pieces,
-        nextPieces: nextState.pieces,
-        gameMode: prev.gameMode,
-      });
-      if (chess.settings.showMoveAnnotations) {
-        const movingColor = prev.currentTurn;
-        const gm = prev.gameMode;
-        const nextPieces = nextState.pieces;
-        setTimeout(() => {
-          const nextColor: PieceColor =
-            movingColor === "white" ? "black" : "white";
-          const nextHint = detectLegendaryPattern(nextPieces, nextColor, gm);
-          if (nextHint && nextHint.movesAway === 1) {
-            addLabel("legendary", nextHint);
-            return;
-          }
-          const post = detectLegendaryPattern(nextPieces, movingColor, gm);
-          if (post && post.movesAway === 2) addLabel("legendary", post);
-        }, 0);
-      }
-      return nextState;
-    });
+    applyMoveWithAnnotations(selectedPiece, norm);
   };
 
   const handleResign = () => {
@@ -871,6 +977,23 @@ export default function Game() {
       )}
 
       <div className="flex-1 flex flex-col items-center justify-center p-2 sm:p-4">
+        {/* Zero-height overlay: PromotionPicker floats above the board without shifting it */}
+        <div style={{ height: 0, overflow: "visible", width: "100%" }}>
+          <div
+            style={{
+              transform: "translateY(-100%) translateY(-12px)",
+              pointerEvents: chess.pendingPromotion ? "auto" : "none",
+            }}
+          >
+            {chess.pendingPromotion && (
+              <PromotionPicker
+                color={chess.pendingPromotion.piece.color}
+                onSelect={confirmPromotion}
+              />
+            )}
+          </div>
+        </div>
+
         <ChessBoard
           pieces={chess.gameState.pieces}
           currentTurn={chess.gameState.currentTurn}
@@ -892,8 +1015,8 @@ export default function Game() {
         />
 
         {/* Zero-height overlay: labels float below the board without shifting it */}
-        <div style={{ height: 0, overflow: 'visible', width: '100%' }}>
-          <div style={{ paddingTop: '12px' }}>
+        <div style={{ height: 0, overflow: "visible", width: "100%" }}>
+          <div style={{ paddingTop: "12px" }}>
             <GameLabels items={gameLabels} onDismiss={dismissLabel} />
           </div>
         </div>

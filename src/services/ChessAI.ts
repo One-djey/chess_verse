@@ -1,4 +1,4 @@
-import { Piece, PieceColor, Position } from "../types/chess";
+import { Piece, PieceColor, PieceType, Position } from "../types/chess";
 
 export class ChessAI {
   private stockfish: Worker | null = null;
@@ -12,7 +12,11 @@ export class ChessAI {
   private isSearching: boolean = false;
   private stopPending: boolean = false;
   private moveResolver:
-    | ((move: { from: Position; to: Position }) => void)
+    | ((move: {
+        from: Position;
+        to: Position;
+        promotionType?: PieceType;
+      }) => void)
     | null = null;
   private rejectResolver: ((reason: Error) => void) | null = null;
 
@@ -59,11 +63,22 @@ export class ChessAI {
           }
 
           const [from, to] = moveToken.match(/.{2}/g) || [];
+          const uciPromoChar = moveToken[4];
+          const uciPromoMap: Record<string, PieceType> = {
+            q: "queen",
+            r: "rook",
+            b: "bishop",
+            n: "knight",
+          };
+          const promotionType = uciPromoChar
+            ? uciPromoMap[uciPromoChar]
+            : undefined;
 
           if (this.moveResolver && from && to) {
             this.moveResolver({
               from: this.algebraicToPosition(from),
               to: this.algebraicToPosition(to),
+              promotionType,
             });
             this.moveResolver = null;
           }
@@ -112,7 +127,7 @@ export class ChessAI {
 
   public async getNextMove(
     pieces: Piece[],
-  ): Promise<{ from: Position; to: Position }> {
+  ): Promise<{ from: Position; to: Position; promotionType?: PieceType }> {
     if (!this.stockfish || !this.isReady) {
       throw new Error("L'IA n'est pas encore initialisée");
     }
@@ -131,7 +146,11 @@ export class ChessAI {
     this.stockfish.postMessage(`go movetime ${this.movetime}`);
 
     return new Promise((resolve, reject) => {
-      const resolver = (move: { from: Position; to: Position }) => {
+      const resolver = (move: {
+        from: Position;
+        to: Position;
+        promotionType?: PieceType;
+      }) => {
         this.isSearching = false;
         this.rejectResolver = null;
         resolve(move);
@@ -152,7 +171,7 @@ export class ChessAI {
   public async getHintMove(
     pieces: Piece[],
     color: PieceColor,
-  ): Promise<{ from: Position; to: Position }> {
+  ): Promise<{ from: Position; to: Position; promotionType?: PieceType }> {
     if (!this.stockfish || !this.isReady) {
       throw new Error("L'IA n'est pas disponible");
     }
@@ -167,7 +186,11 @@ export class ChessAI {
     this.stockfish.postMessage("go movetime 1500");
 
     return new Promise((resolve, reject) => {
-      const resolver = (move: { from: Position; to: Position }) => {
+      const resolver = (move: {
+        from: Position;
+        to: Position;
+        promotionType?: PieceType;
+      }) => {
         this.isSearching = false;
         this.rejectResolver = null;
         // Restaurer le niveau configuré

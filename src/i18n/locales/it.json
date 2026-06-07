@@ -496,6 +496,15 @@
     "timesCaptured": "catture",
     "level": "Liv."
   },
+  "promotion": {
+    "choosePiece": "Promuovi in:"
+  },
+  "chess": {
+    "colors": {
+      "white": "bianco",
+      "black": "nero"
+    }
+  },
   "aiThinking": {
     "messages": [
       "L'IA sta pensando...",

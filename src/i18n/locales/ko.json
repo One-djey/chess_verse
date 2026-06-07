@@ -496,6 +496,15 @@
     "timesCaptured": "잡힘",
     "level": "레벨"
   },
+  "promotion": {
+    "choosePiece": "승진할 기물 선택:"
+  },
+  "chess": {
+    "colors": {
+      "white": "백",
+      "black": "흑"
+    }
+  },
   "aiThinking": {
     "messages": [
       "AI가 생각 중입니다...",

@@ -496,6 +496,15 @@
     "timesCaptured": "回取られた",
     "level": "Lv."
   },
+  "promotion": {
+    "choosePiece": "昇格先を選択："
+  },
+  "chess": {
+    "colors": {
+      "white": "白",
+      "black": "黒"
+    }
+  },
   "aiThinking": {
     "messages": [
       "AIが考えています...",
