@@ -135,19 +135,19 @@ function SingleLabel({
   if (isLegendary) {
     containerClass =
       "flex items-start gap-2 px-4 py-2.5 bg-white border border-amber-300 rounded-lg shadow-md text-sm text-amber-800";
-    dismissClass = "ml-2 text-amber-400 hover:text-amber-600 mt-0.5";
+    dismissClass = "ml-auto text-amber-400 hover:text-amber-600 mt-0.5 flex-shrink-0";
   } else if (isAiThinking) {
     containerClass =
       "flex items-center gap-2 px-4 py-2.5 bg-blue-50 border border-blue-200 rounded-lg shadow-md text-sm text-blue-700";
-    dismissClass = "ml-2 text-blue-400 hover:text-blue-600";
+    dismissClass = "ml-auto text-blue-400 hover:text-blue-600 flex-shrink-0";
   } else if (isAlert) {
     containerClass =
       "flex items-center gap-2 px-4 py-2.5 bg-white border border-orange-200 rounded-lg shadow-md text-sm text-orange-700";
-    dismissClass = "ml-2 text-orange-400 hover:text-orange-600";
+    dismissClass = "ml-auto text-orange-400 hover:text-orange-600 flex-shrink-0";
   } else {
     containerClass =
       "flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-200 rounded-lg shadow-md text-sm text-gray-700";
-    dismissClass = "ml-2 text-gray-400 hover:text-gray-600";
+    dismissClass = "ml-auto text-gray-400 hover:text-gray-600 flex-shrink-0";
   }
 
   let body: React.ReactNode;
@@ -251,7 +251,7 @@ export default function GameLabels({
     .slice(0, MAX_VISIBLE);
 
   return (
-    <div className="relative w-fit mx-auto" style={{ minHeight: "44px" }}>
+    <div className="relative w-full max-w-sm mx-auto" style={{ minHeight: "44px" }}>
       {sorted.map((item, index) => {
         const isFirst = index === 0;
         const yOffset = index * 8;
