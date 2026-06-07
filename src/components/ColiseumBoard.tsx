@@ -61,7 +61,7 @@ export default function ColiseumBoard({
     <div
       className="[container-type:inline-size]"
       style={{
-        width: `min(80vmin, 700px, calc((100vh - 8rem) * ${cols} / ${rows}))`,
+        width: `min(80vh, calc(100vw - 1rem), calc((100vh - 8rem) * ${cols} / ${rows}))`,
         aspectRatio: `${cols} / ${rows}`,
       }}
     >
@@ -72,7 +72,7 @@ export default function ColiseumBoard({
         <div
           style={{
             position: "absolute",
-            inset: boardSkinDef.borderInset ?? "1.75rem",
+            inset: boardSkinDef.borderInset ?? "0",
             display: "grid",
             gridTemplateColumns: `repeat(${cols}, 1fr)`,
             gridTemplateRows: `repeat(${rows}, 1fr)`,
@@ -174,7 +174,7 @@ export default function ColiseumBoard({
         {/* Pieces layer */}
         <div
           className="absolute pointer-events-none z-30"
-          style={{ inset: boardSkinDef.borderInset ?? "1.75rem" }}
+          style={{ inset: boardSkinDef.borderInset ?? "0" }}
         >
           {pieces.map((piece) => {
             const isSelected = selectedPiece?.id === piece.id;
@@ -189,10 +189,9 @@ export default function ColiseumBoard({
                 style={{
                   width: `${100 / cols}%`,
                   height: `${100 / rows}%`,
-                  left: 0,
-                  top: 0,
-                  transform: `translate(${piece.position.x * 100}%, ${piece.position.y * 100}%)`,
-                  transition: "transform 300ms ease-in-out",
+                  left: `${(piece.position.x * 100) / cols}%`,
+                  top: `${(piece.position.y * 100) / rows}%`,
+                  transition: "left 300ms ease-in-out, top 300ms ease-in-out",
                 }}
               >
                 <div

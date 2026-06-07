@@ -358,6 +358,21 @@ function findEdgeSpawn(
   return bestPos;
 }
 
+function isEdgeCell(grid: number[][], y: number, x: number): boolean {
+  const H = grid.length;
+  const W = grid[0].length;
+  return (
+    y === 0 ||
+    y === H - 1 ||
+    x === 0 ||
+    x === W - 1 ||
+    (y > 0 && grid[y - 1][x] === 0) ||
+    (y < H - 1 && grid[y + 1][x] === 0) ||
+    (x > 0 && grid[y][x - 1] === 0) ||
+    (x < W - 1 && grid[y][x + 1] === 0)
+  );
+}
+
 function placePieces(
   grid: number[][],
   spawnY: number,
@@ -405,11 +420,143 @@ function placePieces(
 
   if (available.length < PIECE_ORDER.length) return [];
 
+  // player 0 (white): king on dark (parity 1), queen on light (parity 0)
+  // player 1 (black): king on light (parity 0), queen on dark (parity 1)
+  const kingParity = 1 - (playerIdx % 2);
+  const queenParity = playerIdx % 2;
+
+  // King: edge cell closest to spawn (= furthest from center) with correct color
+  const kingSquare =
+    available.find(
+      ([y, x]) => (x + y) % 2 === kingParity && isEdgeCell(grid, y, x),
+    ) ??
+    available.find(([y, x]) => isEdgeCell(grid, y, x)) ??
+    available.find(([y, x]) => (x + y) % 2 === kingParity) ??
+    available[0];
+
+  const afterKing = available.filter(
+    ([y, x]) => !(y === kingSquare[0] && x === kingSquare[1]),
+  );
+
+  // Sort afterKing by distance from king: closest = back rank, furthest = pawn front line
+  const [ky, kx] = kingSquare;
+  const manhDist = ([y, x]: [number, number]) =>
+    Math.abs(y - ky) + Math.abs(x - kx);
+  const sortedByDist = [...afterKing].sort((a, b) => manhDist(a) - manhDist(b));
+
+  // Queen: closest to king with correct color (adjacent in most cases)
+  const queenSquare =
+    sortedByDist.find(([y, x]) => (x + y) % 2 === queenParity) ??
+    sortedByDist[0];
+  const remaining = sortedByDist.filter(
+    ([y, x]) => !(y === queenSquare[0] && x === queenSquare[1]),
+  );
+  // remaining: 14 cells, sorted closest→furthest from king
+
+  // First 6 = back rank (bishop×2, knight×2, rook×2), last 8 = pawn front line
+  const pieceCells = remaining.slice(0, 6);
+  const pawnCells = remaining.slice(6);
+
+  // Ensure pieceCells has exactly 3 light + 3 dark for the 3 pairs
+  // If not, swap the furthest piece cell of the majority color with the
+  // closest pawn cell of the minority color (repeat until balanced or no swap possible)
+  for (let iter = 0; iter < 3; iter++) {
+    const lc = pieceCells.filter(([y, x]) => (x + y) % 2 === 0).length;
+    if (lc === 3) break;
+    const needMore = (lc < 3 ? 0 : 1) as 0 | 1;
+    const needLess = (1 - needMore) as 0 | 1;
+    const outEntry = [...pieceCells]
+      .map((sq, i) => ({ sq, i }))
+      .reverse()
+      .find(({ sq }) => (sq[1] + sq[0]) % 2 === needLess);
+    const inIdx = pawnCells.findIndex(([y, x]) => (x + y) % 2 === needMore);
+    if (!outEntry || inIdx === -1) break;
+    [pieceCells[outEntry.i], pawnCells[inIdx]] = [
+      pawnCells[inIdx],
+      pieceCells[outEntry.i],
+    ];
+    pieceCells.sort((a, b) => manhDist(a) - manhDist(b));
+    pawnCells.sort((a, b) => manhDist(a) - manhDist(b));
+  }
+
+  // Lateral axis perpendicular to king→center vector
+  const fwY = (grid.length - 1) / 2 - ky;
+  const fwX = (grid[0].length - 1) / 2 - kx;
+  const fwLen = Math.sqrt(fwX * fwX + fwY * fwY) || 1;
+  const latX = fwY / fwLen;
+  const latY = -fwX / fwLen;
+  const lateralOf = ([y, x]: [number, number]) =>
+    (x - kx) * latX + (y - ky) * latY;
+
+  // Split pieceCells laterally; distance order preserved → bishop=close, rook=far
+  const leftPieces = pieceCells.filter((sq) => lateralOf(sq) < 0);
+  const rightPieces = pieceCells.filter((sq) => lateralOf(sq) >= 0);
+
+  const usedPairs = new Set<string>();
+  const pk = ([y, x]: [number, number]) => key(y, x);
+
+  const tryPickPair = (): [[number, number], [number, number]] | null => {
+    const findIn = (arr: [number, number][], parity: number) =>
+      arr.find(
+        (sq) => !usedPairs.has(pk(sq)) && (sq[1] + sq[0]) % 2 === parity,
+      );
+    const lL = findIn(leftPieces, 0),
+      rD = findIn(rightPieces, 1);
+    if (lL && rD) {
+      usedPairs.add(pk(lL));
+      usedPairs.add(pk(rD));
+      return [lL, rD];
+    }
+    const lD = findIn(leftPieces, 1),
+      rL = findIn(rightPieces, 0);
+    if (lD && rL) {
+      usedPairs.add(pk(lD));
+      usedPairs.add(pk(rL));
+      return [lD, rL];
+    }
+    return null;
+  };
+
+  const fallbackPick = (parity: number): [number, number] => {
+    const sq =
+      pieceCells.find(
+        (sq) => !usedPairs.has(pk(sq)) && (sq[1] + sq[0]) % 2 === parity,
+      ) ?? pieceCells.find((sq) => !usedPairs.has(pk(sq)))!;
+    usedPairs.add(pk(sq));
+    return sq;
+  };
+
+  // Bishop (closest to king), knight (medium), rook (furthest)
+  const bishopPair = tryPickPair() ?? [fallbackPick(0), fallbackPick(1)];
+  const knightPair = tryPickPair() ?? [fallbackPick(0), fallbackPick(1)];
+  const rookPair = tryPickPair() ?? [fallbackPick(0), fallbackPick(1)];
+
+  if (pawnCells.length >= 8) {
+    const placement: [ArenaPieceType, [number, number]][] = [
+      ["king", kingSquare],
+      ["queen", queenSquare],
+      ["bishop", bishopPair[0]],
+      ["bishop", bishopPair[1]],
+      ["knight", knightPair[0]],
+      ["knight", knightPair[1]],
+      ["rook", rookPair[0]],
+      ["rook", rookPair[1]],
+      ...pawnCells
+        .slice(0, 8)
+        .map((sq): [ArenaPieceType, [number, number]] => ["pawn", sq]),
+    ];
+    const pieces: ArenaPiece[] = placement.map(([pieceType, [y, x]]) => {
+      occupied.add(key(y, x));
+      return { y, x, piece: pieceType, player: playerIdx };
+    });
+    return pieces;
+  }
+
+  // Fallback: sequential BFS order (shouldn't happen on normal arenas)
   const pieces: ArenaPiece[] = [];
   for (let i = 0; i < PIECE_ORDER.length; i++) {
     const [y, x] = available[i];
-    const k = key(y, x);
-    occupied.add(k);
+    occupied.add(key(y, x));
     pieces.push({ y, x, piece: PIECE_ORDER[i], player: playerIdx });
   }
   return pieces;
@@ -491,15 +638,15 @@ function tryGenerate(
   if (totalCells < minTotal || totalCells > maxTotal) return null;
 
   // 11. Find spawn zones
-  // For 2 players: force top/bottom (−π/2 and +π/2) so camps mirror standard chess orientation
+  // For 2 players: player 0 (white) spawns at bottom (+π/2), player 1 (black) at top (−π/2)
   const sectorWidth = Math.PI / numPlayers;
   const spawnZones: [number, number][] = [];
   for (let i = 0; i < numPlayers; i++) {
     const angle =
       numPlayers === 2
         ? i === 0
-          ? -Math.PI / 2
-          : Math.PI / 2
+          ? Math.PI / 2
+          : -Math.PI / 2
         : (2 * Math.PI * i) / numPlayers;
     const spawn = findEdgeSpawn(grid, angle, sectorWidth);
     if (!spawn) return null;

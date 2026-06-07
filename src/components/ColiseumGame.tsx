@@ -17,7 +17,7 @@ import {
 } from "../utils/chess/coliseumMoves";
 import type { LocalSettings } from "../hooks/useChessGame";
 import type { Arena, ColiseumGameState } from "../types/coliseum";
-import type { PieceColor } from "../types/chess";
+import type { Piece, PieceColor } from "../types/chess";
 import type { RematchState } from "../types/p2p";
 import type { P2PConnectionState } from "../types/p2p";
 import { makeRoomActions } from "../services/TrysteroService";
@@ -97,9 +97,30 @@ function ColiseumUI({
     }
   });
 
+  const coordOffset = useMemo(() => {
+    const grid = state.arena.grid;
+    let lastRow = 0;
+    for (let y = grid.length - 1; y >= 0; y--) {
+      if (grid[y].some((v) => v === 1)) {
+        lastRow = y;
+        break;
+      }
+    }
+    let firstCol = grid[0]?.length ?? 0;
+    for (const row of grid) {
+      for (let x = 0; x < row.length; x++) {
+        if (row[x] === 1 && x < firstCol) firstCol = x;
+      }
+    }
+    return {
+      x: firstCol < (grid[0]?.length ?? 0) ? firstCol : 0,
+      lastRow,
+    };
+  }, [state.arena]);
+
   const [gameLabels, setGameLabels] = useState<GameLabelItem[]>([]);
   const prevIsCheck = useRef(false);
-  const prevMoveCount = useRef(0);
+  const prevMovesLength = useRef(0);
 
   const handleSettingsChange = useCallback((s: LocalSettings) => {
     setSettings(s);
@@ -181,22 +202,54 @@ function ColiseumUI({
   }, [state.isCheck]);
 
   useEffect(() => {
-    const total = state.moveCount.white + state.moveCount.black;
-    if (total > prevMoveCount.current && state.moves.length > 0) {
+    if (state.moves.length > prevMovesLength.current) {
       const last = state.moves[state.moves.length - 1];
-      if (last.capturedPiece) {
+      if (last?.capturedPiece) {
+        const sq = `${String.fromCharCode(97 + last.to.x - coordOffset.x)}${coordOffset.lastRow - last.to.y + 1}`;
         setGameLabels((prev) => [
           ...prev,
           {
             id: `capture-${Date.now()}`,
             variant: "capture",
             createdAt: Date.now(),
+            captureContext: {
+              pieceName: t(`profile.pieces.${last.piece.type}`).toLowerCase(),
+              pieceColor: t(`chess.colors.${last.piece.color}`),
+              capturedName: t(
+                `profile.pieces.${last.capturedPiece!.type}`,
+              ).toLowerCase(),
+              capturedColor: t(`chess.colors.${last.capturedPiece!.color}`),
+              square: sq,
+            },
           },
         ]);
       }
     }
-    prevMoveCount.current = total;
-  }, [state.moveCount, state.moves]);
+    prevMovesLength.current = state.moves.length;
+  }, [state.moves, t]);
+
+  const wrappedHandlePieceSelect = useCallback(
+    (piece: Piece) => {
+      if (settings.showMoveAnnotations) {
+        const moves = getColiseumLegalMoves(piece, state.pieces, state.arena);
+        if (moves.length === 0) {
+          const variant = state.isCheck ? "checkBlockedPiece" : "blockedPiece";
+          setGameLabels((prev) => [
+            ...prev,
+            { id: `blocked-${Date.now()}`, variant, createdAt: Date.now() },
+          ]);
+        }
+      }
+      handlePieceSelect(piece);
+    },
+    [
+      handlePieceSelect,
+      state.pieces,
+      state.arena,
+      state.isCheck,
+      settings.showMoveAnnotations,
+    ],
+  );
 
   const breadcrumbs = isP2PMode
     ? [
@@ -250,7 +303,7 @@ function ColiseumUI({
         </div>
       )}
 
-      <div className="flex-1 flex items-center justify-center p-2 overflow-hidden">
+      <div className="flex-1 flex items-center justify-center p-2 overflow-hidden relative">
         {generating ? (
           <div className="text-gray-500 text-lg animate-pulse font-medium">
             {t("coliseum.generating", "Generating arena…")}
@@ -264,7 +317,7 @@ function ColiseumUI({
             validMoves={state.validMoves}
             isCheck={state.isCheck}
             movablePieceIds={movablePieceIds}
-            onPieceSelect={handlePieceSelect}
+            onPieceSelect={wrappedHandlePieceSelect}
             onMove={handleMove}
             onDeselect={handleDeselect}
             skin={skin}
@@ -277,16 +330,19 @@ function ColiseumUI({
             hintMove={null}
           />
         )}
+        {settings.showMoveAnnotations && (
+          <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[200] w-full max-w-sm px-2 pointer-events-none">
+            <div className="pointer-events-auto">
+              <GameLabels
+                items={gameLabels}
+                onDismiss={(id) =>
+                  setGameLabels((prev) => prev.filter((i) => i.id !== id))
+                }
+              />
+            </div>
+          </div>
+        )}
       </div>
-
-      {settings.showMoveAnnotations && (
-        <GameLabels
-          items={gameLabels}
-          onDismiss={(id) =>
-            setGameLabels((prev) => prev.filter((i) => i.id !== id))
-          }
-        />
-      )}
 
       {state.gameOver && gameOverVisible && (
         <GameOver
