@@ -1,6 +1,7 @@
 import React from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { useGameLayout } from "../hooks/useGameLayout";
 import GameLabels, {
   CaptureContext,
   GameLabelItem,
@@ -948,6 +949,8 @@ export default function Game() {
     ? t("modeSelect.multiplayer")
     : t("modeSelect.local");
 
+  const { layout, overlayOutside } = useGameLayout();
+
   return (
     <div className="h-screen overflow-hidden bg-gray-100 flex flex-col">
       <NavBar
@@ -976,15 +979,10 @@ export default function Game() {
         />
       )}
 
-      <div className="flex-1 flex flex-col items-center justify-center p-2 sm:p-4">
-        {/* Zero-height overlay: PromotionPicker floats above the board without shifting it */}
-        <div style={{ height: 0, overflow: "visible", width: "100%" }}>
-          <div
-            style={{
-              transform: "translateY(-100%) translateY(-12px)",
-              pointerEvents: chess.pendingPromotion ? "auto" : "none",
-            }}
-          >
+      {layout === "side" ? (
+        <div className="flex-1 flex flex-row items-center p-2 sm:p-4 min-h-0">
+          {/* Left panel — PromotionPicker */}
+          <div className="flex-1 flex flex-col items-center justify-start pt-3 min-w-0">
             {chess.pendingPromotion && (
               <PromotionPicker
                 color={chess.pendingPromotion.piece.color}
@@ -992,35 +990,117 @@ export default function Game() {
               />
             )}
           </div>
-        </div>
 
-        <ChessBoard
-          pieces={chess.gameState.pieces}
-          currentTurn={chess.gameState.currentTurn}
-          selectedPiece={chess.gameState.selectedPiece}
-          validMoves={chess.gameState.validMoves}
-          isCheck={chess.gameState.isCheck}
-          onPieceSelect={handlePieceSelect}
-          onMove={handleMove}
-          gameMode={chess.gameState.gameMode}
-          lockedColor={lockedColor}
-          flipped={boardFlipped}
-          rotateBlackPieces={rotatePieces}
-          movablePieceIds={movablePieceIds}
-          endangeredPieceIds={endangeredPieceIds}
-          hintMove={hintMove}
-          dangerousValidMoves={dangerousValidMoves}
-          skin={skin}
-          peerSkin={p2p.peerSkin ?? undefined}
-        />
+          <ChessBoard
+            pieces={chess.gameState.pieces}
+            currentTurn={chess.gameState.currentTurn}
+            selectedPiece={chess.gameState.selectedPiece}
+            validMoves={chess.gameState.validMoves}
+            isCheck={chess.gameState.isCheck}
+            onPieceSelect={handlePieceSelect}
+            onMove={handleMove}
+            gameMode={chess.gameState.gameMode}
+            lockedColor={lockedColor}
+            flipped={boardFlipped}
+            rotateBlackPieces={rotatePieces}
+            movablePieceIds={movablePieceIds}
+            endangeredPieceIds={endangeredPieceIds}
+            hintMove={hintMove}
+            dangerousValidMoves={dangerousValidMoves}
+            skin={skin}
+            peerSkin={p2p.peerSkin ?? undefined}
+          />
 
-        {/* Zero-height overlay: labels float below the board without shifting it */}
-        <div style={{ height: 0, overflow: "visible", width: "100%" }}>
-          <div style={{ paddingTop: "12px" }}>
+          {/* Right panel — GameLabels */}
+          <div className="flex-1 flex flex-col items-center justify-start pt-3 min-w-0">
             <GameLabels items={gameLabels} onDismiss={dismissLabel} />
           </div>
         </div>
-      </div>
+      ) : overlayOutside ? (
+        <div className="flex-1 flex flex-col items-center justify-center p-2 sm:p-4">
+          {/* Zero-height overlay: PromotionPicker floats above the board without shifting it */}
+          <div style={{ height: 0, overflow: "visible", width: "100%" }}>
+            <div
+              style={{
+                transform: "translateY(-100%) translateY(-12px)",
+                pointerEvents: chess.pendingPromotion ? "auto" : "none",
+              }}
+            >
+              {chess.pendingPromotion && (
+                <PromotionPicker
+                  color={chess.pendingPromotion.piece.color}
+                  onSelect={confirmPromotion}
+                />
+              )}
+            </div>
+          </div>
+
+          <ChessBoard
+            pieces={chess.gameState.pieces}
+            currentTurn={chess.gameState.currentTurn}
+            selectedPiece={chess.gameState.selectedPiece}
+            validMoves={chess.gameState.validMoves}
+            isCheck={chess.gameState.isCheck}
+            onPieceSelect={handlePieceSelect}
+            onMove={handleMove}
+            gameMode={chess.gameState.gameMode}
+            lockedColor={lockedColor}
+            flipped={boardFlipped}
+            rotateBlackPieces={rotatePieces}
+            movablePieceIds={movablePieceIds}
+            endangeredPieceIds={endangeredPieceIds}
+            hintMove={hintMove}
+            dangerousValidMoves={dangerousValidMoves}
+            skin={skin}
+            peerSkin={p2p.peerSkin ?? undefined}
+          />
+
+          {/* Zero-height overlay: labels float below the board without shifting it */}
+          <div style={{ height: 0, overflow: "visible", width: "100%" }}>
+            <div style={{ paddingTop: "12px" }}>
+              <GameLabels items={gameLabels} onDismiss={dismissLabel} />
+            </div>
+          </div>
+        </div>
+      ) : (
+        /* Gray zone: not enough top/bottom margin — overlays render inside the board */
+        <div className="flex-1 flex flex-col items-center justify-center p-2 sm:p-4">
+          <div className="relative">
+            <div className="absolute inset-x-0 top-0 z-[60] flex justify-center">
+              {chess.pendingPromotion && (
+                <PromotionPicker
+                  color={chess.pendingPromotion.piece.color}
+                  onSelect={confirmPromotion}
+                />
+              )}
+            </div>
+
+            <ChessBoard
+              pieces={chess.gameState.pieces}
+              currentTurn={chess.gameState.currentTurn}
+              selectedPiece={chess.gameState.selectedPiece}
+              validMoves={chess.gameState.validMoves}
+              isCheck={chess.gameState.isCheck}
+              onPieceSelect={handlePieceSelect}
+              onMove={handleMove}
+              gameMode={chess.gameState.gameMode}
+              lockedColor={lockedColor}
+              flipped={boardFlipped}
+              rotateBlackPieces={rotatePieces}
+              movablePieceIds={movablePieceIds}
+              endangeredPieceIds={endangeredPieceIds}
+              hintMove={hintMove}
+              dangerousValidMoves={dangerousValidMoves}
+              skin={skin}
+              peerSkin={p2p.peerSkin ?? undefined}
+            />
+
+            <div className="absolute inset-x-0 bottom-0 z-[60]">
+              <GameLabels items={gameLabels} onDismiss={dismissLabel} />
+            </div>
+          </div>
+        </div>
+      )}
 
       {chess.gameState.gameOver && gameOverVisible && (
         <GameOver
