@@ -61,7 +61,6 @@ export default function ChessBoard({
 
   const { boardSkin } = useBoardSkin();
   const boardSkinDef = getBoardSkinDef(boardSkin);
-
   const getSkinForPiece = (piece: Piece): PieceSkin => {
     if (peerSkin && lockedColor) {
       return piece.color === lockedColor ? skin : peerSkin;

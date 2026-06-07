@@ -11,6 +11,10 @@ import { useColiseumGame } from "../hooks/useColiseumGame";
 import { useColiseumP2PGame } from "../hooks/useColiseumP2PGame";
 import { useP2P } from "../hooks/useP2P";
 import { useSkin } from "../hooks/useSkin";
+import { useBoardSkinStyle } from "../hooks/useBoardSkinStyle";
+import { useBoardSkin } from "../hooks/useBoardSkin";
+import { getBoardSkinDef } from "../utils/boardSkin";
+import { CampDecoration } from "./CampDecoration";
 import {
   getColiseumLegalMoves,
   isColiseumSquareUnderAttack,
@@ -261,8 +265,15 @@ function ColiseumUI({
         { label: t("modes.coliseum.title") },
       ];
 
+  const boardSkinStyle = useBoardSkinStyle();
+  const { boardSkin } = useBoardSkin();
+  const skinDef = getBoardSkinDef(boardSkin);
+
   return (
-    <div className="h-screen overflow-hidden bg-gray-100 flex flex-col">
+    <div
+      className={`h-screen overflow-hidden flex flex-col ${boardSkinStyle.backgroundImage ? "" : "bg-gray-100"}`}
+      style={boardSkinStyle}
+    >
       <NavBar
         breadcrumbs={breadcrumbs}
         onSurrender={
@@ -303,33 +314,38 @@ function ColiseumUI({
         </div>
       )}
 
-      <div className="flex-1 flex items-center justify-center p-2 overflow-hidden relative">
-        {generating ? (
-          <div className="text-gray-500 text-lg animate-pulse font-medium">
-            {t("coliseum.generating", "Generating arena…")}
-          </div>
-        ) : (
-          <ColiseumBoard
-            arena={state.arena}
-            pieces={state.pieces}
-            currentTurn={state.currentTurn}
-            selectedPiece={state.selectedPiece}
-            validMoves={state.validMoves}
-            isCheck={state.isCheck}
-            movablePieceIds={movablePieceIds}
-            onPieceSelect={wrappedHandlePieceSelect}
-            onMove={handleMove}
-            onDeselect={handleDeselect}
-            skin={skin}
-            endangeredPieceIds={
-              settings.showDangerIndicator ? endangeredPieceIds : undefined
-            }
-            dangerousValidMoves={
-              settings.showDangerIndicator ? dangerousValidMoves : undefined
-            }
-            hintMove={null}
-          />
-        )}
+      <div className="flex-1 overflow-hidden flex flex-col">
+        <CampDecoration
+          campTop={skinDef.campTop}
+          campBottom={skinDef.campBottom}
+        >
+          {generating ? (
+            <div className="text-gray-500 text-lg animate-pulse font-medium">
+              {t("coliseum.generating", "Generating arena…")}
+            </div>
+          ) : (
+            <ColiseumBoard
+              arena={state.arena}
+              pieces={state.pieces}
+              currentTurn={state.currentTurn}
+              selectedPiece={state.selectedPiece}
+              validMoves={state.validMoves}
+              isCheck={state.isCheck}
+              movablePieceIds={movablePieceIds}
+              onPieceSelect={wrappedHandlePieceSelect}
+              onMove={handleMove}
+              onDeselect={handleDeselect}
+              skin={skin}
+              endangeredPieceIds={
+                settings.showDangerIndicator ? endangeredPieceIds : undefined
+              }
+              dangerousValidMoves={
+                settings.showDangerIndicator ? dangerousValidMoves : undefined
+              }
+              hintMove={null}
+            />
+          )}
+        </CampDecoration>
         {settings.showMoveAnnotations && (
           <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[200] w-full max-w-sm px-2 pointer-events-none">
             <div className="pointer-events-auto">

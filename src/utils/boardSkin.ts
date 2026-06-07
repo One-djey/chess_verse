@@ -8,6 +8,12 @@ export interface BoardSkinDef {
   border?: string;
   /** Inset between the border image and the playable grid — use % to scale with board size */
   borderInset?: string;
+  /** Tiled ground texture applied as background-image on the board container */
+  ground?: string;
+  /** Decorative camp image shown at the top (mobile) / right (desktop, rotated -90°) */
+  campTop?: string;
+  /** Decorative camp image shown at the bottom (mobile) / left (desktop, rotated 90°) */
+  campBottom?: string;
 }
 
 export function getSlabUrl(skin: BoardSkinDef, x: number, y: number): string {
@@ -24,6 +30,9 @@ export const BOARD_SKINS: BoardSkinDef[] = [
     darkSquare: "/ressources/board/royal-arena/dark_square.png",
     border: "/ressources/board/royal-arena/border.png",
     borderInset: "4.9cqw",
+    ground: "/ressources/board/royal-arena/ground.png",
+    campTop: "/ressources/board/royal-arena/camp-top-right.png",
+    campBottom: "/ressources/board/royal-arena/camp-bottom-left.png",
   },
 ];
 

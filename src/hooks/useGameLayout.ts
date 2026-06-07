@@ -9,6 +9,7 @@ export type GameLayout = "side" | "top-bottom";
 interface GameLayoutInfo {
   layout: GameLayout;
   sideMargin: number;
+  boardSize: number;
   /** When false, top/bottom space is too tight — overlays should render inside the board */
   overlayOutside: boolean;
 }
@@ -23,6 +24,7 @@ function compute(width: number, height: number): GameLayoutInfo {
   return {
     layout: sideMargin >= SIDE_LAYOUT_THRESHOLD ? "side" : "top-bottom",
     sideMargin,
+    boardSize,
     overlayOutside: topBottomMargin >= MIN_OVERLAY_MARGIN,
   };
 }

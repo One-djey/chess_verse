@@ -10,6 +10,7 @@ import { P2PProvider } from "./context/P2PContext";
 import { InstallProvider } from "./context/InstallContext";
 import { SkinProvider } from "./context/SkinContext";
 import { BoardSkinProvider } from "./context/BoardSkinContext";
+
 import "./i18n";
 
 const ModeSelect = React.lazy(() => import("./components/ModeSelect"));
