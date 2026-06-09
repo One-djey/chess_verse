@@ -15,7 +15,10 @@
 | BUG-005 | 🟢 Très faible | moves | `acquiredTypes` actifs hors mode assimilation | ⬜ À trancher |
 | BUG-006 | 🟡 Faible | SkinContext | Skin non validé à la lecture du storage | ⬜ À trancher |
 | BUG-007 | 🟡 Faible | statsService | Échec silencieux sur quota `localStorage` | ⬜ À trancher |
+| BUG-008 | 🟠 Moyenne | ChessAI | FEN : droits de roque toujours `KQkq`, jamais d'en passant | ⬜ À trancher |
+| BUG-009 | 🟢 Très faible | coliseumMoves | Attaque diagonale de pion sur case vide non détectée | ⬜ À trancher |
 | INFO-001 | ℹ️ Mitigé | ChessAI | Restauration du skill après un hint | ⬜ Aucune action requise |
+| INFO-002 | ℹ️ Théorique | ChessAI | `stopPending` peut avaler le `bestmove` suivant | ⬜ Aucune action requise |
 | DOC-001 | 🟠 Moyenne | README | « En passant » annoncé mais non implémenté | ⬜ À trancher |
 | LIM-001 | ℹ️ Design | moves | Pas d'en passant, ni nulle par répétition / 50 coups | — |
 | LIM-002 | ℹ️ Design | P2P | Le guest fait confiance au host sans re-validation | — |
@@ -102,6 +105,31 @@
   - B. Remonter l'erreur à l'UI (toast) — disproportionné pour ce produit.
 - **Recommandation** : **A**. Effort : faible. Risque : nul.
 - **Tests à adapter** : `src/services/statsService.test.ts` — le test quota vérifie déjà l'absence de crash ; ajouter l'assertion sur `console.warn` et la purge.
+
+## BUG-008 — FEN : droits de roque toujours `KQkq`
+
+- **Sévérité** : 🟠 Moyenne (Stockfish peut suggérer un **roque illégal** — roi/tour déjà déplacés — que le moteur local rejettera ensuite, déclenchant retries puis fallback : coup IA de moindre qualité, jamais de coup illégal appliqué).
+- **Cause racine** : la FEN envoyée à Stockfish se termine toujours par `KQkq - 0 1` quel que soit l'état (`hasMoved` des rois/tours ignoré, en passant jamais renseigné — cohérent avec LIM-001).
+- **Localisation** : `src/services/ChessAI.ts:265`.
+- **Solutions envisageables** :
+  - **A. Calculer les droits réels** : déduire `K/Q/k/q` de `hasMoved` du roi et des tours sur leurs cases d'origine ; `-` si aucun. ~15 lignes pures, testables.
+  - B. Statu quo : la chaîne retry+fallback absorbe déjà l'erreur (c'est son rôle), coût = qualité de jeu légèrement dégradée dans ces positions.
+- **Recommandation** : **A** — amélioration nette de la qualité IA pour un coût faible ; écrire d'abord les tests de la fonction de droits de roque. Décision humaine sur la priorité.
+- **Tests** : `src/services/ChessAI.test.ts` verrouille la FEN actuelle (spot-checks) — adapter au moment du fix.
+
+## BUG-009 — Coliseum : attaque diagonale de pion sur case vide non détectée
+
+- **Sévérité** : 🟢 Très faible (la détection d'échec reste correcte : `getColiseumLegalMoves` simule le coup, donc le roi occupe la case au moment du test ; seuls les usages « case vide » de `isColiseumSquareUnderAttack` sous-évaluent la couverture des pions).
+- **Cause racine** : les captures de pion coliseum exigent une cible présente (`mustCapture`) — l'inverse du mode standard, où `isSquareUnderAttack` gère explicitement la diagonale de pion sur case vide.
+- **Localisation** : `src/utils/chess/coliseumMoves.ts` (logique pion / `isColiseumSquareUnderAttack`).
+- **Solutions envisageables** : A. aligner sur le mode standard (compter les diagonales de pion même vides) ; **B. statu quo documenté** (aucun symptôme connu).
+- **Recommandation** : **B**, sauf si un futur usage de `isColiseumSquareUnderAttack` sur cases vides apparaît. Comportement verrouillé par deux tests `// NOTE:`.
+
+## INFO-002 — `stopPending` peut avaler le `bestmove` suivant (théorique)
+
+- **Constat** : si l'engin n'émet **jamais** le `bestmove` final d'une recherche annulée (contraire au protocole UCI), `stopPending` reste vrai et consommerait le premier `bestmove` de la recherche suivante.
+- **Localisation** : `src/services/ChessAI.ts` (gestion `stopPending` dans `onmessage`).
+- **Recommandation** : aucune action (Stockfish répond toujours à `stop` par un `bestmove`) ; si refacto, réinitialiser `stopPending` au lancement d'une nouvelle recherche.
 
 ## INFO-001 — Restauration du skill après un hint (mitigé)
 
