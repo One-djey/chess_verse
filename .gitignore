@@ -26,3 +26,4 @@ dist-ssr
 
 # Claude GSD task files
 .claude/gsd/
+coverage

@@ -156,7 +156,7 @@ Invariant central : **ne retourne `null` que si mat ou pat avéré** (le scan de
 - E : pat de noir → `null` ; mat de noir → `null`.
 
 **Modes spéciaux**
-- X : en borderless, coordonnées retournées normalisées (0–7) et légales sous les règles de wrap ; exhaustivité — la bonne capture portée par la « dernière » pièce scannée est trouvée.
+- X : en borderless, la destination retournée est la coordonnée **virtuelle brute** (ex. `x:-1`), non normalisée — comportement actuel verrouillé par test (les consommateurs comme `applyMoveToState` normalisent) ; exhaustivité — la bonne capture portée par la « dernière » pièce scannée est trouvée.
 
 ### 4.4 `board.ts` ✅
 
@@ -279,6 +279,10 @@ Constats faits pendant l'analyse — **non corrigés** par cette initiative, à 
 5. **Host autoritaire non authentifié en P2P** : le guest applique tout `move_confirm` sans re-validation (acceptable pour du jeu entre amis, à documenter).
 6. **`recordGame` et frontière de minuit** : le day streak est calculé à l'enregistrement, une partie finie après minuit compte pour le nouveau jour.
 7. **Game.tsx (~1 180 lignes)** : logique pure enfouie (`detectScholarsMate`, `resolveGameMode`, accumulation de stats de session) → extraction recommandée vers `src/utils/` pour testabilité.
+8. **Mutation des défauts partagés dans `statsService`** *(découvert par les tests)* : `getStats()` fait une copie superficielle de `DEFAULT_STATS` et `recordGame` mute `modeGameCount`/`dailyActivity` en place — après `resetStats()`, ces compteurs de la session précédente réapparaissent.
+9. **Compteur d'abandons** *(découvert par les tests)* : `surrenders` est incrémenté même quand c'est l'adversaire qui abandonne (le badge associé progresse à tort).
+10. **Fallback borderless non normalisé** *(découvert par les tests)* : `getSmartFallbackMove` retourne la destination virtuelle brute (ex. `x:-1`) ; `applyMoveToState` normalise, mais tout autre consommateur devrait le faire aussi. De plus, `isSquareUnderAttack` ne sonde que la case littérale en borderless (contrairement à `isInCheck` et ses 9 positions virtuelles).
+11. **Capacités acquises non conditionnées au mode** *(découvert par les tests)* : `isValidMove` applique `acquiredTypes` même hors mode assimilation (seule la fusion à la capture est conditionnée) — sans effet en pratique, mais verrouillé par test.
 
 ## 7. Roadmap d'industrialisation
 

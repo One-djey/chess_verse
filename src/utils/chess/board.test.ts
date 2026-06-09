@@ -2,6 +2,7 @@ import { describe, it, expect, vi } from "vitest";
 import {
   BOARD_SIZE,
   UNICODE_PIECES,
+  getDifficultyDescription,
   getDifficultyIndex,
   getDifficultyKey,
   getInitialPieces,
@@ -70,6 +71,15 @@ describe("difficulty helpers", () => {
     expect(getDifficultyKey(1)).toBe("gameSettings.difficultyLevels.0");
     expect(getDifficultyKey(3)).toBe("gameSettings.difficultyLevels.1");
     expect(getDifficultyKey(20)).toBe("gameSettings.difficultyLevels.9");
+  });
+
+  it("returns deprecated fallback labels, optionally with the Elo estimate", () => {
+    expect(getDifficultyDescription(1)).toBe("Beginner");
+    expect(getDifficultyDescription(20)).toBe("Superhuman");
+    expect(getDifficultyDescription(1, true)).toBe("Beginner (Elo ~1100)");
+    expect(getDifficultyDescription(10, true)).toBe(
+      "Candidate Master (Elo ~2000)",
+    );
   });
 });
 
