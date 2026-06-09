@@ -56,6 +56,19 @@ To run the game locally:
    npm run dev
    ```
 
+## Testing
+
+The project is covered by automated tests (Vitest + Testing Library), run in CI on every push/PR:
+
+```sh
+npm run test           # run the full suite once
+npm run test:watch     # watch mode
+npm run test:coverage  # with coverage thresholds on core modules
+```
+
+- Full QA strategy and test-case catalog: [`docs/TEST_STRATEGY.md`](docs/TEST_STRATEGY.md)
+- Known bugs & technical debt registry (causes, locations, recommended fixes): [`docs/KNOWN_ISSUES.md`](docs/KNOWN_ISSUES.md)
+
 ## Technologies Used
 
 - **React 18** — UI framework
