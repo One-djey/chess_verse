@@ -22,6 +22,7 @@
 | INFO-001 | ℹ️ Mitigé | ChessAI | Restauration du skill après un hint | ⬜ Aucune action requise |
 | INFO-002 | ℹ️ Théorique | ChessAI | `stopPending` peut avaler le `bestmove` suivant | ⬜ Aucune action requise |
 | DOC-001 | 🟠 Moyenne | README | « En passant » annoncé mais non implémenté | ⬜ À trancher |
+| BUG-012 | 🟡 Faible | legendaryPatterns | Classification des mats imprécise ; setup Berger peut suggérer un coup perdant | ⬜ À trancher |
 | UX-001 | 🟢 Très faible | GameOver | Micro-écarts UI : libellé « Close » non traduit, titre P2P, rematch masqué | ⬜ À trancher |
 | LIM-001 | ℹ️ Design | moves | Pas d'en passant, ni nulle par répétition / 50 coups | — |
 | LIM-002 | ℹ️ Design | P2P | Le guest fait confiance au host sans re-validation | — |
@@ -172,6 +173,19 @@
   - **A. Corriger le README** (retirer « en passant »). Trivial.
   - B. Implémenter l'en passant (nécessite de tracker le dernier double-pas dans `GameState`, gérer le borderless/assimilation, MAJ FEN pour Stockfish — qui suggérera des prises en passant ensuite). Effort : moyen+.
 - **Recommandation** : **A** à court terme ; B est un choix produit (noter que Stockfish raisonne déjà en règles standard, donc B améliorerait aussi la cohérence IA). Décision humaine requise.
+
+## BUG-012 — `legendaryPatterns` : classifications imprécises (groupé)
+
+Relevés par les tests (verrouillés par `// NOTE:` dans `src/utils/chess/legendaryPatterns.test.ts`) :
+
+1. **`classifyMate` ne considère que les pièces qui attaquent le roi** : les mats Arabe (tour+cavalier) et de l'Opéra (tour+fou) ne peuvent donc être reconnus que sur des **doubles échecs** ; leurs positions canoniques (pièce mineure couvrant les fuites sans donner échec) sont classées `backrankmate`.
+2. **Condition du mat de Lolli trop lâche** : « dame mateuse + n'importe quel pion allié sur la colonne g » — un pion inactif en g2 transforme un simple mat du couloir en `lollismate`, alors que le vrai pion de Lolli (f6) ne matche jamais.
+3. **Le setup du mat du Berger peut suggérer un coup perdant** : la suggestion prend le premier coup de dame (ordre de génération) qui « voit » f7 — dans la position standard c'est **Qd7??** (dame en prise à côté du roi adverse). Impact direct si la fonctionnalité d'indice/annotation expose cette suggestion au joueur.
+4. Mineur : commentaire obsolète dans `tactics.ts:63` (mentionne un paramètre `skipCheckValidation` inexistant).
+
+- **Localisation** : `src/utils/chess/legendaryPatterns.ts` (`classifyMate`, condition Lolli, phase « setups 2 coups »).
+- **Solutions envisageables** : **A.** corriger par item — classifyMate : inclure les pièces qui *confinent* le roi, pas seulement les attaquantes ; Lolli : exiger le pion en f6/f3 adjacent à la dame ; setup Berger : filtrer les suggestions où la dame est en prise (`isSquareUnderAttack`). B. Statu quo : feature cosmétique, mal classer un mat reste anecdotique — **sauf l'item 3** si la suggestion est montrée au joueur.
+- **Recommandation** : traiter l'**item 3** en priorité (vérifier d'abord dans `Game.tsx` si la suggestion est affichée), items 1-2 en confort. Décision humaine.
 
 ## UX-001 — Micro-écarts UI dans `GameOver` (groupés)
 
