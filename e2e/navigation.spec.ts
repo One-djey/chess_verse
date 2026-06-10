@@ -41,15 +41,17 @@ test.describe("Navigation — game mode selection", () => {
   test("profile page shows empty state when no games played", async ({
     page,
   }) => {
-    // Clear stats to ensure empty state
+    // Force English and clear stats to ensure a deterministic empty state
     await page.goto("/");
-    await page.evaluate(() => localStorage.removeItem("chessverse_stats"));
-    await page.goto("/profile");
-    await expect(page.getByText(/no game/i).or(page.getByText(/aucune/i)).or(
-      page.locator("p").filter({ hasText: "noGames" }),
-    )).toBeVisible({ timeout: 5000 }).catch(() => {
-      // If i18n hasn't loaded, just check we're on the profile page
+    await page.evaluate(() => {
+      localStorage.removeItem("chessverse_stats");
+      localStorage.setItem("chessverse_language", "en");
     });
+    await page.goto("/profile");
     await expect(page).toHaveURL("/profile");
+    // en.json profile.noGames: "No games recorded yet. Play a game to see your stats!"
+    await expect(page.getByText(/No games recorded yet/i)).toBeVisible({
+      timeout: 5000,
+    });
   });
 });

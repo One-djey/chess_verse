@@ -5,6 +5,8 @@ async function startSoloGame(page: Page, mode = "classic") {
   // Must navigate to the app origin before accessing localStorage
   await page.goto("/");
   await page.evaluate(() => {
+    // Force English so text assertions are deterministic across CI locales
+    localStorage.setItem("chessverse_language", "en");
     localStorage.setItem(
       "chess_settings",
       JSON.stringify({
@@ -37,9 +39,11 @@ async function clickSquare(page: Page, dx: number, dy: number) {
 test.describe("Game board — rendering", () => {
   test("classic game board renders with 32 pieces", async ({ page }) => {
     await startSoloGame(page);
-    // At least some piece images should be present
-    const allImgs = page.locator("img");
-    await expect(allImgs.first()).toBeVisible({ timeout: 5000 });
+    // Each piece renders an <img alt="<color> <type>"> — exactly 16 per side
+    const whitePieces = page.locator('img[alt^="white "]');
+    const blackPieces = page.locator('img[alt^="black "]');
+    await expect(whitePieces).toHaveCount(16);
+    await expect(blackPieces).toHaveCount(16);
   });
 
   test("the surrender button is visible in an active game", async ({
@@ -110,15 +114,13 @@ test.describe("Game board — Scholar's mate (solo, no AI)", () => {
     await clickSquare(page, 7, 3); // select queen h5
     await clickSquare(page, 5, 1); // move to f7
 
-    // The game-over modal should appear
+    // The GameOver modal must announce the white win (solo game, English forced)
     await expect(
-      page.getByRole("dialog").or(
-        page.locator('[class*="modal"], [class*="GameOver"]'),
-      ),
-    ).toBeVisible({ timeout: 5000 }).catch(async () => {
-      // Fallback: look for checkmate text or win indicator
-      await expect(page.getByText(/checkmate|mat|victory|gagn/i)).toBeVisible({ timeout: 2000 });
-    });
+      page.getByText(/White wins!|Victory!/),
+    ).toBeVisible({ timeout: 5000 });
+    // And offer both end-of-game actions
+    await expect(page.getByRole("button", { name: "Play Again" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Main Menu" })).toBeVisible();
   });
 });
 
@@ -144,16 +146,19 @@ test.describe("Game board — stats tracking", () => {
     await clickSquare(page, 7, 3);
     await clickSquare(page, 5, 1);
 
-    // Wait a bit for the game-over effect to fire and write stats
-    await page.waitForTimeout(500);
+    // The gameOver effect MUST write the stats — poll until the key appears
+    await expect
+      .poll(
+        () => page.evaluate(() => localStorage.getItem("chessverse_stats")),
+        { timeout: 5000 },
+      )
+      .not.toBeNull();
 
     const raw = await page.evaluate(() =>
       localStorage.getItem("chessverse_stats"),
     );
-    // Stats should be written (may be null if the game-over hasn't fired yet)
-    if (raw) {
-      const stats = JSON.parse(raw);
-      expect(stats.totalGames).toBeGreaterThanOrEqual(1);
-    }
+    const stats = JSON.parse(raw!);
+    expect(stats.totalGames).toBeGreaterThanOrEqual(1);
+    expect(stats.wins).toBeGreaterThanOrEqual(1); // white checkmated black
   });
 });

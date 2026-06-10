@@ -292,6 +292,19 @@ Constats faits pendant l'analyse — **non corrigés** par cette initiative, à 
 4. **Fait (P3)** : Playwright chromium, 17 scénarios (navigation, settings persistence, Scholar's mate complet, modes spéciaux), CI e2e séparée — `npm run test:e2e` ; rapport HTML dans `playwright-report/`.
 5. **Hygiène continue** : ajouter les tests aux hooks de revue (CI bloquante), refuser tout merge qui fait baisser la couverture des fichiers P0. Envisager webkit + visual regression (Playwright screenshots) pour les skins.
 
+### 7.1 Backlog d'améliorations (P4 — non bloquant)
+
+> Manques connus, assumés tant que le produit évolue vite. À piocher quand un sujet devient critique (ex. avant une refonte du P2P, implémenter d'abord le scénario E2E P2P). **Aucun de ces points ne bloque un merge.**
+
+| # | Amélioration | Pourquoi | Déclencheur suggéré |
+| --- | --- | --- | --- |
+| F-1 | **E2E P2P à 2 contextes navigateur** (scénario 3 du §4.16) : host crée la room, guest rejoint par URL, un coup de chaque côté, abandon, rematch | Le protocole host/guest n'est couvert qu'en unitaire mocké ; la signalisation WebRTC réelle n'est jamais exercée | Avant toute refonte du protocole P2P, ou premier bug P2P signalé en prod |
+| F-2 | **E2E « l'IA répond »** (scénario 2 du §4.16) : niveau 1, jouer un coup, attendre la réponse < 10 s, vérifier sa légalité | Tous les E2E actuels désactivent l'IA ; le chargement du Worker Stockfish en build de prod n'est testé par rien | Avant toute mise à jour de Stockfish ou du chargement Worker |
+| F-3 | **E2E gameplay des modes spéciaux** (scénario 6 du §4.16) : un coup wrappé en borderless, une capture avec glow vert en assimilation | On vérifie seulement que ces modes *se chargent* | Première régression signalée sur un mode spécial |
+| F-4 | **Extraction de la logique pure de `Game.tsx`** (= REC-001 de KNOWN_ISSUES.md) : `detectScholarsMate`, `resolveGameMode`, stats de session | ~1 180 lignes non testables unitairement | Avant tout gros chantier dans `Game.tsx` |
+| F-5 | **Mutation testing (Stryker)** sur les modules P0 | Mesure objective de la force des suites : un mutant survivant = une assertion manquante | Quand le rythme de dev ralentit, en tâche de fond |
+| F-6 | **Projet Playwright webkit + visual regression** (screenshots échiquier/skins) | Couverture navigateur et régressions visuelles des skins | Premier bug spécifique Safari, ou refonte CSS de l'échiquier |
+
 ## 8. Maintien à jour des tests — politique de développement
 
 > Résumé opposable dans `CLAUDE.md` (section *Test policy*) — lu par tout agent à chaque session. Cette section est la version détaillée.
