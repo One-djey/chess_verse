@@ -262,8 +262,8 @@ Mocker `makeRoomActions` : capturer les handlers enregistrés, les invoquer manu
 | Priorité | Périmètre | Critère de sortie | Statut |
 | --- | --- | --- | --- |
 | **P0** | `moves`, `assimilation`, `aiFallback`, `board`, `pieceImage`, `statsService` | Suites vertes en CI, seuils de couverture par fichier (85–100 %, cf. `vitest.config.ts`) | ✅ **Implémenté** |
-| **P1** | `tactics`, `coliseumMoves`, `legendaryPatterns`, `ChessAI` (mock Worker), `useChessGame`, `useP2PGame` | Cas du §4.7–4.12 implémentés, mocks réutilisables (`src/test/`) | 📋 À faire |
-| **P2** | `P2PContext`, contexts, parité i18n, composants RTL du §4.15 | Cas implémentés, environnement jsdom par docblock | 📋 À faire |
+| **P1** | `tactics`, `coliseumMoves`, `legendaryPatterns`, `ChessAI` (mock Worker), `useChessGame`, `useP2PGame` | Cas du §4.7–4.12 implémentés, mocks réutilisables (`src/test/`) | ✅ **Implémenté** |
+| **P2** | `P2PContext`, contexts, parité i18n, composants RTL du §4.15 | Cas implémentés, environnement jsdom par docblock | ✅ **Implémenté** (GameSettings/ProfilePage/ModeSelect/BadgesGrid restants) |
 | **P3** | E2E Playwright (§4.16), CI e2e séparée | 6 parcours verts en CI nightly ou pre-release | 📋 À faire |
 
 **Règle d'or** : tout fix de bug commence par un test qui reproduit le bug (red → green) ; toute nouvelle règle de jeu arrive avec ses cas nominaux + erreurs + edge cases.
