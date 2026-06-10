@@ -17,6 +17,8 @@
 | BUG-007 | 🟡 Faible | statsService | Échec silencieux sur quota `localStorage` | ⬜ À trancher |
 | BUG-008 | 🟠 Moyenne | ChessAI | FEN : droits de roque toujours `KQkq`, jamais d'en passant | ⬜ À trancher |
 | BUG-009 | 🟢 Très faible | coliseumMoves | Attaque diagonale de pion sur case vide non détectée | ⬜ À trancher |
+| BUG-010 | 🟠 Moyenne | useP2PGame | Guest : `seqRef` avancé même si la pièce du `move_confirm` est introuvable | ⬜ À trancher |
+| BUG-011 | 🟡 Faible | useP2PGame | Host : `from` du `move_proposal` jamais validé | ⬜ À trancher |
 | INFO-001 | ℹ️ Mitigé | ChessAI | Restauration du skill après un hint | ⬜ Aucune action requise |
 | INFO-002 | ℹ️ Théorique | ChessAI | `stopPending` peut avaler le `bestmove` suivant | ⬜ Aucune action requise |
 | DOC-001 | 🟠 Moyenne | README | « En passant » annoncé mais non implémenté | ⬜ À trancher |
@@ -124,6 +126,30 @@
 - **Localisation** : `src/utils/chess/coliseumMoves.ts` (logique pion / `isColiseumSquareUnderAttack`).
 - **Solutions envisageables** : A. aligner sur le mode standard (compter les diagonales de pion même vides) ; **B. statu quo documenté** (aucun symptôme connu).
 - **Recommandation** : **B**, sauf si un futur usage de `isColiseumSquareUnderAttack` sur cases vides apparaît. Comportement verrouillé par deux tests `// NOTE:`.
+
+## BUG-010 — Guest : `seqRef` avancé sur pièce introuvable
+
+- **Sévérité** : 🟠 Moyenne (si un `move_confirm` référence un `pieceId` absent du plateau local — message perdu/réordonné en amont, état divergent — le guest **ignore le coup mais synchronise quand même `seqRef`** : la partie continue avec deux plateaux différents, sans erreur visible).
+- **Cause racine** : `onMoveConfirm` met à jour `seqRef` avant/indépendamment de la résolution du `pieceId` ; l'échec de résolution est silencieux.
+- **Localisation** : `src/hooks/useP2PGame.ts:99-105`.
+- **Solutions envisageables** :
+  - **A. Demander une resynchronisation** : sur pieceId introuvable, envoyer un message (ex. réutiliser/étendre `sync_state`) pour que le host renvoie le plateau complet. Robuste, nécessite un petit ajout au protocole côté host.
+  - B. À minima : `console.error` + ne pas avancer `seqRef` (rend la divergence détectable au prochain message via le gap).
+- **Recommandation** : **B** à court terme (trivial), A si l'on veut une vraie résilience réseau. Décision humaine.
+- **Tests à inverser** : `src/hooks/useP2PGame.test.tsx` — test `// NOTE:` correspondant.
+
+## BUG-011 — Host : `from` du `move_proposal` jamais validé
+
+- **Sévérité** : 🟡 Faible (le host valide la pièce par `pieceId` et la destination par `getValidMoves` — un `from` mensonger est ignoré, le coup appliqué reste légal ; incohérence de protocole plus que faille).
+- **Localisation** : `src/hooks/useP2PGame.ts` (handler `onMoveProposal`).
+- **Solutions envisageables** : **A.** rejeter si `msg.from` ≠ position actuelle de la pièce (1 comparaison) ; B. retirer `from` du message (changement de protocole).
+- **Recommandation** : **A**. Effort : trivial. Risque : nul.
+
+## INFO-003 — `onResign` avec `playerColor` null
+
+- **Constat** : si un `resign` arrive alors que `playerColor` n'est pas encore assigné (fenêtre de handshake), le résultat dérive `winner` **et** `surrenderedBy` de la même valeur nulle → `winner: "white"`, `surrenderedBy: "white"` (incohérent). Fenêtre quasi inatteignable en pratique (la partie n'a pas commencé).
+- **Localisation** : `src/hooks/useP2PGame.ts:119-127`.
+- **Recommandation** : ignorer le `resign` si `playerColor === null`. À traiter avec BUG-010/011 si refonte du handler.
 
 ## INFO-002 — `stopPending` peut avaler le `bestmove` suivant (théorique)
 
