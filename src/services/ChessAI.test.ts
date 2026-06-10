@@ -140,7 +140,7 @@ describe("getNextMove happy path", () => {
     void ai.getNextMove(kingsAndPawns()).catch(() => {});
     const positionMsg = worker.posted.find((m) => m.startsWith("position fen"));
     expect(positionMsg).toBe(
-      "position fen 4k3/4p3/8/8/8/8/4P3/4K3 b KQkq - 0 1",
+      "position fen 4k3/4p3/8/8/8/8/4P3/4K3 b - - 0 1",
     );
   });
 
@@ -366,7 +366,7 @@ describe("getHintMove", () => {
     void ai.getHintMove(kingsAndPawns(), "white").catch(() => {});
     expect(worker.posted).toContain("setoption name Skill Level value 20");
     expect(worker.posted).toContain(
-      "position fen 4k3/4p3/8/8/8/8/4P3/4K3 w KQkq - 0 1",
+      "position fen 4k3/4p3/8/8/8/8/4P3/4K3 w - - 0 1",
     );
     expect(worker.posted).toContain("go movetime 1500");
   });
@@ -375,7 +375,7 @@ describe("getHintMove", () => {
     const { ai, worker } = readyAI();
     void ai.getHintMove(kingsAndPawns(), "black").catch(() => {});
     const positionMsg = worker.posted.find((m) => m.startsWith("position fen"));
-    expect(positionMsg).toContain(" b KQkq - 0 1");
+    expect(positionMsg).toContain(" b - - 0 1");
   });
 
   it("resolves with the move and restores the configured skill level", async () => {

@@ -262,8 +262,40 @@ export class ChessAI {
       if (y < 7) fen += "/";
     }
 
-    fen += color === "white" ? " w KQkq - 0 1" : " b KQkq - 0 1";
+    const castling = this.computeCastlingRights(pieces);
+    fen += color === "white" ? ` w ${castling} - 0 1` : ` b ${castling} - 0 1`;
     return fen;
+  }
+
+  private computeCastlingRights(pieces: Piece[]): string {
+    const whiteKing = pieces.find((p) => p.color === "white" && p.type === "king");
+    const blackKing = pieces.find((p) => p.color === "black" && p.type === "king");
+
+    let rights = "";
+
+    if (whiteKing && !whiteKing.hasMoved) {
+      const kRook = pieces.find(
+        (p) => p.color === "white" && p.type === "rook" && p.position.x === 7 && p.position.y === 7 && !p.hasMoved,
+      );
+      if (kRook) rights += "K";
+      const qRook = pieces.find(
+        (p) => p.color === "white" && p.type === "rook" && p.position.x === 0 && p.position.y === 7 && !p.hasMoved,
+      );
+      if (qRook) rights += "Q";
+    }
+
+    if (blackKing && !blackKing.hasMoved) {
+      const kRook = pieces.find(
+        (p) => p.color === "black" && p.type === "rook" && p.position.x === 7 && p.position.y === 0 && !p.hasMoved,
+      );
+      if (kRook) rights += "k";
+      const qRook = pieces.find(
+        (p) => p.color === "black" && p.type === "rook" && p.position.x === 0 && p.position.y === 0 && !p.hasMoved,
+      );
+      if (qRook) rights += "q";
+    }
+
+    return rights || "-";
   }
 
   private pieceToFENChar(piece: Piece): string {

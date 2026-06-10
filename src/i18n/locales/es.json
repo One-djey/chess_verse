@@ -513,5 +513,8 @@
       "La IA explora todas las posibilidades...",
       "La IA evalúa las mejores opciones..."
     ]
+  },
+  "common": {
+    "close": "Cerrar"
   }
 }

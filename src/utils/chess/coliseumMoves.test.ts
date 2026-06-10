@@ -301,17 +301,11 @@ describe("isColiseumSquareUnderAttack", () => {
     ).toBe(false);
   });
 
-  // NOTE: pawn capture moves require an actual enemy piece on the target
-  // square (mustCapture in getColiseumValidMoves), so an EMPTY diagonal
-  // square is reported as NOT under attack by a pawn. Check detection still
-  // works because getColiseumLegalMoves simulates the move first (the king
-  // occupies the square during the simulation), but raw under-attack queries
-  // on empty squares underestimate pawn coverage.
-  it("reports an empty diagonal square as not attacked by a pawn (source quirk)", () => {
+  it("reports an empty diagonal square as attacked by a pawn (BUG-009 fixed)", () => {
     const pawn = makePiece("white", "pawn", 4, 4);
     expect(
       isColiseumSquareUnderAttack(pos(5, 5), "white", [pawn], openArena()),
-    ).toBe(false);
+    ).toBe(true);
   });
 
   it("reports a diagonal square occupied by an enemy as attacked by a pawn", () => {

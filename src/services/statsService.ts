@@ -430,12 +430,11 @@ export const BADGES: Badge[] = [
 export function getStats(): ChessverseStats {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return { ...DEFAULT_STATS };
+    if (!raw) return structuredClone(DEFAULT_STATS);
     const parsed = JSON.parse(raw) as Partial<ChessverseStats>;
-    // Merge with defaults to handle schema additions over time
-    return { ...DEFAULT_STATS, ...parsed };
+    return { ...structuredClone(DEFAULT_STATS), ...parsed };
   } catch {
-    return { ...DEFAULT_STATS };
+    return structuredClone(DEFAULT_STATS);
   }
 }
 
@@ -443,7 +442,7 @@ export function saveStats(stats: ChessverseStats): void {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(stats));
   } catch {
-    // localStorage quota exceeded or unavailable — fail silently
+    console.warn("[statsService] localStorage quota exceeded — stats not saved.");
   }
 }
 
@@ -494,7 +493,7 @@ export function recordGame(game: GameRecord): void {
   else if (isDraw) stats.draws += 1;
   else stats.losses += 1;
 
-  if (game.surrenderedBy) stats.surrenders += 1;
+  if (game.surrenderedBy && isLoss) stats.surrenders += 1;
 
   // ── ELO ──
   if (isWin && game.playType === "ai" && game.aiDifficulty) {
@@ -567,6 +566,14 @@ export function recordGame(game: GameRecord): void {
     }
     stats.maxDayStreak = Math.max(stats.maxDayStreak, stats.currentDayStreak);
     stats.lastPlayedDate = today;
+  }
+
+  // Purge dailyActivity entries older than 365 days to bound localStorage growth.
+  const cutoff = new Date();
+  cutoff.setDate(cutoff.getDate() - 365);
+  const cutoffKey = `${cutoff.getFullYear()}-${String(cutoff.getMonth() + 1).padStart(2, "0")}-${String(cutoff.getDate()).padStart(2, "0")}`;
+  for (const key of Object.keys(stats.dailyActivity)) {
+    if (key < cutoffKey) delete stats.dailyActivity[key];
   }
 
   saveStats(stats);

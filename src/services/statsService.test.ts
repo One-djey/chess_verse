@@ -163,21 +163,15 @@ describe("getStats defaults & robustness", () => {
     expect(stats.modesPlayed).toEqual([]);
   });
 
-  // NOTE: getStats() returns a SHALLOW copy of the module-level DEFAULT_STATS,
-  // and recordGame mutates stats.modeGameCount / stats.dailyActivity in place.
-  // When storage is empty, those nested objects ARE the defaults' objects, so
-  // the defaults get permanently polluted for the module's lifetime: after
-  // resetStats(), getStats() still shows the previous game's mode/activity.
-  // This is a genuine bug in the source; this test locks the CURRENT behavior.
-  it("NOTE: recordGame on empty storage pollutes module defaults (current buggy behavior)", () => {
+  it("resetStats() + getStats() returns pristine defaults — no pollution from previous game", () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date(2026, 5, 9, 12, 0, 0));
     svc.recordGame(makeGame({ mode: "classic" }));
     svc.resetStats();
     const stats = svc.getStats();
-    expect(stats.modeGameCount["classic"]).toBe(1); // leaked into defaults
-    expect(stats.dailyActivity[dateKey(new Date())]).toBe(1); // leaked too
-    expect(stats.totalGames).toBe(0); // scalar fields are NOT affected
+    expect(stats.modeGameCount["classic"]).toBeUndefined(); // no leak
+    expect(stats.dailyActivity[dateKey(new Date())]).toBeUndefined(); // no leak
+    expect(stats.totalGames).toBe(0);
   });
 });
 
@@ -283,15 +277,12 @@ describe("surrender counting", () => {
     expect(stats.losses).toBe(1);
   });
 
-  // NOTE: the surrenders counter increments whenever surrenderedBy is set,
-  // even when it is the OPPONENT who surrendered (player wins). The "coward"
-  // badge can therefore progress on opponent surrenders. Locking current behavior.
-  it("NOTE: also increments surrenders when the opponent surrenders (current behavior)", () => {
+  it("does NOT increment surrenders when the opponent surrenders (player wins)", () => {
     svc.recordGame(
       makeGame({ winner: "white", playerColor: "white", surrenderedBy: "black" }),
     );
     const stats = svc.getStats();
-    expect(stats.surrenders).toBe(1);
+    expect(stats.surrenders).toBe(0);
     expect(stats.wins).toBe(1);
   });
 });
@@ -835,7 +826,7 @@ describe("saveStats / resetStats", () => {
     expect(svc.getStats().wins).toBe(0);
   });
 
-  it("saveStats does not crash when localStorage.setItem throws (quota exceeded)", () => {
+  it("saveStats does not crash and emits console.warn when localStorage.setItem throws (quota exceeded)", () => {
     const original = storage.setItem.bind(storage);
     let thrown = false;
     storage.setItem = (key: string, value: string) => {
@@ -845,8 +836,11 @@ describe("saveStats / resetStats", () => {
       }
       original(key, value);
     };
+    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
     expect(() => svc.saveStats(baseStats({ wins: 1 }))).not.toThrow();
     expect(thrown).toBe(true);
+    expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining("quota"));
+    warnSpy.mockRestore();
     // nothing persisted by the failed call
     expect(storage.getItem(STORAGE_KEY)).toBeNull();
     // subsequent saves work again

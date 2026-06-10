@@ -365,6 +365,17 @@ describe("useP2PGame — host move proposals", () => {
     expect(raw.sendMoveConfirm).not.toHaveBeenCalled();
   });
 
+  it("rejects a proposal when msg.from does not match the piece's current position (BUG-011 fixed)", () => {
+    const { handlers, raw, result } = hostRookSetup();
+    const before = result.current.gameState;
+    act(() =>
+      handlers["move_proposal"]!({ ...ROOK_PROPOSAL, from: pos(0, 7) }), // wrong from
+    );
+    expect(raw.sendMoveReject).toHaveBeenCalledTimes(1);
+    expect(raw.sendMoveConfirm).not.toHaveBeenCalled();
+    expect(result.current.gameState).toBe(before);
+  });
+
   it("increments seq on each confirmed move (1, then 2)", () => {
     const { handlers, raw, result } = hostRookSetup();
     act(() => handlers["move_proposal"]!(ROOK_PROPOSAL));
@@ -494,10 +505,8 @@ describe("useP2PGame — guest move confirm & reject", () => {
     expect(result.current.seqRef.current).toBe(2);
   });
 
-  it("ignores a confirm for an unknown pieceId but still syncs seq", () => {
-    // NOTE: source quirk — the guest advances seqRef even when the confirmed
-    // pieceId is not found locally, so the board silently desyncs.
-    vi.spyOn(console, "warn").mockImplementation(() => {});
+  it("ignores a confirm for an unknown pieceId and does NOT advance seqRef (BUG-010 fixed)", () => {
+    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
     const { handlers, result } = guestRookSetup();
     const before = result.current.gameState;
     act(() =>
@@ -510,7 +519,9 @@ describe("useP2PGame — guest move confirm & reject", () => {
       }),
     );
     expect(result.current.gameState).toBe(before);
-    expect(result.current.seqRef.current).toBe(1);
+    expect(result.current.seqRef.current).toBe(0); // seqRef NOT advanced
+    expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining("ghost"));
+    errorSpy.mockRestore();
   });
 
   it("move_reject clears selectedPiece and validMoves only", () => {
@@ -722,16 +733,14 @@ describe("useP2PGame — resign", () => {
     expect(state.surrenderedBy).toBe("white");
   });
 
-  it("falls back to winner white when playerColor is null", () => {
-    // NOTE: source quirk — with playerColor null the hook records winner
-    // "white" AND surrenderedBy "white" (opp is computed from the same null).
+  it("ignores a resign when playerColor is null (INFO-003 fixed)", () => {
     const { handlers, result } = setup({ role: "host", playerColor: null });
+    const before = result.current.gameState;
     act(() => handlers["resign"]!({ type: "resign" }));
 
     const state = result.current.gameState;
-    expect(state.gameOver).toBe(true);
-    expect(state.winner).toBe("white");
-    expect(state.surrenderedBy).toBe("white");
+    expect(state.gameOver).toBe(before.gameOver); // unchanged
+    expect(state.winner).toBe(before.winner); // unchanged
   });
 });
 

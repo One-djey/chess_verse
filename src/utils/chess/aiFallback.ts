@@ -49,9 +49,9 @@ function captureValue(to: Position, pieces: Piece[]): number {
   return target ? PIECE_VALUES[target.type] : 0;
 }
 
-/** Format a candidate as a plain { from, to } result. */
+/** Format a candidate as a plain { from, to } result with normalized coordinates. */
 function toMove(c: Candidate): { from: Position; to: Position } {
-  return { from: c.piece.position, to: c.to };
+  return { from: c.piece.position, to: normalizePosition(c.to) };
 }
 
 /**

@@ -36,23 +36,16 @@ describe("SkinProvider — initial value", () => {
     expect(localStorage.getItem(STORAGE_KEY)).toBeNull();
   });
 
-  // NOTE: locks current behavior of BUG-006 (docs/KNOWN_ISSUES.md) — the
-  // provider does NOT validate the stored string against known skins, so an
-  // arbitrary value is exposed as-is (and produces 404 piece images).
-  // If BUG-006 is fixed to fall back to "classic", update this test.
-  it("exposes an unknown stored value as-is (BUG-006)", () => {
+  it("falls back to 'classic' when an unknown skin is stored (BUG-006 fixed)", () => {
     localStorage.setItem(STORAGE_KEY, "hacker");
     const { result } = renderSkin();
-    expect(result.current.skin).toBe("hacker");
+    expect(result.current.skin).toBe("classic");
   });
 
-  // NOTE: companion case of BUG-006 — the `?? DEFAULT_SKIN` fallback only
-  // catches null/undefined, so an empty string stored in localStorage is
-  // returned verbatim instead of falling back to "classic".
-  it("exposes an empty-string stored value as-is (BUG-006)", () => {
+  it("falls back to 'classic' when an empty string is stored (BUG-006 fixed)", () => {
     localStorage.setItem(STORAGE_KEY, "");
     const { result } = renderSkin();
-    expect(result.current.skin).toBe("");
+    expect(result.current.skin).toBe("classic");
   });
 });
 

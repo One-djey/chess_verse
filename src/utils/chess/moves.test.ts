@@ -363,6 +363,18 @@ describe("isSquareUnderAttack", () => {
       isSquareUnderAttack(pos(0, 5), "black", [rook, blocker], CLASSIC),
     ).toBe(false);
   });
+
+  it("BUG-004 fixed: detects wrap-around rook attack in borderless mode", () => {
+    // Black rook on a1 (0,0) can reach h1 (7,0) via wrap-around in borderless.
+    const rook = makePiece("black", "rook", 0, 0);
+    expect(isSquareUnderAttack(pos(7, 0), "black", [rook], BORDERLESS)).toBe(true);
+  });
+
+  it("BUG-004 fixed: classic mode rook attacks remain correct without wrap", () => {
+    const rookEdge = makePiece("black", "rook", 1, 0);
+    expect(isSquareUnderAttack(pos(7, 0), "black", [rookEdge], CLASSIC)).toBe(true); // rank 0
+    expect(isSquareUnderAttack(pos(0, 0), "black", [rookEdge], CLASSIC)).toBe(true); // rank 0
+  });
 });
 
 // ── 4. Castling ──────────────────────────────────────────────────────────────
@@ -730,15 +742,11 @@ describe("assimilation mode", () => {
     expect(isValidMove(rook, pos(5, 5), [rook], CLASSIC)).toBe(false);
   });
 
-  // NOTE: getPieceCapabilities is piece-level and not gated by gameMode.rules.assimilation,
-  // so a piece carrying acquiredTypes keeps its extra movement even when validated under
-  // CLASSIC rules. In practice classic pieces never have acquiredTypes, but this test
-  // locks the current behavior.
-  it("acquiredTypes also grant movement under classic rules (current behavior)", () => {
+  it("acquiredTypes are ignored under classic rules — piece only has its base type", () => {
     const rook = makePiece("white", "rook", 3, 3, {
       acquiredTypes: ["bishop"],
     });
-    expect(isValidMove(rook, pos(5, 5), [rook], CLASSIC)).toBe(true);
+    expect(isValidMove(rook, pos(5, 5), [rook], CLASSIC)).toBe(false);
   });
 
   it("getValidMoves includes diagonal squares for a rook with acquired bishop", () => {

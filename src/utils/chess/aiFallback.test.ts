@@ -185,13 +185,9 @@ describe("getSmartFallbackMove — borderless mode", () => {
     const move = getSmartFallbackMove(pieces, BORDERLESS);
     expect(move).not.toBeNull();
     expect(move!.from).toEqual(pos(2, 4));
-    // NOTE: getSmartFallbackMove returns the raw (virtual) destination from
-    // getValidMoves without normalizing it — borderless consumers must call
-    // normalizePos themselves (applyMoveToState does). Current behavior:
-    expect(move!.to).toEqual(pos(-1, 4));
-    // Once normalized it lands exactly on the white pawn's square.
-    expect(normalizePos(move!.to.x, move!.to.y)).toEqual(pos(7, 4));
-    // And the move is legal under wrap rules.
+    // getSmartFallbackMove now normalizes the destination before returning.
+    expect(move!.to).toEqual(pos(7, 4));
+    // The move is legal under wrap rules.
     const rookMoves = getValidMoves(blackRook, pieces, BORDERLESS);
     expect(includesPos(rookMoves, -1, 4)).toBe(true);
   });

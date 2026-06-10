@@ -128,7 +128,7 @@ export default function GameOver({
           <button
             onClick={onDismiss}
             className="absolute top-3 right-3 p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-700 transition"
-            aria-label="Close"
+            aria-label={t("common.close")}
           >
             <X size={18} />
           </button>

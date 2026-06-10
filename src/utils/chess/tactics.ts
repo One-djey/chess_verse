@@ -60,7 +60,6 @@ function detectFork(ctx: MoveContext): boolean {
 
   let attackCount = 0;
   for (const enemy of enemies) {
-    // Use skipCheckValidation=true: we only care about attack geometry, not legality
     if (isValidMove(movedPiece, enemy.position, ctx.nextPieces, ctx.gameMode)) {
       attackCount++;
       if (attackCount >= 2) return true;

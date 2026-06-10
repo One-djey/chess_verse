@@ -513,5 +513,8 @@
       "The AI is exploring all possibilities...",
       "The AI is evaluating the best options..."
     ]
+  },
+  "common": {
+    "close": "Close"
   }
 }

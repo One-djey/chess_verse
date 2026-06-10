@@ -8,24 +8,24 @@
 
 | ID | Sévérité | Module | Titre | Statut |
 | --- | --- | --- | --- | --- |
-| BUG-001 | 🟠 Moyenne | statsService | `resetStats()` ne réinitialise pas `modeGameCount`/`dailyActivity` | ⬜ À trancher |
-| BUG-002 | 🟡 Faible | statsService | Abandons adverses comptés dans `surrenders` | ⬜ À trancher |
-| BUG-003 | 🟡 Faible | aiFallback | Destination borderless non normalisée | ⬜ À trancher |
-| BUG-004 | 🟡 Faible | moves | `isSquareUnderAttack` ignore le wrap en borderless | ⬜ À trancher |
-| BUG-005 | 🟢 Très faible | moves | `acquiredTypes` actifs hors mode assimilation | ⬜ À trancher |
-| BUG-006 | 🟡 Faible | SkinContext | Skin non validé à la lecture du storage | ⬜ À trancher |
-| BUG-007 | 🟡 Faible | statsService | Échec silencieux sur quota `localStorage` | ⬜ À trancher |
-| BUG-008 | 🟠 Moyenne | ChessAI | FEN : droits de roque toujours `KQkq`, jamais d'en passant | ⬜ À trancher |
-| BUG-009 | 🟢 Très faible | coliseumMoves | Attaque diagonale de pion sur case vide non détectée | ⬜ À trancher |
-| BUG-010 | 🟠 Moyenne | useP2PGame | Guest : `seqRef` avancé même si la pièce du `move_confirm` est introuvable | ⬜ À trancher |
-| BUG-011 | 🟡 Faible | useP2PGame | Host : `from` du `move_proposal` jamais validé | ⬜ À trancher |
-| BUG-012 | 🟡 Faible | legendaryPatterns | Classification des mats imprécise ; setup Berger peut suggérer un coup perdant | ⬜ À trancher |
-| UX-001 | 🟢 Très faible | GameOver | Micro-écarts UI : libellé « Close » non traduit, titre P2P, rematch masqué | ⬜ À trancher |
-| UX-002 | 🟢 Très faible | GameSettings | Bouton ✕ sans `aria-label` (non ciblable par lecteur d'écran) | ⬜ À trancher |
-| INFO-001 | ℹ️ Mitigé | ChessAI | Restauration du skill après un hint | ⬜ Aucune action requise |
-| INFO-002 | ℹ️ Théorique | ChessAI | `stopPending` peut avaler le `bestmove` suivant | ⬜ Aucune action requise |
-| INFO-003 | ℹ️ Théorique | useP2PGame | `onResign` avec `playerColor` null → résultat incohérent | ⬜ Aucune action requise |
-| DOC-001 | 🟠 Moyenne | README | « En passant » annoncé mais non implémenté | ⬜ À trancher |
+| BUG-001 | 🟠 Moyenne | statsService | `resetStats()` ne réinitialise pas `modeGameCount`/`dailyActivity` | ✅ Corrigé |
+| BUG-002 | 🟡 Faible | statsService | Abandons adverses comptés dans `surrenders` | ✅ Corrigé |
+| BUG-003 | 🟡 Faible | aiFallback | Destination borderless non normalisée | ✅ Corrigé |
+| BUG-004 | 🟡 Faible | moves | `isSquareUnderAttack` ignore le wrap en borderless | ✅ Corrigé |
+| BUG-005 | 🟢 Très faible | moves | `acquiredTypes` actifs hors mode assimilation | ✅ Corrigé |
+| BUG-006 | 🟡 Faible | SkinContext | Skin non validé à la lecture du storage | ✅ Corrigé |
+| BUG-007 | 🟡 Faible | statsService | Échec silencieux sur quota `localStorage` | ✅ Corrigé |
+| BUG-008 | 🟠 Moyenne | ChessAI | FEN : droits de roque toujours `KQkq`, jamais d'en passant | ✅ Corrigé |
+| BUG-009 | 🟢 Très faible | coliseumMoves | Attaque diagonale de pion sur case vide non détectée | ✅ Corrigé |
+| BUG-010 | 🟠 Moyenne | useP2PGame | Guest : `seqRef` avancé même si la pièce du `move_confirm` est introuvable | ✅ Corrigé |
+| BUG-011 | 🟡 Faible | useP2PGame | Host : `from` du `move_proposal` jamais validé | ✅ Corrigé |
+| BUG-012 | 🟡 Faible | legendaryPatterns | Classification des mats imprécise ; setup Berger peut suggérer un coup perdant | ✅ Corrigé |
+| UX-001 | 🟢 Très faible | GameOver | Micro-écarts UI : libellé « Close » non traduit, titre P2P, rematch masqué | ✅ Corrigé (item 1) |
+| UX-002 | 🟢 Très faible | GameSettings | Bouton ✕ sans `aria-label` (non ciblable par lecteur d'écran) | ✅ Corrigé |
+| INFO-001 | ℹ️ Mitigé | ChessAI | Restauration du skill après un hint | ✅ Aucune action requise |
+| INFO-002 | ℹ️ Théorique | ChessAI | `stopPending` peut avaler le `bestmove` suivant | ✅ Aucune action requise |
+| INFO-003 | ℹ️ Théorique | useP2PGame | `onResign` avec `playerColor` null → résultat incohérent | ✅ Corrigé |
+| DOC-001 | 🟠 Moyenne | README | « En passant » annoncé mais non implémenté | ✅ Corrigé |
 | LIM-001 | ℹ️ Design | moves | Pas d'en passant, ni nulle par répétition / 50 coups | — |
 | LIM-002 | ℹ️ Design | P2P | Le guest fait confiance au host sans re-validation | — |
 | REC-001 | 🔧 Refacto | Game.tsx | Logique pure enfouie non testable | ⬜ À trancher |

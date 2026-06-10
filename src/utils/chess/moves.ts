@@ -167,7 +167,9 @@ export const isValidMove = (
   )
     return false;
 
-  const capabilities = getPieceCapabilities(piece);
+  const capabilities = gameMode.rules?.assimilation
+    ? getPieceCapabilities(piece)
+    : [piece.type];
   return capabilities.some((type) =>
     isValidMoveForSingleType(type, piece, target, pieces, gameMode),
   );
@@ -230,27 +232,37 @@ export const isSquareUnderAttack = (
   attackerColor: PieceColor,
   pieces: Piece[],
   gameMode: GameMode,
-): boolean =>
-  pieces
-    .filter((p) => p.color === attackerColor)
-    .some((p) => {
-      const caps = getPieceCapabilities(p);
-      // Pawns (and pieces with acquired pawn movement) attack diagonally,
-      // even onto empty squares — this can't be detected via isValidMove alone.
-      if (caps.includes("pawn")) {
-        const dir = p.color === "white" ? -1 : 1;
-        if (
-          Math.abs(p.position.x - position.x) === 1 &&
-          position.y - p.position.y === dir
-        )
+): boolean => {
+  const attackers = pieces.filter((p) => p.color === attackerColor);
+
+  // In borderless mode, test all 9 virtual equivalents of the target square
+  // (aligned with isInCheck) so that wrap-around attacks are not missed.
+  const targets: Position[] = gameMode.rules?.borderless
+    ? Array.from({ length: 3 }, (_, di) =>
+        Array.from({ length: 3 }, (_, dj) => ({
+          x: position.x + (di - 1) * BOARD_SIZE,
+          y: position.y + (dj - 1) * BOARD_SIZE,
+        })),
+      ).flat()
+    : [position];
+
+  return attackers.some((p) => {
+    const caps = gameMode.rules?.assimilation
+      ? getPieceCapabilities(p)
+      : [p.type];
+    // Pawns attack diagonally even onto empty squares.
+    if (caps.includes("pawn")) {
+      const dir = p.color === "white" ? -1 : 1;
+      for (const t of targets) {
+        if (Math.abs(p.position.x - t.x) === 1 && t.y - p.position.y === dir)
           return true;
       }
-      // All non-pawn capabilities are correctly handled by isValidMove.
-      return (
-        caps.filter((t) => t !== "pawn").length > 0 &&
-        isValidMove(p, position, pieces, gameMode)
-      );
-    });
+    }
+    // All non-pawn capabilities are correctly handled by isValidMove.
+    if (caps.filter((t) => t !== "pawn").length === 0) return false;
+    return targets.some((t) => isValidMove(p, t, pieces, gameMode));
+  });
+};
 
 // ── Castling ─────────────────────────────────────────────────────────────────
 
@@ -340,7 +352,9 @@ function generateMoveCandidates(piece: Piece, gameMode: GameMode): Position[] {
   };
 
   const { x: px, y: py } = piece.position;
-  const capabilities = getPieceCapabilities(piece);
+  const capabilities = gameMode.rules?.assimilation
+    ? getPieceCapabilities(piece)
+    : [piece.type];
 
   for (const type of capabilities) {
     switch (type) {

@@ -208,8 +208,7 @@ describe("GameOver — dismiss", () => {
     const user = userEvent.setup();
     const onDismiss = vi.fn();
     renderGameOver({ onDismiss });
-    // NOTE: the close button aria-label is hardcoded "Close" (not translated).
-    await user.click(screen.getByRole("button", { name: "Close" }));
+    await user.click(screen.getByRole("button", { name: "common.close" }));
     expect(onDismiss).toHaveBeenCalledTimes(1);
   });
 

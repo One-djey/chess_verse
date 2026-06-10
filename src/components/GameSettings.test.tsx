@@ -75,15 +75,11 @@ describe("GameSettings — visibility", () => {
     expect(screen.getByText("gameSettings.title")).toBeInTheDocument();
   });
 
-  it("calls onClose when the X button is clicked", async () => {
+  it("calls onClose when the X button is clicked (UX-002 fixed — aria-label added)", async () => {
     const user = userEvent.setup();
     const onClose = vi.fn();
     renderSettings({ onClose });
-    // The X button has no accessible name — query by role button nearest the title
-    const closeBtn = screen.getAllByRole("button").find((b) =>
-      b.getAttribute("class")?.includes("rounded-lg"),
-    );
-    await user.click(closeBtn!);
+    await user.click(screen.getByRole("button", { name: "common.close" }));
     expect(onClose).toHaveBeenCalledTimes(1);
   });
 });

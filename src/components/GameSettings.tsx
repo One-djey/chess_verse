@@ -219,6 +219,7 @@ export default function GameSettings({
               </h2>
               <button
                 onClick={onClose}
+                aria-label={t("common.close")}
                 className="text-gray-400 hover:text-gray-600 transition-colors rounded-lg p-1 -mr-1"
               >
                 <X size={20} />

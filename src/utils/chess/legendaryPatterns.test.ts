@@ -113,12 +113,9 @@ describe("detectLegendaryPattern — mate-in-1 classification", () => {
   });
 
   it("detects an Arabian mate (Nf7# double check with Ra8)", () => {
-    // NOTE: classifyMate only inspects pieces that ATTACK the king, so the
-    // Arabian branch (rook + knight, corner) requires a double check — a
-    // knight merely covering escape squares is classified as backrankmate.
-    // Here Nd8-f7 unmasks Ra8 and checks h8 itself. The white pawns on
-    // b7/c6/e6 block every other knight retreat (which would be a generic
-    // discovered back-rank mate) and the g6 pawn covers h7.
+    // Ra8 gives check on the back rank; Nd8-f7 both checks h8 and covers
+    // escape squares (double check). classifyMate now considers confining
+    // pieces too, so this double-check case remains detected correctly.
     const pieces = [
       makePiece("white", "rook", 0, 0, { hasMoved: true }), // Ra8
       makePiece("white", "knight", 3, 0), // Nd8
@@ -141,10 +138,9 @@ describe("detectLegendaryPattern — mate-in-1 classification", () => {
   });
 
   it("detects an Opera mate (Bg6# double check with Re1)", () => {
-    // NOTE: same attacker-only quirk as Arabian — the Opera branch needs both
-    // rook AND bishop attacking the king, i.e. a double check. Be4-g6 unmasks
-    // the e-file rook and covers f7 itself; quieter bishop retreats (Bf5 etc.)
-    // leave f7 as an escape and are not mate.
+    // Re1 gives check; Be4-g6 both uncovers the rook and covers f7 (double
+    // check). classifyMate now considers confining pieces, so this case is
+    // still correctly classified as operamate.
     const pieces = [
       makePiece("white", "rook", 4, 7, { hasMoved: true }), // Re1
       makePiece("white", "bishop", 4, 4), // Be4
@@ -186,12 +182,7 @@ describe("detectLegendaryPattern — mate-in-1 classification", () => {
     });
   });
 
-  it("classifies a queen back-rank mate as Lolli's mate when any friendly pawn sits on g2", () => {
-    // NOTE: the Lolli branch fires for ANY queen mate as long as the mating
-    // side has a pawn on the g-file's 2nd/7th rank (x=6, y=1|6), even if that
-    // pawn is unrelated to the mate. The classic Lolli pawn on f6 would NOT
-    // match. Locking this behavior: same Qa8# back-rank mate flips from
-    // backrankmate to lollismate when an idle white pawn stands on g2.
+  it("Lolli's mate requires pawn on f6/f3 — g2 pawn no longer triggers it (BUG-012 fixed)", () => {
     const base = () => [
       makePiece("white", "queen", 0, 7), // Qa1
       makePiece("white", "king", 4, 7, { hasMoved: true }),
@@ -203,12 +194,21 @@ describe("detectLegendaryPattern — mate-in-1 classification", () => {
     const withoutGPawn = detectLegendaryPattern(base(), "white", CLASSIC);
     expect(withoutGPawn?.patternId).toBe("backrankmate");
 
+    // g2 pawn is NOT adjacent to the attack — no longer triggers Lolli
     const withGPawn = detectLegendaryPattern(
       [...base(), makePiece("white", "pawn", 6, 6)], // g2
       "white",
       CLASSIC,
     );
-    expect(withGPawn).toEqual({
+    expect(withGPawn?.patternId).toBe("backrankmate");
+
+    // f6 pawn (x=5, y=2) correctly triggers Lolli's mate
+    const withFPawn = detectLegendaryPattern(
+      [...base(), makePiece("white", "pawn", 5, 2)], // f6
+      "white",
+      CLASSIC,
+    );
+    expect(withFPawn).toEqual({
       patternId: "lollismate",
       type: "mate",
       movesAway: 1,
@@ -279,17 +279,14 @@ describe("detectLegendaryPattern — 2-move setups", () => {
       makePiece("black", "pawn", 5, 1), // f7
     ];
     const result = detectLegendaryPattern(pieces, "white", CLASSIC);
-    // NOTE: the suggested queen move is the FIRST move in generation order
-    // whose destination geometrically attacks f7 — here Qd7 (3,1), which
-    // hangs the queen right next to the king. The detector only verifies the
-    // attack on f7, not queen safety, and the order comes from
-    // generateMoveCandidates (rank scan, then file scan from y=0 upward).
+    // Qd7 (3,1) is filtered out because the queen would be en prise next to
+    // the black king. The first safe queen move that still sees f7 is Qd5 (3,3).
     expect(result).toEqual({
       patternId: "scholarsmate",
       type: "mate",
       movesAway: 2,
       pieceType: "queen",
-      move: { from: pos(3, 7), to: pos(3, 1) },
+      move: { from: pos(3, 7), to: pos(3, 3) },
     });
   });
 });
