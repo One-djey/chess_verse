@@ -27,3 +27,5 @@ dist-ssr
 # Claude GSD task files
 .claude/gsd/
 coverage
+playwright-report
+test-results

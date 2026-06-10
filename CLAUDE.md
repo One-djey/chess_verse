@@ -7,9 +7,9 @@ React 18 + TypeScript + Vite + Tailwind CSS. No backend. P2P via Trystero (WebRT
 ## Tests
 
 - Runner: **Vitest 3** (`vitest.config.ts`, separate from `vite.config.ts`), default env `node`; component tests opt into jsdom via `// @vitest-environment jsdom` docblock.
-- Commands: `npm run test` | `npm run test:watch` | `npm run test:coverage` (per-file coverage thresholds on P0 modules).
-- Tests are colocated (`src/utils/chess/moves.test.ts` next to `moves.ts`). Shared fixtures in `src/test/helpers.ts` (`makePiece`, `makeState`, `CLASSIC`/`BORDERLESS`/`ALL_RANDOM`/`ASSIMILATION` modes).
-- Full QA strategy & test-case catalog: `docs/TEST_STRATEGY.md`. Known bugs/debt registry (causes, locations, recommended fixes — read before fixing any listed bug): `docs/KNOWN_ISSUES.md`. CI: `.github/workflows/test.yml` (lint + tests + build).
+- Commands: `npm run test` | `npm run test:watch` | `npm run test:coverage` (per-file coverage thresholds on P0 modules) | `npm run test:e2e` (Playwright — requires a `npm run build` first or uses cached `dist/`).
+- Tests are colocated (`src/utils/chess/moves.test.ts` next to `moves.ts`). Shared fixtures in `src/test/helpers.ts` (`makePiece`, `makeState`, `CLASSIC`/`BORDERLESS`/`ALL_RANDOM`/`ASSIMILATION` modes). E2E specs in `e2e/` (`navigation.spec.ts`, `settings-persistence.spec.ts`, `game-board.spec.ts`).
+- Full QA strategy & test-case catalog: `docs/TEST_STRATEGY.md`. Known bugs/debt registry (causes, locations, recommended fixes — read before fixing any listed bug): `docs/KNOWN_ISSUES.md`. CI: `.github/workflows/test.yml` (lint + unit tests + build + e2e in separate job).
 - Other chess modules not listed below: `src/utils/chess/tactics.ts` (tactic detection), `src/utils/chess/coliseumMoves.ts` + `src/components/ColiseumGame.tsx` (coliseum mode), `src/utils/chess/legendaryPatterns.ts` (famous mate detection).
 
 ## Key paths

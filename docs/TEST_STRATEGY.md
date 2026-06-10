@@ -263,8 +263,8 @@ Mocker `makeRoomActions` : capturer les handlers enregistrés, les invoquer manu
 | --- | --- | --- | --- |
 | **P0** | `moves`, `assimilation`, `aiFallback`, `board`, `pieceImage`, `statsService` | Suites vertes en CI, seuils de couverture par fichier (85–100 %, cf. `vitest.config.ts`) | ✅ **Implémenté** |
 | **P1** | `tactics`, `coliseumMoves`, `legendaryPatterns`, `ChessAI` (mock Worker), `useChessGame`, `useP2PGame` | Cas du §4.7–4.12 implémentés, mocks réutilisables (`src/test/`) | ✅ **Implémenté** |
-| **P2** | `P2PContext`, contexts, parité i18n, composants RTL du §4.15 | Cas implémentés, environnement jsdom par docblock | ✅ **Implémenté** (GameSettings/ProfilePage/ModeSelect/BadgesGrid restants) |
-| **P3** | E2E Playwright (§4.16), CI e2e séparée | 6 parcours verts en CI nightly ou pre-release | 📋 À faire |
+| **P2** | `P2PContext`, contexts, parité i18n, composants RTL du §4.15 (GameSettings, ProfilePage, ModeSelect, BadgesGrid) | Cas implémentés, environnement jsdom par docblock | ✅ **Implémenté** |
+| **P3** | E2E Playwright (§4.16), CI e2e séparée | 17 scénarios verts (navigation, settings, Scholar's mate, modes spéciaux) — `npm run test:e2e` | ✅ **Implémenté** |
 
 **Règle d'or** : tout fix de bug commence par un test qui reproduit le bug (red → green) ; toute nouvelle règle de jeu arrive avec ses cas nominaux + erreurs + edge cases.
 
@@ -286,8 +286,8 @@ Constats faits pendant l'analyse — **non corrigés** par cette initiative, à 
 
 ## 7. Roadmap d'industrialisation
 
-1. **Fait** : Vitest + Testing Library + helpers + suites P0 + CI GitHub Actions (`.github/workflows/test.yml` : lint + tests avec coverage + build).
-2. **Sprint suivant (P1)** : mock Worker UCI réutilisable (`src/test/mockStockfish.ts`), mock d'actions Trystero (`src/test/mockRoom.ts`), suites §4.7–4.12.
-3. **Ensuite (P2)** : suites composants RTL, test de parité i18n, seuil de couverture global (~70 %) en plus des seuils par fichier.
-4. **Pre-release (P3)** : Playwright (projets chromium + webkit), parcours §4.16, exécution nightly ; envisager le visual regression (Playwright screenshots) sur l'échiquier et les skins.
-5. **Hygiène continue** : ajouter les tests aux hooks de revue (CI bloquante), refuser tout merge qui fait baisser la couverture des fichiers P0.
+1. **Fait (P0)** : Vitest + Testing Library + helpers + suites P0 + CI GitHub Actions (`.github/workflows/test.yml` : lint + tests avec coverage + build).
+2. **Fait (P1)** : mock Worker UCI (`ChessAI.test.ts`), mock Trystero (`useP2PGame.test.tsx`), suites §4.7–4.12 — 541 tests Vitest verts.
+3. **Fait (P2)** : suites composants RTL complètes (GameSettings, ProfilePage, ModeSelect, BadgesGrid, GameOver, NavBar, PromotionPicker, FeedbackModal, profile/*), test de parité i18n, seuils de couverture par fichier — 577 tests Vitest verts.
+4. **Fait (P3)** : Playwright chromium, 17 scénarios (navigation, settings persistence, Scholar's mate complet, modes spéciaux), CI e2e séparée — `npm run test:e2e` ; rapport HTML dans `playwright-report/`.
+5. **Hygiène continue** : ajouter les tests aux hooks de revue (CI bloquante), refuser tout merge qui fait baisser la couverture des fichiers P0. Envisager webkit + visual regression (Playwright screenshots) pour les skins.
