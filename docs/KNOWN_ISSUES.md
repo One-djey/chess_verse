@@ -22,6 +22,7 @@
 | INFO-001 | ℹ️ Mitigé | ChessAI | Restauration du skill après un hint | ⬜ Aucune action requise |
 | INFO-002 | ℹ️ Théorique | ChessAI | `stopPending` peut avaler le `bestmove` suivant | ⬜ Aucune action requise |
 | DOC-001 | 🟠 Moyenne | README | « En passant » annoncé mais non implémenté | ⬜ À trancher |
+| UX-001 | 🟢 Très faible | GameOver | Micro-écarts UI : libellé « Close » non traduit, titre P2P, rematch masqué | ⬜ À trancher |
 | LIM-001 | ℹ️ Design | moves | Pas d'en passant, ni nulle par répétition / 50 coups | — |
 | LIM-002 | ℹ️ Design | P2P | Le guest fait confiance au host sans re-validation | — |
 | REC-001 | 🔧 Refacto | Game.tsx | Logique pure enfouie non testable | ⬜ À trancher |
@@ -171,6 +172,17 @@
   - **A. Corriger le README** (retirer « en passant »). Trivial.
   - B. Implémenter l'en passant (nécessite de tracker le dernier double-pas dans `GameState`, gérer le borderless/assimilation, MAJ FEN pour Stockfish — qui suggérera des prises en passant ensuite). Effort : moyen+.
 - **Recommandation** : **A** à court terme ; B est un choix produit (noter que Stockfish raisonne déjà en règles standard, donc B améliorerait aussi la cohérence IA). Décision humaine requise.
+
+## UX-001 — Micro-écarts UI dans `GameOver` (groupés)
+
+Relevés par les tests composants (verrouillés par `// NOTE:` dans `src/components/GameOver.test.tsx`) :
+
+1. **`aria-label="Close"` codé en dur en anglais** sur le bouton ✕ — devrait passer par i18n (clé à ajouter aux 8 locales).
+2. **Le titre P2P ignore `playerColor`** : seul le style change selon victoire/défaite, le texte est générique — vérifier que c'est voulu.
+3. **`peerLeft` masque le bouton rematch** au lieu de l'afficher désactivé — choix UX à confirmer (un bouton désactivé + tooltip « adversaire parti » est plus lisible).
+4. **Victoire des noirs en local sans IA** affichée comme « victoire » générique — cohérent (2 joueurs sur le même écran), à confirmer.
+
+- **Recommandation** : corriger 1 (trivial, vraie anomalie i18n) ; 2-4 sont des décisions produit à trancher en lot.
 
 ## LIM-001 / LIM-002 — Limitations assumées (design)
 
