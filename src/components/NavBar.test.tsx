@@ -3,6 +3,7 @@ import { describe, it, expect, vi, afterEach } from "vitest";
 import { render, screen, cleanup } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter, useLocation } from "react-router-dom";
+import type { ComponentProps } from "react";
 import NavBar from "./NavBar";
 import { SkinProvider } from "../context/SkinContext";
 import { BoardSkinProvider } from "../context/BoardSkinContext";
@@ -24,7 +25,7 @@ function LocationProbe() {
   return <div data-testid="location">{location.pathname}</div>;
 }
 
-function renderNavBar(props: Partial<React.ComponentProps<typeof NavBar>> = {}) {
+function renderNavBar(props: Partial<ComponentProps<typeof NavBar>> = {}) {
   // SkinProvider/BoardSkinProvider are required by the GameSettings modal
   // that NavBar always mounts (its hooks throw without a provider).
   return render(

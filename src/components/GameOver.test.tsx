@@ -3,6 +3,7 @@ import { describe, it, expect, vi, afterEach } from "vitest";
 import { render, screen, cleanup, fireEvent } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter, useLocation } from "react-router-dom";
+import type { ComponentProps } from "react";
 import GameOver from "./GameOver";
 
 // i18n: t() returns the raw key so assertions are locale-independent.
@@ -27,7 +28,7 @@ const baseProps = {
   onReplay: vi.fn(),
 };
 
-function renderGameOver(props: Partial<React.ComponentProps<typeof GameOver>> = {}) {
+function renderGameOver(props: Partial<ComponentProps<typeof GameOver>> = {}) {
   return render(
     <MemoryRouter initialEntries={["/game/classic"]}>
       <GameOver {...baseProps} {...props} />
