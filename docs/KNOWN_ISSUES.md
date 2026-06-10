@@ -19,11 +19,13 @@
 | BUG-009 | 🟢 Très faible | coliseumMoves | Attaque diagonale de pion sur case vide non détectée | ⬜ À trancher |
 | BUG-010 | 🟠 Moyenne | useP2PGame | Guest : `seqRef` avancé même si la pièce du `move_confirm` est introuvable | ⬜ À trancher |
 | BUG-011 | 🟡 Faible | useP2PGame | Host : `from` du `move_proposal` jamais validé | ⬜ À trancher |
-| INFO-001 | ℹ️ Mitigé | ChessAI | Restauration du skill après un hint | ⬜ Aucune action requise |
-| INFO-002 | ℹ️ Théorique | ChessAI | `stopPending` peut avaler le `bestmove` suivant | ⬜ Aucune action requise |
-| DOC-001 | 🟠 Moyenne | README | « En passant » annoncé mais non implémenté | ⬜ À trancher |
 | BUG-012 | 🟡 Faible | legendaryPatterns | Classification des mats imprécise ; setup Berger peut suggérer un coup perdant | ⬜ À trancher |
 | UX-001 | 🟢 Très faible | GameOver | Micro-écarts UI : libellé « Close » non traduit, titre P2P, rematch masqué | ⬜ À trancher |
+| UX-002 | 🟢 Très faible | GameSettings | Bouton ✕ sans `aria-label` (non ciblable par lecteur d'écran) | ⬜ À trancher |
+| INFO-001 | ℹ️ Mitigé | ChessAI | Restauration du skill après un hint | ⬜ Aucune action requise |
+| INFO-002 | ℹ️ Théorique | ChessAI | `stopPending` peut avaler le `bestmove` suivant | ⬜ Aucune action requise |
+| INFO-003 | ℹ️ Théorique | useP2PGame | `onResign` avec `playerColor` null → résultat incohérent | ⬜ Aucune action requise |
+| DOC-001 | 🟠 Moyenne | README | « En passant » annoncé mais non implémenté | ⬜ À trancher |
 | LIM-001 | ℹ️ Design | moves | Pas d'en passant, ni nulle par répétition / 50 coups | — |
 | LIM-002 | ℹ️ Design | P2P | Le guest fait confiance au host sans re-validation | — |
 | REC-001 | 🔧 Refacto | Game.tsx | Logique pure enfouie non testable | ⬜ À trancher |
@@ -197,6 +199,15 @@ Relevés par les tests composants (verrouillés par `// NOTE:` dans `src/compone
 4. **Victoire des noirs en local sans IA** affichée comme « victoire » générique — cohérent (2 joueurs sur le même écran), à confirmer.
 
 - **Recommandation** : corriger 1 (trivial, vraie anomalie i18n) ; 2-4 sont des décisions produit à trancher en lot.
+
+## UX-002 — `GameSettings` : bouton ✕ sans nom accessible
+
+- **Sévérité** : 🟢 Très faible (accessibilité : le bouton de fermeture du modal Settings est invisible pour les lecteurs d'écran et difficile à cibler en test).
+- **Symptôme** : découvert pendant l'écriture de `GameSettings.test.tsx` — le bouton ✕ n'a ni `aria-label` ni texte ; le test doit le retrouver par sa classe CSS (fragile).
+- **Localisation** : `src/components/GameSettings.tsx:220-225` (le ✕ de `GameOver` a un `aria-label="Close"`, cf. UX-001 item 1 ; celui de `GameSettings` n'en a aucun).
+- **Solution** : ajouter `aria-label={t("gameSettings.close")}` (clé à créer dans les 8 locales — ou réutiliser une clé commune `common.close` qui réglerait aussi UX-001 item 1).
+- **Recommandation** : corriger en même temps que UX-001 item 1 avec une clé i18n partagée. Effort : trivial.
+- **Tests à adapter** : `src/components/GameSettings.test.tsx` — remplacer la requête par classe par `getByRole("button", { name: ... })`.
 
 ## LIM-001 / LIM-002 — Limitations assumées (design)
 
