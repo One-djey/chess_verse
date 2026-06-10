@@ -291,3 +291,33 @@ Constats faits pendant l'analyse — **non corrigés** par cette initiative, à 
 3. **Fait (P2)** : suites composants RTL complètes (GameSettings, ProfilePage, ModeSelect, BadgesGrid, GameOver, NavBar, PromotionPicker, FeedbackModal, profile/*), test de parité i18n, seuils de couverture par fichier — 577 tests Vitest verts.
 4. **Fait (P3)** : Playwright chromium, 17 scénarios (navigation, settings persistence, Scholar's mate complet, modes spéciaux), CI e2e séparée — `npm run test:e2e` ; rapport HTML dans `playwright-report/`.
 5. **Hygiène continue** : ajouter les tests aux hooks de revue (CI bloquante), refuser tout merge qui fait baisser la couverture des fichiers P0. Envisager webkit + visual regression (Playwright screenshots) pour les skins.
+
+## 8. Maintien à jour des tests — politique de développement
+
+> Résumé opposable dans `CLAUDE.md` (section *Test policy*) — lu par tout agent à chaque session. Cette section est la version détaillée.
+
+**Principe** : la suite de tests est un livrable du code, pas une étape séparée. Tout commit qui change `src/` contient aussi ses tests ; la CI (seuils de couverture par fichier + lint + build + e2e) est le filet, pas la consigne.
+
+### 8.1 Doctrine par type de changement
+
+| Type de changement | Obligation de test |
+| --- | --- |
+| **Nouveau module** `src/utils/` ou `src/services/` | Suite colocalisée `*.test.ts` (nominaux + erreurs attendues + edge cases). Si logique de jeu critique : ajouter le fichier aux seuils de `vitest.config.ts`. |
+| **Nouveau hook** | `*.test.tsx` jsdom (`renderHook` + `act`), mocks des dépendances (voir `useChessGame.test.tsx`, `useP2PGame.test.tsx` comme modèles). |
+| **Nouveau composant** | RTL si logique conditionnelle (props, états, branchements) ; un composant purement présentationnel peut être couvert par l'E2E seul. Wrappers requis : `SkinProvider`/`BoardSkinProvider`, mock `react-i18next` (`t: key => key`). |
+| **Nouveau mode de jeu** | Cas dans `moves.test.ts` (guard sur `gameMode.rules`), constante du mode dans `src/test/helpers.ts`, entrée dans le test de parité i18n (auto), scénario de chargement dans `e2e/game-board.spec.ts`. |
+| **Nouvelle locale** | Ajouter le fichier + l'enregistrer (cf. procédure CLAUDE.md §i18n) — `locales.test.ts` vérifie la parité de clés automatiquement. |
+| **Modification de comportement existant** | Mettre à jour les tests affectés **dans le même commit**. Un test qui casse n'est jamais adapté sans comprendre pourquoi : soit le code est bogué, soit le test documente un comportement qui change volontairement (le dire dans le message de commit). |
+| **Correction de bug** | Red → green : test reproduisant le bug d'abord. Si le bug est au registre `KNOWN_ISSUES.md` : suivre la procédure en fin de document (inverser le test `// NOTE:`, statut → ✅ + commit). Sinon : envisager d'ajouter l'entrée si le bug révèle une classe de problème. |
+| **Changement de flux utilisateur** (navigation, modal, settings) | Mettre à jour le scénario `e2e/` correspondant, ou en créer un si le flux est nouveau. |
+
+### 8.2 Garde-fous
+
+1. **Tests `// NOTE:`** : ils assertent volontairement des comportements bogués (verrouillage du registre). Ne jamais les « réparer » en inversant l'assertion sans lire `KNOWN_ISSUES.md` — leur échec signifie qu'un comportement verrouillé a changé.
+2. **Seuils de couverture** : interdiction de les baisser dans `vitest.config.ts` pour faire passer la CI. Le bon réflexe devant un seuil rouge est d'ajouter les cas manquants.
+3. **Helpers partagés** : enrichir `src/test/helpers.ts` plutôt que dupliquer des fixtures ; un pattern de mock utilisé deux fois (Worker, room Trystero) doit migrer vers `src/test/`.
+4. **E2E** : les sélecteurs reposent sur les rôles ARIA et `aria-label` — toute régression d'accessibilité casse l'E2E, c'est voulu (cf. UX-002). Préférer ajouter un `aria-label`/`data-testid` plutôt qu'un sélecteur CSS fragile.
+
+### 8.3 Definition of done (tout commit)
+
+`npm run test` ✅ + `npm run lint` ✅ + `npm run build` ✅ — et `npm run test:e2e` si un flux UI a changé. La CI rejoue tout sur push/PR.
