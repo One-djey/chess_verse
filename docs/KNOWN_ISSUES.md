@@ -26,7 +26,7 @@
 | INFO-002 | ℹ️ Théorique | ChessAI | `stopPending` peut avaler le `bestmove` suivant | ✅ Aucune action requise |
 | INFO-003 | ℹ️ Théorique | useP2PGame | `onResign` avec `playerColor` null → résultat incohérent | ✅ Corrigé |
 | DOC-001 | 🟠 Moyenne | README | « En passant » annoncé mais non implémenté | ✅ Corrigé |
-| LIM-001 | ℹ️ Design | moves | Pas d'en passant, ni nulle par répétition / 50 coups | — |
+| LIM-001 | ℹ️ Design | moves | Pas d'en passant, ni nulle par répétition / 50 coups | ✅ Corrigé |
 | LIM-002 | ℹ️ Design | P2P | Le guest fait confiance au host sans re-validation | — |
 | REC-001 | 🔧 Refacto | Game.tsx | Logique pure enfouie non testable | ⬜ À trancher |
 
@@ -211,7 +211,7 @@ Relevés par les tests composants (verrouillés par `// NOTE:` dans `src/compone
 
 ## LIM-001 / LIM-002 — Limitations assumées (design)
 
-- **LIM-001** : pas d'en passant (cf. DOC-001), pas de nulle par triple répétition ni règle des 50 coups. Nulle = pat ou rois seuls uniquement. Verrouillé par tests.
+- **LIM-001** : ✅ Corrigé — en passant, nulle par triple répétition et règle des 50 coups sont désormais implémentés. `GameState` expose `enPassantTarget`, `halfMoveClock` et `positionHistory`. Helpers `isDrawByRepetition()` / `isDrawBy50Moves()` exportés depuis `moves.ts`. La FEN envoyée à Stockfish inclut la case d'en passant et le compteur. `Game.tsx` déclenche la fin de partie sur répétition ou 50 coups via l'effet de filet.
 - **LIM-002** : en P2P le host est autoritaire ; le guest applique tout `move_confirm` sans re-validation (`src/hooks/useP2PGame.ts`). Acceptable pour du jeu entre amis ; à documenter, pas à « corriger » sans refonte du protocole.
 
 ## REC-001 — Extraction de la logique pure de `Game.tsx`
