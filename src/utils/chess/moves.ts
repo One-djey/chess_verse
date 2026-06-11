@@ -146,6 +146,7 @@ export const isValidMove = (
   target: Position,
   pieces: Piece[],
   gameMode: GameMode,
+  enPassantTarget?: Position,
 ): boolean => {
   if (!gameMode.rules?.borderless) {
     if (target.x < 0 || target.x > 7 || target.y < 0 || target.y > 7)
@@ -166,6 +167,20 @@ export const isValidMove = (
     crossesForbiddenEdge(piece.position, target, piece.color)
   )
     return false;
+
+  // En passant: allow a pawn to move diagonally onto the enPassantTarget square
+  // even though it is empty.
+  if (
+    enPassantTarget &&
+    piece.type === "pawn" &&
+    norm.x === enPassantTarget.x &&
+    norm.y === enPassantTarget.y
+  ) {
+    const dir = piece.color === "white" ? -1 : 1;
+    const absDx = Math.abs(norm.x - piece.position.x);
+    if (absDx === 1 && norm.y === piece.position.y + dir) return true;
+  }
+
 
   const capabilities = gameMode.rules?.assimilation
     ? getPieceCapabilities(piece)
@@ -226,6 +241,42 @@ export const wouldBeInCheck = (
     .map((p) => (p === piece ? { ...p, position: norm } : p));
   return isInCheck(piece.color, simulated, gameMode);
 };
+
+/**
+ * Like wouldBeInCheck but also removes the en passant captured pawn when
+ * the move is an en passant capture. The captured pawn sits at the same rank
+ * as the moving pawn (from.y) and same file as the destination (to.x).
+ */
+function wouldBeInCheckAfterEnPassant(
+  piece: Piece,
+  target: Position,
+  pieces: Piece[],
+  gameMode: GameMode,
+  enPassantTarget?: Position,
+): boolean {
+  const norm = normalizePos(target.x, target.y);
+
+  // Detect en passant capture: pawn moves diagonally to empty square that matches ep target
+  const isEpCapture =
+    enPassantTarget &&
+    piece.type === "pawn" &&
+    norm.x === enPassantTarget.x &&
+    norm.y === enPassantTarget.y &&
+    getPieceAt(norm, pieces) === null;
+
+  if (!isEpCapture) return wouldBeInCheck(piece, target, pieces, gameMode);
+
+  // Remove the captured pawn at (to.x, from.y) and simulate the move
+  const capturedPawnPos = normalizePos(norm.x, piece.position.y);
+  const simulated = pieces
+    .filter(
+      (p) =>
+        !(p.position.x === capturedPawnPos.x && p.position.y === capturedPawnPos.y),
+    )
+    .filter((p) => !(p.position.x === norm.x && p.position.y === norm.y))
+    .map((p) => (p === piece ? { ...p, position: norm } : p));
+  return isInCheck(piece.color, simulated, gameMode);
+}
 
 export const isSquareUnderAttack = (
   position: Position,
@@ -441,18 +492,30 @@ export const getValidMoves = (
   piece: Piece,
   pieces: Piece[],
   gameMode: GameMode,
+  enPassantTarget?: Position,
 ): Position[] => {
   const castling =
     piece.type === "king" && !piece.hasMoved
       ? getCastlingMoves(piece, pieces, gameMode).map((m) => m.kingTarget)
       : [];
 
+  // Build candidate squares; for pawns, add the en passant target if applicable.
   const candidates = generateMoveCandidates(piece, gameMode);
+  if (enPassantTarget && piece.type === "pawn") {
+    const dir = piece.color === "white" ? -1 : 1;
+    const epNorm = normalizePos(enPassantTarget.x, enPassantTarget.y);
+    const absDx = Math.abs(epNorm.x - piece.position.x);
+    if (absDx === 1 && epNorm.y === piece.position.y + dir) {
+      // Add the ep square (using virtual coords in borderless, normalised in classic)
+      candidates.push(epNorm);
+    }
+  }
+
   const regular: Position[] = [];
   for (const { x, y } of candidates) {
     if (
-      isValidMove(piece, { x, y }, pieces, gameMode) &&
-      !wouldBeInCheck(piece, { x, y }, pieces, gameMode)
+      isValidMove(piece, { x, y }, pieces, gameMode, enPassantTarget) &&
+      !wouldBeInCheckAfterEnPassant(piece, { x, y }, pieces, gameMode, enPassantTarget)
     )
       regular.push({ x, y });
   }
@@ -463,10 +526,11 @@ export const hasLegalMoves = (
   color: PieceColor,
   pieces: Piece[],
   gameMode: GameMode,
+  enPassantTarget?: Position,
 ): boolean =>
   pieces
     .filter((p) => p.color === color)
-    .some((p) => getValidMoves(p, pieces, gameMode).length > 0);
+    .some((p) => getValidMoves(p, pieces, gameMode, enPassantTarget).length > 0);
 
 /** Returns true if the piece has at least one geometrically valid move, ignoring king-safety. */
 export const hasRawMoves = (
@@ -490,12 +554,32 @@ export function applyMoveToState(
   promotionType?: PieceType,
 ): GameState {
   const target = normalizePos(rawTarget.x, rawTarget.y);
+  const from = piece.position;
   const castling = findCastlingMove(piece, target, prev.pieces, prev.gameMode);
+  const prevEP = prev.enPassantTarget;
 
   const captured = getPieceAt(target, prev.pieces);
+
+  // Detect en passant capture: pawn moves diagonally to empty square matching ep target
+  const isEpCapture =
+    prevEP &&
+    piece.type === "pawn" &&
+    target.x === prevEP.x &&
+    target.y === prevEP.y &&
+    captured === null;
+
   let pieces = captured
     ? prev.pieces.filter((p) => p.id !== captured.id)
     : [...prev.pieces];
+
+  // Remove the captured pawn in an en passant capture (it's at (to.x, from.y))
+  if (isEpCapture) {
+    const capturedPawnPos = normalizePos(target.x, from.y);
+    pieces = pieces.filter(
+      (p) =>
+        !(p.position.x === capturedPawnPos.x && p.position.y === capturedPawnPos.y),
+    );
+  }
 
   // Move piece (with pawn promotion and optional assimilation capture)
   pieces = pieces.map((p) => {
@@ -532,13 +616,42 @@ export function applyMoveToState(
     ((piece.color === "white" && target.y === 0) ||
       (piece.color === "black" && target.y === 7));
 
+  // Determine the effective captured piece for the move record
+  const recordCaptured: typeof captured =
+    isEpCapture
+      ? (() => {
+          const capturedPawnPos = normalizePos(target.x, from.y);
+          return (
+            prev.pieces.find(
+              (p) =>
+                p.position.x === capturedPawnPos.x &&
+                p.position.y === capturedPawnPos.y,
+            ) ?? null
+          );
+        })()
+      : (captured ?? null);
+
   const moveRecord: MoveRecord = {
     piece,
-    from: piece.position,
+    from,
     to: target,
-    capturedPiece: captured ?? null,
+    capturedPiece: recordCaptured,
     wasPromotion,
   };
+
+  // ── En passant target for next move ─────────────────────────────────────────
+  let nextEnPassantTarget: Position | undefined = undefined;
+  if (piece.type === "pawn" && Math.abs(target.y - from.y) === 2) {
+    // Pawn double push: set ep target to the square the pawn skipped
+    const epY = (from.y + target.y) / 2;
+    nextEnPassantTarget = normalizePos(target.x, epY);
+  }
+
+  // ── Half-move clock (50-move rule) ───────────────────────────────────────────
+  const isCapture = captured !== null || isEpCapture;
+  const isPawnMove = piece.type === "pawn";
+  const nextHalfMoveClock =
+    isPawnMove || isCapture ? 0 : (prev.halfMoveClock ?? 0) + 1;
 
   const nextTurn = switchTurn(prev.currentTurn);
   const moveCount = {
@@ -556,6 +669,8 @@ export function applyMoveToState(
     moveCount,
     moves: [...prev.moves, moveRecord],
     surrenderedBy: undefined,
+    enPassantTarget: nextEnPassantTarget,
+    halfMoveClock: nextHalfMoveClock,
   };
 
   if (captured?.type === "king")
@@ -575,14 +690,46 @@ export function applyMoveToState(
       drawReason: "only-kings",
     };
 
+  // ── Position history (triple-repetition) ────────────────────────────────────
+  const sortedPieces = [...pieces].sort(
+    (a, b) => a.position.x - b.position.x || a.position.y - b.position.y,
+  );
+  const pieceStr = sortedPieces
+    .map((p) => `${p.type[0]}${p.color[0]}${p.position.x}${p.position.y}`)
+    .join(",");
+  const epStr = nextEnPassantTarget
+    ? `${nextEnPassantTarget.x}${nextEnPassantTarget.y}`
+    : "-";
+  const posHash = `${pieceStr}_${nextTurn}_${epStr}`;
+  const prevHistory = prev.positionHistory ?? {};
+  const nextHistory = {
+    ...prevHistory,
+    [posHash]: (prevHistory[posHash] ?? 0) + 1,
+  };
+
   const nextInCheck = isInCheck(nextTurn, pieces, prev.gameMode);
-  const nextHasLegal = hasLegalMoves(nextTurn, pieces, prev.gameMode);
+  const nextHasLegal = hasLegalMoves(nextTurn, pieces, prev.gameMode, nextEnPassantTarget);
 
   return {
     ...base,
+    positionHistory: nextHistory,
     isCheck: nextInCheck,
     gameOver: !nextHasLegal,
     winner: nextInCheck && !nextHasLegal ? prev.currentTurn : null,
     drawReason: !nextInCheck && !nextHasLegal ? "stalemate" : undefined,
   };
+}
+
+// ── Draw-detection helpers ───────────────────────────────────────────────────
+
+/** Returns true if any position has occurred 3 or more times (triple-repetition draw). */
+export function isDrawByRepetition(
+  positionHistory: Record<string, number>,
+): boolean {
+  return Object.values(positionHistory).some((count) => count >= 3);
+}
+
+/** Returns true if the half-move clock has reached 100 (50 full moves without pawn move or capture). */
+export function isDrawBy50Moves(halfMoveClock: number): boolean {
+  return halfMoveClock >= 100;
 }

@@ -127,6 +127,8 @@ export class ChessAI {
 
   public async getNextMove(
     pieces: Piece[],
+    enPassantTarget?: Position,
+    halfMoveClock?: number,
   ): Promise<{ from: Position; to: Position; promotionType?: PieceType }> {
     if (!this.stockfish || !this.isReady) {
       throw new Error("L'IA n'est pas encore initialisée");
@@ -140,7 +142,7 @@ export class ChessAI {
       `setoption name Skill Level value ${skillLevel}`,
     );
 
-    const fen = this.piecesToFENForColor(pieces, "black");
+    const fen = this.piecesToFENForColor(pieces, "black", enPassantTarget, halfMoveClock);
     this.isSearching = true;
     this.stockfish.postMessage(`position fen ${fen}`);
     this.stockfish.postMessage(`go movetime ${this.movetime}`);
@@ -171,6 +173,8 @@ export class ChessAI {
   public async getHintMove(
     pieces: Piece[],
     color: PieceColor,
+    enPassantTarget?: Position,
+    halfMoveClock?: number,
   ): Promise<{ from: Position; to: Position; promotionType?: PieceType }> {
     if (!this.stockfish || !this.isReady) {
       throw new Error("L'IA n'est pas disponible");
@@ -181,7 +185,7 @@ export class ChessAI {
 
     // Niveau max pour le meilleur coup possible
     this.stockfish.postMessage("setoption name Skill Level value 20");
-    const fen = this.piecesToFENForColor(pieces, color);
+    const fen = this.piecesToFENForColor(pieces, color, enPassantTarget, halfMoveClock);
     this.stockfish.postMessage(`position fen ${fen}`);
     this.stockfish.postMessage("go movetime 1500");
 
@@ -233,7 +237,12 @@ export class ChessAI {
     return `${file}${rank}`;
   }
 
-  private piecesToFENForColor(pieces: Piece[], color: PieceColor): string {
+  private piecesToFENForColor(
+    pieces: Piece[],
+    color: PieceColor,
+    enPassantTarget?: Position,
+    halfMoveClock?: number,
+  ): string {
     let fen = "";
     let emptyCount = 0;
 
@@ -263,7 +272,15 @@ export class ChessAI {
     }
 
     const castling = this.computeCastlingRights(pieces);
-    fen += color === "white" ? ` w ${castling} - 0 1` : ` b ${castling} - 0 1`;
+    // En passant field: convert Position to algebraic (column: x→'a'-'h', rank: 8-y)
+    const epField = enPassantTarget
+      ? this.positionToAlgebraic(enPassantTarget)
+      : "-";
+    const hmc = halfMoveClock ?? 0;
+    fen +=
+      color === "white"
+        ? ` w ${castling} ${epField} ${hmc} 1`
+        : ` b ${castling} ${epField} ${hmc} 1`;
     return fen;
   }
 

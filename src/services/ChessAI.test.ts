@@ -452,3 +452,46 @@ describe("destroy and restart", () => {
     });
   });
 });
+
+// ── FEN: en passant and half-move clock ──────────────────────────────────────
+
+describe("FEN: en passant target and half-move clock", () => {
+  it("includes the en passant square in algebraic notation when enPassantTarget is provided", () => {
+    // enPassantTarget {x:4, y:2} → column e (4+97='e'), rank 8-2=6 → "e6"
+    const { ai, worker } = readyAI();
+    void ai
+      .getNextMove(kingsAndPawns(), { x: 4, y: 2 })
+      .catch(() => {});
+    const positionMsg = worker.posted.find((m) => m.startsWith("position fen"));
+    expect(positionMsg).toContain("e6");
+  });
+
+  it("uses '-' for the en passant field when no enPassantTarget is given", () => {
+    const { ai, worker } = readyAI();
+    void ai.getNextMove(kingsAndPawns()).catch(() => {});
+    const positionMsg = worker.posted.find((m) => m.startsWith("position fen"));
+    expect(positionMsg).toContain("b - - 0 1");
+  });
+
+  it("embeds the halfMoveClock in the FEN when provided", () => {
+    const { ai, worker } = readyAI();
+    void ai.getNextMove(kingsAndPawns(), undefined, 5).catch(() => {});
+    const positionMsg = worker.posted.find((m) => m.startsWith("position fen"));
+    expect(positionMsg).toContain("b - - 5 1");
+  });
+
+  it("defaults halfMoveClock to 0 in the FEN when not provided", () => {
+    const { ai, worker } = readyAI();
+    void ai.getNextMove(kingsAndPawns()).catch(() => {});
+    const positionMsg = worker.posted.find((m) => m.startsWith("position fen"));
+    expect(positionMsg).toContain("b - - 0 1");
+  });
+
+  it("getHintMove also uses the enPassantTarget in the FEN", () => {
+    const { ai, worker } = readyAI();
+    // enPassantTarget {x:3, y:5} → column d (3+97='d'), rank 8-5=3 → "d3"
+    void ai.getHintMove(kingsAndPawns(), "black", { x: 3, y: 5 }).catch(() => {});
+    const positionMsg = worker.posted.find((m) => m.startsWith("position fen"));
+    expect(positionMsg).toContain("d3");
+  });
+});

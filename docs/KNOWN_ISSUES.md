@@ -26,7 +26,7 @@
 | INFO-002 | ℹ️ Théorique | ChessAI | `stopPending` peut avaler le `bestmove` suivant | ✅ Aucune action requise |
 | INFO-003 | ℹ️ Théorique | useP2PGame | `onResign` avec `playerColor` null → résultat incohérent | ✅ Corrigé |
 | DOC-001 | 🟠 Moyenne | README | « En passant » annoncé mais non implémenté | ✅ Corrigé |
-| LIM-001 | ℹ️ Design | moves | Pas d'en passant, ni nulle par répétition / 50 coups | — |
+| LIM-001 | ℹ️ Design | moves | Pas d'en passant, ni nulle par répétition / 50 coups | ✅ Corrigé |
 | LIM-002 | ℹ️ Design | P2P | Le guest fait confiance au host sans re-validation | ✅ Corrigé |
 | REC-001 | 🔧 Refacto | Game.tsx | Logique pure enfouie non testable | ✅ Corrigé |
 
@@ -211,14 +211,14 @@ Relevés par les tests composants (verrouillés par `// NOTE:` dans `src/compone
 
 ## LIM-001 / LIM-002 — Limitations assumées (design)
 
-- **LIM-001** : pas d'en passant (cf. DOC-001), pas de nulle par triple répétition ni règle des 50 coups. Nulle = pat ou rois seuls uniquement. Verrouillé par tests.
+- **LIM-001** : ✅ Corrigé — en passant, nulle par triple répétition et règle des 50 coups sont désormais implémentés. `GameState` expose `enPassantTarget`, `halfMoveClock` et `positionHistory`. Helpers `isDrawByRepetition()` / `isDrawBy50Moves()` exportés depuis `moves.ts`. La FEN envoyée à Stockfish inclut la case d'en passant et le compteur. `Game.tsx` déclenche la fin de partie sur répétition ou 50 coups via l'effet de filet.
 - **LIM-002** : en P2P le host est autoritaire ; le guest applique tout `move_confirm` sans re-validation (`src/hooks/useP2PGame.ts`). Acceptable pour du jeu entre amis ; à documenter, pas à « corriger » sans refonte du protocole.
 
 ## REC-001 — Extraction de la logique pure de `Game.tsx`
 
 - **Constat** : `Game.tsx` (~1 180 lignes) contient de la logique pure non testable isolément : `detectScholarsMate(moves)` (l.~55-82), `resolveGameMode(modeId, p2pMode)` (l.~84-90), accumulation des stats de session, chaîne de validation des coups IA.
 - **Recommandation** : extraire vers `src/utils/` (ex. `src/utils/chess/scholarsMate.ts`) et couvrir unitairement ; aucune modification de comportement. Prérequis utile avant tout travail E2E sur `Game.tsx`.
-- **Résolution** : `detectScholarsMate` extrait vers `src/utils/chess/tactics.ts` ; `resolveGameMode` extrait vers `src/utils/gameLogic.ts` (nouveau fichier). Game.tsx importe depuis ces nouveaux emplacements. 23 tests unitaires ajoutés (9 Scholar's Mate + 4 detectTactic smoke + 10 resolveGameMode). Aucun changement de comportement.
+- **Résolution** : `detectScholarsMate` extrait vers `src/utils/chess/tactics.ts` ; `resolveGameMode` extrait vers `src/utils/gameLogic.ts` (nouveau fichier). Game.tsx importe depuis ces nouveaux emplacements. 23 tests unitaires ajoutés (9 Scholar's Mate + 4 detectTactic smoke + 10 resolveGameMove). Aucun changement de comportement.
 
 ---
 

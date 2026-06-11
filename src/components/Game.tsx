@@ -31,6 +31,8 @@ import {
   detectTactic,
   MoveContext,
   getSmartFallbackMove,
+  isDrawByRepetition,
+  isDrawBy50Moves,
 } from "../utils/chess";
 import { detectScholarsMate } from "../utils/chess/tactics";
 import { resolveGameMode } from "../utils/gameLogic";
@@ -173,6 +175,7 @@ export default function Game() {
         piece,
         currentPieces,
         chess.gameStateRef.current.gameMode,
+        chess.gameStateRef.current.enPassantTarget,
       ).some((v) => v.x === move.to.x && v.y === move.to.y);
       if (!valid) {
         // Stockfish suggested a move that violates special-mode rules
@@ -287,6 +290,8 @@ export default function Game() {
       try {
         const move = await chess.aiRef.current.getNextMove(
           chess.gameStateRef.current.pieces,
+          chess.gameStateRef.current.enPassantTarget,
+          chess.gameStateRef.current.halfMoveClock,
         );
         if (!cancelled) applyMove(move);
       } catch (e) {
@@ -374,17 +379,45 @@ export default function Game() {
   }, [chess.gameState.currentTurn, chess.aiEnabled, chess.gameState.gameOver]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Safety net: catch any checkmate/stalemate that applyMoveToState might have missed.
+  // Also checks for repetition and 50-move rule draws.
   // Runs after every turn change or board update. In P2P the host is authoritative.
   React.useEffect(() => {
     if (chess.gameState.gameOver) return;
     if (chess.gameState.pieces.length === 0) return;
     if (p2p.isP2PMode) return;
 
+    // Check for draw by repetition or 50-move rule
+    if (isDrawByRepetition(chess.gameState.positionHistory ?? {})) {
+      chess.setGameState((prev) => {
+        if (prev.gameOver) return prev;
+        return {
+          ...prev,
+          gameOver: true,
+          winner: null,
+          drawReason: "repetition",
+        };
+      });
+      return;
+    }
+    if (isDrawBy50Moves(chess.gameState.halfMoveClock ?? 0)) {
+      chess.setGameState((prev) => {
+        if (prev.gameOver) return prev;
+        return {
+          ...prev,
+          gameOver: true,
+          winner: null,
+          drawReason: "fifty-moves",
+        };
+      });
+      return;
+    }
+
     if (
       !hasLegalMoves(
         chess.gameState.currentTurn,
         chess.gameState.pieces,
         chess.gameState.gameMode,
+        chess.gameState.enPassantTarget,
       )
     ) {
       const inCheck = chess.gameState.isCheck;
@@ -399,12 +432,14 @@ export default function Game() {
         };
       });
     }
-  }, [
-    // eslint-disable-line react-hooks/exhaustive-deps
+  }, [ // eslint-disable-line react-hooks/exhaustive-deps
     chess.gameState.currentTurn,
     chess.gameState.pieces,
     chess.gameState.gameMode,
     chess.gameState.gameOver,
+    chess.gameState.enPassantTarget,
+    chess.gameState.positionHistory,
+    chess.gameState.halfMoveClock,
     p2p.isP2PMode,
   ]);
 
@@ -423,8 +458,12 @@ export default function Game() {
       .filter((p) => p.color === chess.gameState.currentTurn)
       .forEach((p) => {
         if (
-          getValidMoves(p, chess.gameState.pieces, chess.gameState.gameMode)
-            .length > 0
+          getValidMoves(
+            p,
+            chess.gameState.pieces,
+            chess.gameState.gameMode,
+            chess.gameState.enPassantTarget,
+          ).length > 0
         ) {
           ids.add(p.id);
         }
@@ -434,6 +473,7 @@ export default function Game() {
     chess.gameState.pieces,
     chess.gameState.currentTurn,
     chess.gameState.gameMode,
+    chess.gameState.enPassantTarget,
     p2p.isP2PMode,
     p2p.playerColor,
   ]);
@@ -496,7 +536,12 @@ export default function Game() {
         return;
       }
       chess.aiRef.current
-        .getHintMove(chess.gameState.pieces, chess.gameState.currentTurn)
+        .getHintMove(
+          chess.gameState.pieces,
+          chess.gameState.currentTurn,
+          chess.gameState.enPassantTarget,
+          chess.gameState.halfMoveClock,
+        )
         .then((move) => {
           if (!cancelled) setHintMove(move);
         })
@@ -692,6 +737,7 @@ export default function Game() {
       piece,
       chess.gameState.pieces,
       chess.gameState.gameMode,
+      chess.gameState.enPassantTarget,
     );
     if (moves.length === 0) {
       let variant: LabelVariant;

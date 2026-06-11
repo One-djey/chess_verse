@@ -61,9 +61,12 @@ export function useP2PGame({
           actions.sendMoveReject({ type: "move_reject" });
           return;
         }
-        const valid = getValidMoves(piece, state.pieces, state.gameMode).some(
-          (v) => v.x === msg.to.x && v.y === msg.to.y,
-        );
+        const valid = getValidMoves(
+          piece,
+          state.pieces,
+          state.gameMode,
+          state.enPassantTarget,
+        ).some((v) => v.x === msg.to.x && v.y === msg.to.y);
         if (!valid) {
           actions.sendMoveReject({ type: "move_reject" });
           return;
@@ -108,7 +111,7 @@ export function useP2PGame({
             return prev;
           }
           // LIM-002: re-validate the host's move locally before applying it.
-          const validMoves = getValidMoves(piece, prev.pieces, prev.gameMode);
+          const validMoves = getValidMoves(piece, prev.pieces, prev.gameMode, prev.enPassantTarget);
           const isValid = validMoves.some(
             (v) => v.x === msg.to.x && v.y === msg.to.y,
           );

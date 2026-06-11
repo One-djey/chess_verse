@@ -13,6 +13,8 @@ import {
   hasLegalMoves,
   hasRawMoves,
   applyMoveToState,
+  isDrawByRepetition,
+  isDrawBy50Moves,
 } from "./moves";
 import {
   CLASSIC,
@@ -789,13 +791,12 @@ describe("assimilation mode", () => {
   });
 });
 
-// ── 9. Known limitation: no en passant ───────────────────────────────────────
+// ── 9. En passant ─────────────────────────────────────────────────────────────
 
-describe("en passant (known limitation)", () => {
-  // En passant is NOT implemented: a pawn can never capture diagonally onto an
-  // empty square, even immediately after the opponent's adjacent double step.
-  // This test locks the current behavior.
-  it("a pawn cannot capture en passant right after an adjacent double step", () => {
+describe("en passant", () => {
+  it("after a pawn double-push, getValidMoves on the adjacent opponent pawn includes the ep square", () => {
+    // Black pawn at (3,1) does a double push to (3,3), landing beside white pawn at (4,3).
+    // The ep target is (3,2). White pawn should be able to capture there.
     const whitePawn = makePiece("white", "pawn", 4, 3);
     const blackPawn = makePiece("black", "pawn", 3, 1);
     const state = makeState(
@@ -803,12 +804,134 @@ describe("en passant (known limitation)", () => {
       CLASSIC,
       { currentTurn: "black" },
     );
-    const next = applyMoveToState(state, blackPawn, pos(3, 3)); // double step lands beside the white pawn
+    const next = applyMoveToState(state, blackPawn, pos(3, 3));
+    // applyMoveToState should set enPassantTarget to (3, 2)
+    expect(next.enPassantTarget).toEqual({ x: 3, y: 2 });
     const wp = next.pieces.find((p) => p.id === whitePawn.id)!;
-    // The en passant target square (3,2) is empty → the diagonal move is invalid.
-    expect(isValidMove(wp, pos(3, 2), next.pieces, CLASSIC)).toBe(false);
-    expect(includesPos(getValidMoves(wp, next.pieces, CLASSIC), 3, 2)).toBe(
-      false,
+    const moves = getValidMoves(wp, next.pieces, CLASSIC, next.enPassantTarget);
+    expect(includesPos(moves, 3, 2)).toBe(true);
+    // Also valid via isValidMove
+    expect(isValidMove(wp, pos(3, 2), next.pieces, CLASSIC, next.enPassantTarget)).toBe(true);
+  });
+
+  it("one move later (ep target cleared), getValidMoves no longer includes the ep square", () => {
+    const whitePawn = makePiece("white", "pawn", 4, 3);
+    const blackPawn = makePiece("black", "pawn", 3, 1);
+    const whiteRook = makePiece("white", "rook", 0, 7);
+    const state = makeState(
+      [whitePawn, blackPawn, whiteRook, whiteKing(), blackKing()],
+      CLASSIC,
+      { currentTurn: "black" },
     );
+    // Black does double push, setting ep target
+    const afterBlack = applyMoveToState(state, blackPawn, pos(3, 3));
+    // White plays a rook move (not en passant), ep target should clear
+    const wr = afterBlack.pieces.find((p) => p.id === whiteRook.id)!;
+    const afterWhite = applyMoveToState(afterBlack, wr, pos(0, 6));
+    expect(afterWhite.enPassantTarget).toBeUndefined();
+    const wp = afterWhite.pieces.find((p) => p.id === whitePawn.id)!;
+    const moves = getValidMoves(wp, afterWhite.pieces, CLASSIC, afterWhite.enPassantTarget);
+    expect(includesPos(moves, 3, 2)).toBe(false);
+  });
+
+  it("applyMoveToState with en passant capture removes the correct pawn from pieces", () => {
+    // White pawn at (4,3), black pawn double-pushes from (3,1) to (3,3).
+    // White captures en passant at (3,2): black pawn at (3,3) should be removed.
+    const whitePawn = makePiece("white", "pawn", 4, 3);
+    const blackPawn = makePiece("black", "pawn", 3, 1);
+    const state = makeState(
+      [whitePawn, blackPawn, whiteKing(), blackKing()],
+      CLASSIC,
+      { currentTurn: "black" },
+    );
+    const afterBlackMove = applyMoveToState(state, blackPawn, pos(3, 3));
+    const epTarget = afterBlackMove.enPassantTarget!;
+    const wp = afterBlackMove.pieces.find((p) => p.id === whitePawn.id)!;
+    const afterEP = applyMoveToState(afterBlackMove, wp, epTarget);
+    // White pawn should be at (3,2)
+    const movedWP = afterEP.pieces.find((p) => p.id === whitePawn.id)!;
+    expect(movedWP.position).toEqual({ x: 3, y: 2 });
+    // Black pawn should have been removed
+    expect(afterEP.pieces.find((p) => p.id === blackPawn.id)).toBeUndefined();
+    // The move record should record the captured pawn
+    const lastMove = afterEP.moves[afterEP.moves.length - 1];
+    expect(lastMove.capturedPiece?.id).toBe(blackPawn.id);
+  });
+
+  it("white pawn double-push sets the correct ep target square", () => {
+    const whitePawn = makePiece("white", "pawn", 4, 6);
+    const state = makeState([whitePawn, whiteKing(), blackKing()], CLASSIC);
+    const next = applyMoveToState(state, whitePawn, pos(4, 4));
+    // White moved from y=6 to y=4, skipping y=5
+    expect(next.enPassantTarget).toEqual({ x: 4, y: 5 });
+  });
+
+  it("a non-pawn-double-push move clears the ep target", () => {
+    const whitePawn = makePiece("white", "pawn", 4, 6);
+    const state = makeState([whitePawn, whiteKing(), blackKing()], CLASSIC);
+    const afterDouble = applyMoveToState(state, whitePawn, pos(4, 4));
+    expect(afterDouble.enPassantTarget).toEqual({ x: 4, y: 5 });
+    // Black king moves — clears ep target
+    const bk = afterDouble.pieces.find((p) => p.type === "king" && p.color === "black")!;
+    const afterKing = applyMoveToState(afterDouble, bk, pos(4, 1));
+    expect(afterKing.enPassantTarget).toBeUndefined();
+  });
+});
+
+// ── 10. Half-move clock & draw by 50 moves ────────────────────────────────────
+
+describe("halfMoveClock and isDrawBy50Moves", () => {
+  it("isDrawBy50Moves(99) returns false", () => {
+    expect(isDrawBy50Moves(99)).toBe(false);
+  });
+
+  it("isDrawBy50Moves(100) returns true", () => {
+    expect(isDrawBy50Moves(100)).toBe(true);
+  });
+
+  it("half-move clock resets on pawn move", () => {
+    const pawn = makePiece("white", "pawn", 4, 6);
+    const state = makeState([pawn, whiteKing(), blackKing()], CLASSIC, {
+      halfMoveClock: 10,
+    });
+    const next = applyMoveToState(state, pawn, pos(4, 5));
+    expect(next.halfMoveClock).toBe(0);
+  });
+
+  it("half-move clock resets on capture", () => {
+    const rook = makePiece("white", "rook", 0, 4);
+    const victim = makePiece("black", "pawn", 5, 4);
+    const state = makeState([rook, victim, whiteKing(), blackKing()], CLASSIC, {
+      halfMoveClock: 20,
+    });
+    const next = applyMoveToState(state, rook, pos(5, 4));
+    expect(next.halfMoveClock).toBe(0);
+  });
+
+  it("half-move clock increments on non-pawn non-capture move", () => {
+    const rook = makePiece("white", "rook", 0, 4);
+    const state = makeState([rook, whiteKing(), blackKing()], CLASSIC, {
+      halfMoveClock: 5,
+    });
+    const next = applyMoveToState(state, rook, pos(0, 3));
+    expect(next.halfMoveClock).toBe(6);
+  });
+});
+
+// ── 11. Triple-repetition draw ─────────────────────────────────────────────────
+
+describe("isDrawByRepetition", () => {
+  it("returns false for an empty history", () => {
+    expect(isDrawByRepetition({})).toBe(false);
+  });
+
+  it("returns false when max count is 2", () => {
+    expect(isDrawByRepetition({ abc: 2, def: 1 })).toBe(false);
+  });
+
+  it("returns true when any position has count >= 3", () => {
+    expect(isDrawByRepetition({ abc: 3 })).toBe(true);
+    expect(isDrawByRepetition({ abc: 2, def: 3 })).toBe(true);
+    expect(isDrawByRepetition({ abc: 4 })).toBe(true);
   });
 });
