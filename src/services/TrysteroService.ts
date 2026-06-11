@@ -13,6 +13,7 @@ import type {
   RematchDeclineMessage,
   RematchStartMessage,
   ArenaInitMessage,
+  SyncRequestMessage,
 } from "../types/p2p";
 
 const APP_ID = "chess-verse-2024";
@@ -63,6 +64,8 @@ export function makeRoomActions(room: Room) {
     room.makeAction<GuestReadyMessage>("guest_ready");
   const [sendArenaInit, onArenaInit] =
     room.makeAction<ArenaInitMessage>("arena_init");
+  const [sendSyncRequest, onSyncRequest] =
+    room.makeAction<SyncRequestMessage>("sync_request");
 
   return {
     sendMoveProposal,
@@ -89,5 +92,7 @@ export function makeRoomActions(room: Room) {
     onGuestReady,
     sendArenaInit,
     onArenaInit,
+    sendSyncRequest,
+    onSyncRequest,
   };
 }

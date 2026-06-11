@@ -54,13 +54,19 @@ export function useP2PGame({
         const piece = state.pieces.find(
           (p) => p.id === msg.pieceId && p.color === "black",
         );
-        if (!piece || state.currentTurn !== "black" || state.gameOver) {
+        const fromMismatch =
+          piece &&
+          (msg.from.x !== piece.position.x || msg.from.y !== piece.position.y);
+        if (!piece || fromMismatch || state.currentTurn !== "black" || state.gameOver) {
           actions.sendMoveReject({ type: "move_reject" });
           return;
         }
-        const valid = getValidMoves(piece, state.pieces, state.gameMode).some(
-          (v) => v.x === msg.to.x && v.y === msg.to.y,
-        );
+        const valid = getValidMoves(
+          piece,
+          state.pieces,
+          state.gameMode,
+          state.enPassantTarget,
+        ).some((v) => v.x === msg.to.x && v.y === msg.to.y);
         if (!valid) {
           actions.sendMoveReject({ type: "move_reject" });
           return;
@@ -80,6 +86,25 @@ export function useP2PGame({
         );
       });
 
+      // P2P resilience: when the guest detects divergence it sends sync_request.
+      // The host responds with the current authoritative state so the guest can
+      // re-align. Trade-off: adds a round-trip on divergence, but never leaves
+      // the game permanently stuck in a desync.
+      actions.onSyncRequest(() => {
+        const currentState = gameStateRef.current;
+        if (!currentState) return;
+        actions.sendSyncState({
+          type: "sync_state",
+          pieces: currentState.pieces,
+          seq: seqRef.current,
+          currentTurn: currentState.currentTurn,
+          enPassantTarget: currentState.enPassantTarget,
+          halfMoveClock: currentState.halfMoveClock,
+          positionHistory: currentState.positionHistory,
+          isCheck: currentState.isCheck,
+        });
+      });
+
       actions.onRematchRequest(() => setRematchState("offered"));
       actions.onRematchDecline(() => setRematchState("idle"));
       actions.onRematchAccept(() => {
@@ -96,12 +121,37 @@ export function useP2PGame({
             `P2P seq gap: expected ${seqRef.current + 1}, got ${msg.seq}`,
           );
         }
-        seqRef.current = msg.seq;
         setGameState((prev) => {
           const piece = prev.pieces.find((p) => p.id === msg.pieceId);
-          return piece
-            ? applyMoveToState(prev, piece, msg.to, msg.promotionType)
-            : prev;
+          if (!piece) {
+            // P2P resilience: instead of silently rejecting (which would leave
+            // the game in a stuck state if host/guest have diverged), we request
+            // a full resync. The host responds with sync_state, which the guest
+            // applies to re-align. seqRef is NOT advanced so the next seq gap
+            // warning still fires, making the divergence visible in logs.
+            console.error(
+              `[P2P] Guest: move_confirm references unknown pieceId "${msg.pieceId}" — requesting resync`,
+            );
+            actions.sendSyncRequest({ type: "sync_request" });
+            return prev;
+          }
+          // LIM-002: re-validate the host's move locally before applying it.
+          // P2P resilience: instead of silently ignoring an invalid move (which
+          // would leave the game stuck if states have diverged), we request a
+          // full resync so the host can re-align the guest.
+          const validMoves = getValidMoves(piece, prev.pieces, prev.gameMode, prev.enPassantTarget);
+          const isValid = validMoves.some(
+            (v) => v.x === msg.to.x && v.y === msg.to.y,
+          );
+          if (!isValid) {
+            console.error(
+              `[P2P] Guest: move from host not in valid moves — requesting resync`,
+            );
+            actions.sendSyncRequest({ type: "sync_request" });
+            return prev;
+          }
+          seqRef.current = msg.seq;
+          return applyMoveToState(prev, piece, msg.to, msg.promotionType);
         });
       });
       actions.onMoveReject(() =>
@@ -111,17 +161,36 @@ export function useP2PGame({
           validMoves: [],
         })),
       );
+      // P2P resilience: apply the authoritative state broadcast by the host
+      // after a resync has been requested. The guest replaces its pieces with
+      // the host's snapshot and aligns its seq counter so subsequent confirms
+      // are processed correctly.
+      actions.onSyncState((msg) => {
+        seqRef.current = msg.seq;
+        setGameState((prev) => ({
+          ...prev,
+          pieces: msg.pieces,
+          currentTurn: msg.currentTurn,
+          enPassantTarget: msg.enPassantTarget,
+          halfMoveClock: msg.halfMoveClock,
+          positionHistory: msg.positionHistory,
+          isCheck: msg.isCheck,
+          selectedPiece: null,
+          validMoves: [],
+        }));
+      });
       actions.onRematchRequest(() => setRematchState("offered"));
       actions.onRematchDecline(() => setRematchState("idle"));
       actions.onRematchStart((msg) => resetGame(msg.pieces));
     }
 
     actions.onResign(() => {
+      if (playerColor === null) return;
       const opp: PieceColor = playerColor === "white" ? "black" : "white";
       setGameState((prev) => ({
         ...prev,
         gameOver: true,
-        winner: playerColor ?? "white",
+        winner: playerColor,
         surrenderedBy: opp,
       }));
     });

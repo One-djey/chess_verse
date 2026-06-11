@@ -83,6 +83,8 @@
     "black": "黒",
     "stalemate": "ステールメート：合法手なし",
     "onlyKings": "キングのみ残っています",
+    "repetition": "千日手による引き分け",
+    "fiftyMoves": "50手ルールによる引き分け",
     "duration": "対局時間",
     "movesPlayed": "手数",
     "aiLevel": "AIレベル",
@@ -90,6 +92,9 @@
     "accept": "承諾",
     "decline": "拒否",
     "waitingForOpponent": "対戦相手を待機中…",
+    "youWin": "あなたの勝ち！",
+    "youLose": "あなたの負け。",
+    "peerGone": "対戦相手が退出しました",
     "playAgain": "もう一度プレイ",
     "rematch": "再戦",
     "mainMenu": "メインメニュー"
@@ -148,7 +153,9 @@
       "promotion": "プロモーション！",
       "promotionDesc": "ポーンが最終ランクに到達",
       "castling": "キャスリング",
-      "castlingDesc": "キングとルークが位置を交換"
+      "castlingDesc": "キングとルークが位置を交換",
+      "enPassant": "アンパッサン！",
+      "enPassantDesc": "2マス前進したポーンをすれ違いで取る"
     },
     "moveAnnotations": "手の注釈",
     "moveAnnotationsDesc": "各手の後に戦術ラベルを表示",
@@ -513,5 +520,8 @@
       "AIがすべての可能性を探っています...",
       "AIが最善の選択肢を評価しています..."
     ]
+  },
+  "common": {
+    "close": "閉じる"
   }
 }

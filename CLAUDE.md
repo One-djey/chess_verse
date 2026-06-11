@@ -4,6 +4,22 @@
 
 React 18 + TypeScript + Vite + Tailwind CSS. No backend. P2P via Trystero (WebRTC). AI via Stockfish (Web Worker in `/public/stockfish/`).
 
+## Tests
+
+- Runner: **Vitest 3** (`vitest.config.ts`, separate from `vite.config.ts`), default env `node`; component tests opt into jsdom via `// @vitest-environment jsdom` docblock.
+- Commands: `npm run test` | `npm run test:watch` | `npm run test:coverage` (per-file coverage thresholds on P0 modules) | `npm run test:e2e` (Playwright — requires a `npm run build` first or uses cached `dist/`).
+- Tests are colocated (`src/utils/chess/moves.test.ts` next to `moves.ts`). Shared fixtures in `src/test/helpers.ts` (`makePiece`, `makeState`, `CLASSIC`/`BORDERLESS`/`ALL_RANDOM`/`ASSIMILATION` modes). E2E specs in `e2e/` (`navigation.spec.ts`, `settings-persistence.spec.ts`, `game-board.spec.ts`).
+- Full QA strategy & test-case catalog: `docs/TEST_STRATEGY.md`. Known bugs/debt registry (causes, locations, recommended fixes — read before fixing any listed bug): `docs/KNOWN_ISSUES.md`. CI: `.github/workflows/test.yml` (lint + unit tests + build + e2e in separate job).
+- Other chess modules not listed below: `src/utils/chess/tactics.ts` (tactic detection), `src/utils/chess/coliseumMoves.ts` + `src/components/ColiseumGame.tsx` (coliseum mode), `src/utils/chess/legendaryPatterns.ts` (famous mate detection).
+
+### Test policy — MANDATORY for every code change
+
+- **Every change to `src/` ships its tests in the same commit.** New module → colocated `*.test.ts(x)` (nominal + expected errors + edge cases). Changed behavior → update the affected tests in the same commit. New user-facing flow → add/update an `e2e/` scenario. Full doctrine per change type: `docs/TEST_STRATEGY.md` §8.
+- **Bug fix = red → green.** Write the failing test first. If the bug is listed in `docs/KNOWN_ISSUES.md`, follow its procedure (invert the `// NOTE:` test, update the entry's status).
+- **Never "fix" a failing `// NOTE:` test by inverting it blindly** — these assert known-buggy behavior on purpose. Read `docs/KNOWN_ISSUES.md` first; the failure usually means you changed behavior that was deliberately locked.
+- **Never lower coverage thresholds** in `vitest.config.ts` to make CI pass. New game-logic modules (`src/utils/chess/*`, services) must be **added** to the per-file thresholds.
+- Definition of done: `npm run test` + `npm run lint` + `npm run build` green locally. CI blocks merges otherwise.
+
 ## Key paths
 
 | What                 | Where                                                                                                        |

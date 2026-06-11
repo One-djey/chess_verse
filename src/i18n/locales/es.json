@@ -83,6 +83,8 @@
     "black": "Negras",
     "stalemate": "Ahogado: sin movimientos legales",
     "onlyKings": "Solo quedan los reyes",
+    "repetition": "Tablas por triple repetición",
+    "fiftyMoves": "Tablas por la regla de los 50 movimientos",
     "duration": "Duración",
     "movesPlayed": "Movimientos jugados",
     "aiLevel": "Nivel IA",
@@ -90,6 +92,9 @@
     "accept": "Aceptar",
     "decline": "Rechazar",
     "waitingForOpponent": "Esperando al oponente…",
+    "youWin": "¡Ganaste!",
+    "youLose": "Perdiste.",
+    "peerGone": "El oponente abandonó la partida",
     "playAgain": "Jugar de nuevo",
     "rematch": "Revancha",
     "mainMenu": "Menú principal"
@@ -148,7 +153,9 @@
       "promotion": "¡Promoción!",
       "promotionDesc": "Un peón alcanza la última fila",
       "castling": "Enroque",
-      "castlingDesc": "El rey y la torre intercambian posiciones"
+      "castlingDesc": "El rey y la torre intercambian posiciones",
+      "enPassant": "¡Al paso!",
+      "enPassantDesc": "El peón captura al peón que avanzó dos casillas"
     },
     "moveAnnotations": "Anotaciones de jugada",
     "moveAnnotationsDesc": "Muestra etiquetas tácticas después de cada jugada",
@@ -513,5 +520,8 @@
       "La IA explora todas las posibilidades...",
       "La IA evalúa las mejores opciones..."
     ]
+  },
+  "common": {
+    "close": "Cerrar"
   }
 }

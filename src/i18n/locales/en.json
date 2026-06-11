@@ -83,6 +83,8 @@
     "black": "Black",
     "stalemate": "Stalemate — no legal moves",
     "onlyKings": "Only kings remain",
+    "repetition": "Draw by threefold repetition",
+    "fiftyMoves": "Draw by 50-move rule",
     "duration": "Duration",
     "movesPlayed": "Moves played",
     "aiLevel": "AI Level",
@@ -90,6 +92,9 @@
     "accept": "Accept",
     "decline": "Decline",
     "waitingForOpponent": "Waiting for opponent…",
+    "youWin": "You win!",
+    "youLose": "You lose.",
+    "peerGone": "Opponent left the game",
     "playAgain": "Play Again",
     "rematch": "Rematch",
     "mainMenu": "Main Menu"
@@ -148,7 +153,9 @@
       "promotion": "Promotion!",
       "promotionDesc": "A pawn reaches the last rank",
       "castling": "Castling",
-      "castlingDesc": "King and rook switch places"
+      "castlingDesc": "King and rook switch places",
+      "enPassant": "En passant!",
+      "enPassantDesc": "Pawn captures the double-pushed pawn in passing"
     },
     "moveAnnotations": "Move Annotations",
     "moveAnnotationsDesc": "Show tactical labels after each move",
@@ -513,5 +520,8 @@
       "The AI is exploring all possibilities...",
       "The AI is evaluating the best options..."
     ]
+  },
+  "common": {
+    "close": "Close"
   }
 }

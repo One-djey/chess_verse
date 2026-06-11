@@ -9,6 +9,7 @@ import {
   Crosshair,
   TrendingUp,
   ArrowLeftRight,
+  ArrowUpRight,
   Trophy,
   Brain,
 } from "lucide-react";
@@ -20,7 +21,8 @@ export type AnnotationVariant =
   | "pin"
   | "capture"
   | "promotion"
-  | "castling";
+  | "castling"
+  | "enPassant";
 
 export type AlertVariant = "pinnedPiece" | "blockedPiece" | "checkBlockedPiece";
 
@@ -64,6 +66,7 @@ const LABEL_PRIORITY: Record<LabelVariant, number> = {
   pin: 60,
   promotion: 50,
   capture: 40,
+  enPassant: 35,
   castling: 30,
   pinnedPiece: 25,
   blockedPiece: 20,
@@ -79,6 +82,7 @@ const LABEL_TIMEOUT: Record<LabelVariant, number> = {
   capture: 6000,
   promotion: 6000,
   castling: 6000,
+  enPassant: 6000,
   checkBlockedPiece: 5500,
   pinnedPiece: 5500,
   blockedPiece: 5500,
@@ -102,6 +106,7 @@ const TACTIC_ICONS: Record<
   capture: Crosshair,
   promotion: TrendingUp,
   castling: ArrowLeftRight,
+  enPassant: ArrowUpRight,
 };
 
 const MAX_VISIBLE = 5;

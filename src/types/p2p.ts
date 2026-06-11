@@ -58,7 +58,12 @@ export type GuestReadyMessage = {
 export type SyncStateMessage = {
   type: "sync_state";
   pieces: Piece[];
-  seq: number; // initial sequence (always 0)
+  seq: number; // host's current authoritative sequence counter at the time of broadcast
+  currentTurn: PieceColor;
+  enPassantTarget?: Position;
+  halfMoveClock?: number;
+  positionHistory?: Record<string, number>;
+  isCheck: boolean;
 };
 
 export type ResignMessage = {
@@ -77,6 +82,9 @@ export type RematchStartMessage = { type: "rematch_start"; pieces: Piece[] };
 // Host → Guest: Coliseum arena data (sent before sync_state for coliseum mode)
 export type ArenaInitMessage = { type: "arena_init"; arena: Arena };
 
+// Guest → Host: request a full state resync (sent when guest detects divergence)
+export type SyncRequestMessage = { type: "sync_request" };
+
 export type RematchState = "idle" | "requested" | "offered" | "starting";
 
 export type P2PMessage =
@@ -91,4 +99,5 @@ export type P2PMessage =
   | RematchAcceptMessage
   | RematchDeclineMessage
   | RematchStartMessage
-  | ArenaInitMessage;
+  | ArenaInitMessage
+  | SyncRequestMessage;

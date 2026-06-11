@@ -83,6 +83,8 @@
     "black": "黑方",
     "stalemate": "逼和：无合法走法",
     "onlyKings": "仅剩国王",
+    "repetition": "三次重复局面和棋",
+    "fiftyMoves": "五十步规则和棋",
     "duration": "时长",
     "movesPlayed": "走棋数",
     "aiLevel": "AI等级",
@@ -90,6 +92,9 @@
     "accept": "接受",
     "decline": "拒绝",
     "waitingForOpponent": "等待对手…",
+    "youWin": "你赢了！",
+    "youLose": "你输了。",
+    "peerGone": "对手已离开游戏",
     "playAgain": "再玩一次",
     "rematch": "再战",
     "mainMenu": "主菜单"
@@ -148,7 +153,9 @@
       "promotion": "升变！",
       "promotionDesc": "兵抵达最后一排",
       "castling": "易位",
-      "castlingDesc": "王和车交换位置"
+      "castlingDesc": "王和车交换位置",
+      "enPassant": "过路兵！",
+      "enPassantDesc": "兵吃掉刚走了两格的对方兵"
     },
     "moveAnnotations": "走法注释",
     "moveAnnotationsDesc": "每步棋后显示战术标签",
@@ -513,5 +520,8 @@
       "AI正在探索所有可能性...",
       "AI正在评估最佳选择..."
     ]
+  },
+  "common": {
+    "close": "关闭"
   }
 }

@@ -83,6 +83,8 @@
     "black": "흑",
     "stalemate": "스테일메이트: 합법적인 이동 없음",
     "onlyKings": "킹만 남아 있습니다",
+    "repetition": "삼중 반복으로 무승부",
+    "fiftyMoves": "50수 규칙으로 무승부",
     "duration": "시간",
     "movesPlayed": "진행한 수",
     "aiLevel": "AI 레벨",
@@ -90,6 +92,9 @@
     "accept": "수락",
     "decline": "거절",
     "waitingForOpponent": "상대방 대기 중…",
+    "youWin": "당신이 이겼습니다!",
+    "youLose": "당신이 졌습니다.",
+    "peerGone": "상대가 게임을 떠났습니다",
     "playAgain": "다시 플레이",
     "rematch": "재대결",
     "mainMenu": "메인 메뉴"
@@ -148,7 +153,9 @@
       "promotion": "프로모션!",
       "promotionDesc": "폰이 마지막 랭크에 도달",
       "castling": "캐슬링",
-      "castlingDesc": "킹과 룩이 자리를 교환"
+      "castlingDesc": "킹과 룩이 자리를 교환",
+      "enPassant": "앙파상!",
+      "enPassantDesc": "두 칸 전진한 폰을 지나치며 잡기"
     },
     "moveAnnotations": "수 주석",
     "moveAnnotationsDesc": "각 수 후에 전술 레이블 표시",
@@ -513,5 +520,8 @@
       "AI가 모든 가능성을 탐색하고 있습니다...",
       "AI가 최선의 선택지를 평가하고 있습니다..."
     ]
+  },
+  "common": {
+    "close": "닫기"
   }
 }

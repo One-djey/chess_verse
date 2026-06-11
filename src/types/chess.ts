@@ -42,6 +42,8 @@ export interface MoveRecord {
   to: Position;
   capturedPiece: Piece | null;
   wasPromotion: boolean;
+  /** True when the move was an en passant capture (pawn captures diagonally on empty ep-target square). */
+  isEnPassant?: boolean;
 }
 
 export interface GameState {
@@ -56,9 +58,15 @@ export interface GameState {
   moves: MoveRecord[];
   gameOver: boolean;
   winner: PieceColor | null;
-  drawReason?: "stalemate" | "only-kings";
+  drawReason?: "stalemate" | "only-kings" | "repetition" | "fifty-moves";
   surrenderedBy?: PieceColor;
   gameMode: GameMode;
+  /** Square where an en passant capture can land (the square skipped by the double pawn push). */
+  enPassantTarget?: Position;
+  /** Half-move clock for the 50-move rule; resets on pawn move or capture. */
+  halfMoveClock?: number;
+  /** Position hash → occurrence count, for triple-repetition draw detection. */
+  positionHistory?: Record<string, number>;
 }
 
 export interface CastlingMove {

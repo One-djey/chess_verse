@@ -4,6 +4,7 @@ import {
   PieceType,
   Position,
   GameMode,
+  MoveRecord,
 } from "../../types/chess";
 import { isInCheck, isValidMove } from "./moves";
 
@@ -14,7 +15,8 @@ export type TacticTag =
   | "pin"
   | "capture"
   | "promotion"
-  | "castling";
+  | "castling"
+  | "enPassant";
 
 export interface MoveContext {
   /** The piece that moved (as it was BEFORE the move). */
@@ -24,6 +26,8 @@ export interface MoveContext {
   capturedPiece: Piece | null;
   wasPromotion: boolean;
   wasCastling: boolean;
+  /** True when the move was an en passant capture. */
+  wasEnPassant?: boolean;
   /** Board state BEFORE the move. */
   prevPieces: Piece[];
   /** Board state AFTER the move (result of applyMoveToState). */
@@ -60,7 +64,6 @@ function detectFork(ctx: MoveContext): boolean {
 
   let attackCount = 0;
   for (const enemy of enemies) {
-    // Use skipCheckValidation=true: we only care about attack geometry, not legality
     if (isValidMove(movedPiece, enemy.position, ctx.nextPieces, ctx.gameMode)) {
       attackCount++;
       if (attackCount >= 2) return true;
@@ -107,11 +110,49 @@ function detectPin(ctx: MoveContext): boolean {
 }
 
 /**
+ * Detects the exact Scholar's Mate pattern (white side):
+ *   1. e2→e4  2. Q→h5  3. B→c4  4. Q×f7#
+ *
+ * Coordinate system: y=0 is rank 8 (black back rank), y=7 is rank 1 (white back rank).
+ * The move list is one entry per half-move (ply), white plays even indices.
+ *
+ * Extracted from Game.tsx (REC-001) — pure function with no React dependencies.
+ */
+export function detectScholarsMate(moves: MoveRecord[]): boolean {
+  if (moves.length < 7) return false;
+  const m0 = moves[0]; // white ply 1: pawn e2(4,6)→e4(4,4)
+  const m2 = moves[2]; // white ply 2: queen →h5(7,3)
+  const m4 = moves[4]; // white ply 3: bishop →c4(2,4)
+  const m6 = moves[6]; // white ply 4: queen ×f7(5,1)#
+  return (
+    m0.piece.color === "white" &&
+    m0.piece.type === "pawn" &&
+    m0.from.x === 4 &&
+    m0.from.y === 6 &&
+    m0.to.x === 4 &&
+    m0.to.y === 4 &&
+    m2.piece.color === "white" &&
+    m2.piece.type === "queen" &&
+    m2.to.x === 7 &&
+    m2.to.y === 3 &&
+    m4.piece.color === "white" &&
+    m4.piece.type === "bishop" &&
+    m4.to.x === 2 &&
+    m4.to.y === 4 &&
+    m6.piece.color === "white" &&
+    m6.piece.type === "queen" &&
+    m6.to.x === 5 &&
+    m6.to.y === 1 &&
+    m6.capturedPiece !== null
+  );
+}
+
+/**
  * Returns the highest-priority tactic tag for the given move, or null if
  * the move is unremarkable.
  *
  * Priority order (highest first):
- *   promotion > castling > check > discoveredCheck > fork > pin > capture
+ *   promotion > castling > check > discoveredCheck > enPassant > fork > pin > capture
  */
 export function detectTactic(ctx: MoveContext): TacticTag | null {
   if (ctx.wasPromotion) return "promotion";
@@ -142,6 +183,9 @@ export function detectTactic(ctx: MoveContext): TacticTag | null {
     return "discoveredCheck";
   }
 
+  // en passant ranks above fork/pin/capture: it's a named special move.
+  // Check and discoveredCheck already returned above when applicable.
+  if (ctx.wasEnPassant) return "enPassant";
   if (detectFork(ctx)) return "fork";
   if (detectPin(ctx)) return "pin";
   if (ctx.capturedPiece) return "capture";

@@ -83,6 +83,8 @@
     "black": "Noirs",
     "stalemate": "Pat : aucun mouvement légal",
     "onlyKings": "Il ne reste que les rois",
+    "repetition": "Nulle par triple répétition",
+    "fiftyMoves": "Nulle par la règle des 50 coups",
     "duration": "Durée",
     "movesPlayed": "Coups joués",
     "aiLevel": "Niveau IA",
@@ -90,6 +92,9 @@
     "accept": "Accepter",
     "decline": "Refuser",
     "waitingForOpponent": "En attente de l'adversaire…",
+    "youWin": "Vous gagnez !",
+    "youLose": "Vous perdez.",
+    "peerGone": "L'adversaire a quitté la partie",
     "playAgain": "Rejouer",
     "rematch": "Revanche",
     "mainMenu": "Menu principal"
@@ -148,7 +153,9 @@
       "promotion": "Promotion !",
       "promotionDesc": "Un pion atteint la dernière rangée",
       "castling": "Roque",
-      "castlingDesc": "Le roi et la tour échangent leurs places"
+      "castlingDesc": "Le roi et la tour échangent leurs places",
+      "enPassant": "En passant !",
+      "enPassantDesc": "Le pion capture le pion ayant avancé de deux cases"
     },
     "moveAnnotations": "Annotations de coup",
     "moveAnnotationsDesc": "Affiche des étiquettes tactiques après chaque coup",
@@ -513,5 +520,8 @@
       "L'IA explore toutes les possibilités...",
       "L'IA évalue ses meilleures options..."
     ]
+  },
+  "common": {
+    "close": "Fermer"
   }
 }

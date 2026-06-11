@@ -153,6 +153,21 @@ export function isColiseumSquareUnderAttack(
 ): boolean {
   const attackers = pieces.filter((p) => p.color === byColor);
   return attackers.some((attacker) => {
+    // Coliseum pawns are omnidirectional: they capture on ALL 4 diagonals (unlike
+    // standard chess where direction is color-dependent). getColiseumValidMoves only
+    // includes diagonal squares when an enemy piece is present there (mustCapture=true).
+    // For coverage-map purposes (e.g. king safety), we must also count empty diagonal
+    // squares as "under attack" by a pawn.
+    //
+    // Pawn handling is fully self-contained here: pawns attack only diagonals, never
+    // orthogonals. We do NOT delegate to getColiseumValidMoves for pawns because that
+    // function returns orthogonal squares as valid pawn moves (mustEmpty=true), which
+    // would incorrectly mark orthogonal neighbours as "attacked".
+    if (attacker.type === "pawn") {
+      const dx = Math.abs(pos.x - attacker.position.x);
+      const dy = Math.abs(pos.y - attacker.position.y);
+      return dx === 1 && dy === 1;
+    }
     const moves = getColiseumValidMoves(attacker, pieces, arena);
     return moves.some((m) => m.x === pos.x && m.y === pos.y);
   });

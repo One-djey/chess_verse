@@ -83,6 +83,8 @@
     "black": "Nero",
     "stalemate": "Stallo: nessuna mossa legale",
     "onlyKings": "Rimangono solo i re",
+    "repetition": "Patta per triplice ripetizione",
+    "fiftyMoves": "Patta per la regola delle 50 mosse",
     "duration": "Durata",
     "movesPlayed": "Mosse giocate",
     "aiLevel": "Livello IA",
@@ -90,6 +92,9 @@
     "accept": "Accetta",
     "decline": "Rifiuta",
     "waitingForOpponent": "In attesa dell'avversario…",
+    "youWin": "Hai vinto!",
+    "youLose": "Hai perso.",
+    "peerGone": "L'avversario ha lasciato la partita",
     "playAgain": "Gioca ancora",
     "rematch": "Rivincita",
     "mainMenu": "Menu principale"
@@ -148,7 +153,9 @@
       "promotion": "Promozione!",
       "promotionDesc": "Un pedone raggiunge l'ultima traversa",
       "castling": "Arrocco",
-      "castlingDesc": "Il re e la torre si scambiano di posto"
+      "castlingDesc": "Il re e la torre si scambiano di posto",
+      "enPassant": "En passant!",
+      "enPassantDesc": "Il pedone cattura il pedone avanzato di due case"
     },
     "moveAnnotations": "Annotazioni mosse",
     "moveAnnotationsDesc": "Mostra etichette tattiche dopo ogni mossa",
@@ -513,5 +520,8 @@
       "L'IA esplora tutte le possibilità...",
       "L'IA valuta le migliori opzioni..."
     ]
+  },
+  "common": {
+    "close": "Chiudi"
   }
 }
