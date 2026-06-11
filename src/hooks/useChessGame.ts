@@ -40,6 +40,9 @@ export function makeInitialState(
     gameOver: false,
     winner: null,
     gameMode,
+    enPassantTarget: undefined,
+    halfMoveClock: 0,
+    positionHistory: {},
   };
 }
 

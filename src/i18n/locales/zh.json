@@ -90,6 +90,9 @@
     "accept": "接受",
     "decline": "拒绝",
     "waitingForOpponent": "等待对手…",
+    "youWin": "你赢了！",
+    "youLose": "你输了。",
+    "peerGone": "对手已离开游戏",
     "playAgain": "再玩一次",
     "rematch": "再战",
     "mainMenu": "主菜单"
@@ -513,5 +516,8 @@
       "AI正在探索所有可能性...",
       "AI正在评估最佳选择..."
     ]
+  },
+  "common": {
+    "close": "关闭"
   }
 }

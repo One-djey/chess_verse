@@ -5,6 +5,7 @@ import {
   hasLegalMoves,
   normalizePos,
   isValidMove,
+  isSquareUnderAttack,
   getPieceAt,
 } from "./moves";
 
@@ -71,10 +72,30 @@ function classifyMate(
   );
   if (attackers.length === 0) return "";
 
+  // Pieces that confine the king by controlling its adjacent escape squares
+  // (used to classify patterns like Arabian and Opera where a piece may block
+  // escapes without giving check directly).
+  const confiners = after.filter((p) => {
+    if (p.color !== movedPiece.color || attackers.includes(p)) return false;
+    for (let dx = -1; dx <= 1; dx++) {
+      for (let dy = -1; dy <= 1; dy++) {
+        if (dx === 0 && dy === 0) continue;
+        const nx = kp.x + dx, ny = kp.y + dy;
+        if (nx < 0 || nx > 7 || ny < 0 || ny > 7) continue;
+        if (isValidMove(p, { x: nx, y: ny }, after, gameMode)) return true;
+      }
+    }
+    return false;
+  });
+  const allMatingPieces = [...attackers, ...confiners];
+
   const hasKnight = attackers.some((p) => p.type === "knight");
   const hasRook = attackers.some((p) => p.type === "rook");
   const hasBishop = attackers.some((p) => p.type === "bishop");
   const hasQueen = attackers.some((p) => p.type === "queen");
+  const hasKnightAll = allMatingPieces.some((p) => p.type === "knight");
+  const hasRookAll = allMatingPieces.some((p) => p.type === "rook");
+  const hasBishopAll = allMatingPieces.some((p) => p.type === "bishop");
 
   // Adjacent squares occupied by own pieces (for smothered mate detection)
   let adjOwnCount = 0;
@@ -114,29 +135,29 @@ function classifyMate(
     if (hasLight && hasDark) return "bodensmate";
   }
 
-  // Arabian Mate: rook + knight, king in corner
-  if (isCorner && hasRook && hasKnight) return "arabianmate";
+  // Arabian Mate: rook + knight, king in corner (knight may confine without checking)
+  if (isCorner && hasRookAll && hasKnightAll) return "arabianmate";
 
   // Anastasia's Mate: rook + knight, king on edge (not corner)
-  if (isEdge && !isCorner && hasRook && hasKnight) return "anastasiamate";
+  if (isEdge && !isCorner && hasRookAll && hasKnightAll) return "anastasiamate";
 
   // Greco's Mate: bishop + rook, king in corner
-  if (isCorner && hasRook && hasBishop) return "grecomate";
+  if (isCorner && hasRookAll && hasBishopAll) return "grecomate";
 
-  // Lolli's Mate: queen + pawn on g-file, king castled
+  // Lolli's Mate: queen + pawn on f6/f3 adjacent to the attacking queen
   if (hasQueen) {
-    const hasPawnG = after.some(
+    const hasPawnF = after.some(
       (p) =>
         p.color === movedPiece.color &&
         p.type === "pawn" &&
-        p.position.x === 6 &&
-        (p.position.y === 1 || p.position.y === 6),
+        p.position.x === 5 &&
+        (p.position.y === 2 || p.position.y === 5),
     );
-    if (hasPawnG) return "lollismate";
+    if (hasPawnF) return "lollismate";
   }
 
-  // Opera Mate: rook + bishop, back rank
-  if (isBackRank && hasRook && hasBishop) return "operamate";
+  // Opera Mate: rook + bishop, back rank (bishop may confine without checking)
+  if (isBackRank && hasRookAll && hasBishopAll) return "operamate";
 
   // Back Rank Mate: rook or queen, back rank
   if (isBackRank && (hasRook || hasQueen)) return "backrankmate";
@@ -207,7 +228,10 @@ function detectScholarsSetup(
         p.type !== "king" &&
         isValidMove(p, f7, temp, gameMode),
     );
-    if (stillClear) return { from: queen.position, to: qm, pieceType: "queen" };
+    if (!stillClear) continue;
+    // Skip if the queen would be immediately en prise at qm.
+    if (isSquareUnderAttack(qm, oppColor(color), temp, gameMode)) continue;
+    return { from: queen.position, to: qm, pieceType: "queen" };
   }
 
   return null;

@@ -1,8 +1,12 @@
 import { createContext, useState, type ReactNode } from "react";
-import { PieceSkin } from "../utils/pieceImage";
+import { PieceSkin, SKINS } from "../utils/pieceImage";
 
 const STORAGE_KEY = "chessverse_skin";
 const DEFAULT_SKIN: PieceSkin = "classic";
+
+function isValidSkin(value: string | null): value is PieceSkin {
+  return SKINS.some((s) => s.id === value);
+}
 
 export interface SkinContextValue {
   skin: PieceSkin;
@@ -15,13 +19,14 @@ export function SkinProvider({ children }: { children: ReactNode }) {
   const [skin, setSkinState] = useState<PieceSkin>(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
-      return (saved as PieceSkin) ?? DEFAULT_SKIN;
+      return isValidSkin(saved) ? saved : DEFAULT_SKIN;
     } catch {
       return DEFAULT_SKIN;
     }
   });
 
   const setSkin = (next: PieceSkin) => {
+    if (!isValidSkin(next)) return;
     setSkinState(next);
     localStorage.setItem(STORAGE_KEY, next);
   };

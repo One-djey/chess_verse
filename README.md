@@ -56,6 +56,19 @@ To run the game locally:
    npm run dev
    ```
 
+## Testing
+
+The project is covered by automated tests (Vitest + Testing Library), run in CI on every push/PR:
+
+```sh
+npm run test           # run the full suite once
+npm run test:watch     # watch mode
+npm run test:coverage  # with coverage thresholds on core modules
+```
+
+- Full QA strategy and test-case catalog: [`docs/TEST_STRATEGY.md`](docs/TEST_STRATEGY.md)
+- Known bugs & technical debt registry (causes, locations, recommended fixes): [`docs/KNOWN_ISSUES.md`](docs/KNOWN_ISSUES.md)
+
 ## Technologies Used
 
 - **React 18** — UI framework
@@ -77,8 +90,8 @@ Contributions to enhance the game are welcome!
 3. Register the mode in `src/components/GameModes.tsx` (`gameModes[]` array).
 4. Implement movement or board logic in `src/utils/chess/moves.ts` (guard on `gameMode.rules`).
 5. Add translations for the mode title and description in every `src/i18n/locales/*.json` file.
-6. **Test thoroughly** — check that all other modes are unaffected.
-7. **Submit a pull request** describing the mode and its gameplay changes.
+6. **Write the tests** — every code change must ship its unit tests in the same commit (see [`docs/TEST_STRATEGY.md`](docs/TEST_STRATEGY.md) §8 for the policy); check that all other modes are unaffected.
+7. **Submit a pull request** describing the mode and its gameplay changes. CI (lint + tests + coverage thresholds + build + e2e) must be green.
 
 ## License
 

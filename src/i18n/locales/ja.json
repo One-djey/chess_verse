@@ -90,6 +90,9 @@
     "accept": "承諾",
     "decline": "拒否",
     "waitingForOpponent": "対戦相手を待機中…",
+    "youWin": "あなたの勝ち！",
+    "youLose": "あなたの負け。",
+    "peerGone": "対戦相手が退出しました",
     "playAgain": "もう一度プレイ",
     "rematch": "再戦",
     "mainMenu": "メインメニュー"
@@ -513,5 +516,8 @@
       "AIがすべての可能性を探っています...",
       "AIが最善の選択肢を評価しています..."
     ]
+  },
+  "common": {
+    "close": "閉じる"
   }
 }

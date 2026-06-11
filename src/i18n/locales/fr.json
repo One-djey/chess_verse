@@ -90,6 +90,9 @@
     "accept": "Accepter",
     "decline": "Refuser",
     "waitingForOpponent": "En attente de l'adversaire…",
+    "youWin": "Vous gagnez !",
+    "youLose": "Vous perdez.",
+    "peerGone": "L'adversaire a quitté la partie",
     "playAgain": "Rejouer",
     "rematch": "Revanche",
     "mainMenu": "Menu principal"
@@ -513,5 +516,8 @@
       "L'IA explore toutes les possibilités...",
       "L'IA évalue ses meilleures options..."
     ]
+  },
+  "common": {
+    "close": "Fermer"
   }
 }

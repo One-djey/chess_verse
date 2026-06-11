@@ -153,6 +153,12 @@ export function isColiseumSquareUnderAttack(
 ): boolean {
   const attackers = pieces.filter((p) => p.color === byColor);
   return attackers.some((attacker) => {
+    // Pawn diagonals cover the square even if it's empty (coverage map).
+    if (attacker.type === "pawn") {
+      const dx = Math.abs(attacker.position.x - pos.x);
+      const dy = Math.abs(attacker.position.y - pos.y);
+      if (dx === 1 && dy === 1) return true;
+    }
     const moves = getColiseumValidMoves(attacker, pieces, arena);
     return moves.some((m) => m.x === pos.x && m.y === pos.y);
   });
