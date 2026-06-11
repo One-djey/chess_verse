@@ -32,7 +32,7 @@ Replace the shallow spread in `getStats()` with `structuredClone(DEFAULT_STATS)`
 
 ---
 
-## ADR-002 — Position hash excludes castling rights (triple-repetition detection)
+## ADR-002 — Position hash includes castling rights + en passant (triple-repetition detection)
 
 **Date**: 2026-06-11
 **Status**: Accepted
@@ -57,6 +57,12 @@ Extend the position hash to include: castling availability flags (`K`, `Q`, `k`,
 - Draw detection is FIDE-compliant for the implemented rules.
 - The hash is slightly more expensive to compute but still O(pieces).
 - If future rules (e.g. 960 castling) are added, the hash function must be updated.
+- **Known debt**: `computeCastlingKey` in `moves.ts` duplicates the castling-rights
+  logic of `ChessAI.computeCastlingRights`. The duplication is intentional — importing
+  a service into a `utils` module would create a circular dependency — but the two
+  implementations of the same FIDE rule can drift. If a third consumer ever needs
+  castling rights, extract a shared `castlingRights(pieces)` helper into a leaf module
+  (e.g. `chess/castling.ts`) that both `moves.ts` and `ChessAI.ts` import.
 
 ---
 
@@ -81,7 +87,7 @@ Option B: add `enPassantTarget?: Position` as an optional third parameter to `ge
 ### Consequences
 
 - `getValidMoves` signature grows by one optional parameter — backward-compatible.
-- Adding future stateful rules (e.g. 50-move clock) requires threading another parameter, which will eventually motivate graduating to a full `GameState` parameter (see ADR-003 revisit).
+- Adding future stateful rules (e.g. 50-move clock) requires threading another parameter, which will eventually motivate graduating to a full `GameState` parameter. When a third stateful parameter is needed, revisit this ADR and migrate the signature.
 - Coliseum and P2P modes that bypass `getValidMoves` are unaffected.
 
 ---
@@ -120,24 +126,39 @@ BUG-010 identified that if a `move_confirm` arrived with an unknown `pieceId` (e
 ## ADR-005 — `acquiredTypes` gated on assimilation mode (BUG-005)
 
 **Date**: 2026-06-11
-**Status**: Accepted (statu quo — no code change)
+**Status**: Accepted (mode-guard added at 3 call sites)
 
 ### Context
 
-`isValidMove` calls `getPieceCapabilities(piece)` to iterate over all movement types a piece has. `getPieceCapabilities` returns `[piece.type, ...piece.acquiredTypes]`. This means that if a piece somehow carries `acquiredTypes` outside of assimilation mode (e.g. state corruption, P2P message forgery), those capabilities would silently activate.
+`isValidMove` / `getValidMoves` call `getPieceCapabilities(piece)` to iterate over all movement types a piece has. `getPieceCapabilities` returns `[piece.type, ...piece.acquiredTypes]`. This means that if a piece somehow carries `acquiredTypes` outside of assimilation mode (e.g. state corruption, forged/replayed P2P state), those capabilities would silently activate, letting a piece move in ways its mode does not allow.
+
+`KNOWN_ISSUES.md` originally recommended option B (statu quo, no code change), on the grounds that no piece carries `acquiredTypes` outside assimilation in practice. That recommendation was **overridden by an explicit product decision** to make the engine defensive against cross-mode contamination rather than rely on an invariant that lives outside the move engine.
 
 ### Decision
 
-**Do not add a mode-guard in `isValidMove`**. The behavior is documented. In practice, `acquiredTypes` is only written by `applyAssimilationCapture`, which is itself gated on `rules.assimilation`. A defensive guard would add runtime overhead to every move calculation without protecting against any real threat vector; state corruption that already set `acquiredTypes` could equally corrupt `gameMode.rules`.
+**Add a mode-guard at all 3 call sites** that consume capabilities:
+
+```typescript
+const capabilities = gameMode.rules?.assimilation
+  ? getPieceCapabilities(piece)
+  : [piece.type];
+```
+
+Each site carries an identical comment explaining that even a piece that somehow
+carries `acquiredTypes` (corrupted/forged P2P state) must behave as its base type
+only when not in assimilation mode. This keeps the move engine correct on its own,
+without depending on `applyAssimilationCapture` being the only writer of `acquiredTypes`.
 
 ### Alternatives considered
 
-- **A. Add mode guard**: `const capabilities = gameMode.rules?.assimilation ? getPieceCapabilities(piece) : [piece.type]`. Correct in theory, adds noise to the hot path. Would require applying to 3 call sites. Rejected: YAGNI.
+- **B. Statu quo (no guard)** — the original `KNOWN_ISSUES.md` recommendation. Relies on `acquiredTypes` only ever being written under `rules.assimilation`. Rejected: makes move-engine correctness depend on an external invariant, and offers no defence against corrupted/replayed P2P state. The guard is cheap (an array literal on a path that already iterates pieces) and the explanatory comment removes the "why is this condition here?" trap.
 
 ### Consequences
 
-- The behavior is a known (and documented) design choice, not a hidden bug.
-- If assimilation state ever needs to be serialized and replayed in a non-assimilation context (e.g. game replay with mode switching), a guard must be added at that time.
+- The move engine is self-contained: out-of-mode `acquiredTypes` are inert.
+- Three call sites must stay in sync; the shared comment flags the intent. If a 4th
+  consumer of `getPieceCapabilities` appears, it must apply the same guard.
+- Marginal cost: one branch + array literal per capability lookup. Negligible.
 
 ---
 
@@ -213,3 +234,44 @@ This covers all 4 diagonal directions unconditionally, matching Coliseum's omnid
 - King-safety checks in Coliseum mode become accurate for all pawn positions.
 - The coordinate system (y=0 = rank 8, y=7 = rank 1) is documented in the code comment for future reference.
 - Tests verify both the fix (empty diagonals attacked) and the invariant (orthogonal squares not attacked).
+
+---
+
+## ADR-008 — Process: parallel agents + manual worktree merges (campaign retrospective)
+
+**Date**: 2026-06-11
+**Status**: Accepted (lesson learned, not a code change)
+
+### Context
+
+The bug-fix campaign was executed by several agents running in isolated git
+worktrees, whose branches were then merged manually into the feature branch. Each
+agent produced locally-correct fixes, but the **merge seams** were the fragile point.
+
+### What actually went wrong
+
+- A `detectScholarsMate` function was **duplicated** during a conflict resolution
+  (one copy from the REC-001 extraction, one re-added by a later merge), producing a
+  "Multiple exports with the same name" esbuild error that broke 17 test files at once.
+- Two ADRs in this very file shipped **describing the opposite of the code**:
+  ADR-002's title said the position hash *excludes* castling rights (it includes them),
+  and ADR-005 documented a "no code change" decision for BUG-005 when the mode-guard
+  was in fact added. Both were authored against an earlier draft of the plan and never
+  reconciled with the final implementation.
+
+### Decision / guidance for next time
+
+- After every worktree merge, run `npm run test && npm run lint && npm run build`
+  **before** committing the merge — a transform-level error (duplicate export, bad
+  import) masquerades as hundreds of failing tests and is easy to misread as a logic
+  regression.
+- When a fix overrides a `KNOWN_ISSUES.md` recommendation (e.g. BUG-005 chose A over
+  the recommended B), update the ADR **in the same commit** as the code, not from an
+  earlier plan draft. The doc must describe what shipped, not what was once proposed.
+- Treat duplicate-symbol / unused-export lint and `grep` for the changed symbol name
+  as a cheap post-merge sanity check.
+
+### Consequences
+
+- The two doc/code contradictions above are corrected in this revision.
+- Future multi-agent campaigns should gate each merge on green test+lint+build.
