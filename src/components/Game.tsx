@@ -256,15 +256,16 @@ export default function Game() {
           const movingColor = prev.currentTurn;
           const gm = prev.gameMode;
           const nextPieces = nextState.pieces;
+          const nextEP = nextState.enPassantTarget;
           setTimeout(() => {
             const nextColor: PieceColor =
               movingColor === "white" ? "black" : "white";
-            const nextHint = detectLegendaryPattern(nextPieces, nextColor, gm);
+            const nextHint = detectLegendaryPattern(nextPieces, nextColor, gm, nextEP);
             if (nextHint && nextHint.movesAway === 1) {
               addLabel("legendary", nextHint);
               return;
             }
-            const post = detectLegendaryPattern(nextPieces, movingColor, gm);
+            const post = detectLegendaryPattern(nextPieces, movingColor, gm, nextEP);
             if (post && post.movesAway === 2) addLabel("legendary", post);
           }, 0);
         }
@@ -790,15 +791,16 @@ export default function Game() {
         const movingColor = prev.currentTurn;
         const gm = prev.gameMode;
         const nextPieces = nextState.pieces;
+        const nextEP = nextState.enPassantTarget;
         setTimeout(() => {
           const nextColor: PieceColor =
             movingColor === "white" ? "black" : "white";
-          const nextHint = detectLegendaryPattern(nextPieces, nextColor, gm);
+          const nextHint = detectLegendaryPattern(nextPieces, nextColor, gm, nextEP);
           if (nextHint && nextHint.movesAway === 1) {
             addLabel("legendary", nextHint);
             return;
           }
-          const post = detectLegendaryPattern(nextPieces, movingColor, gm);
+          const post = detectLegendaryPattern(nextPieces, movingColor, gm, nextEP);
           if (post && post.movesAway === 2) addLabel("legendary", post);
         }, 0);
       }

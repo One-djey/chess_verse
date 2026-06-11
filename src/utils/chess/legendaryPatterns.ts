@@ -57,6 +57,7 @@ function classifyMate(
   after: Piece[],
   movedPiece: Piece,
   gameMode: GameMode,
+  enPassantTarget?: Position,
 ): string {
   const opp = oppColor(movedPiece.color);
   const king = after.find((p) => p.type === "king" && p.color === opp);
@@ -82,7 +83,10 @@ function classifyMate(
         if (dx === 0 && dy === 0) continue;
         const nx = kp.x + dx, ny = kp.y + dy;
         if (nx < 0 || nx > 7 || ny < 0 || ny > 7) continue;
-        if (isValidMove(p, { x: nx, y: ny }, after, gameMode)) return true;
+        // Pass enPassantTarget so confiner detection is accurate in positions where
+        // en passant is available — an opponent pawn on the ep-target square would
+        // otherwise appear as a valid escape square (empty), inflating escape counts.
+        if (isValidMove(p, { x: nx, y: ny }, after, gameMode, enPassantTarget)) return true;
       }
     }
     return false;
@@ -408,6 +412,7 @@ export function detectLegendaryPattern(
   pieces: Piece[],
   colorToMove: PieceColor,
   gameMode: GameMode,
+  enPassantTarget?: Position,
 ): LegendaryPatternResult | null {
   // Only applies to classic mode
   if (
@@ -425,7 +430,7 @@ export function detectLegendaryPattern(
       if (!isCheckmate(after, oppColor(colorToMove), gameMode)) continue;
       const movedPieceAfter = after.find((p) => p.id === piece.id);
       if (!movedPieceAfter) continue;
-      const patternId = classifyMate(after, movedPieceAfter, gameMode);
+      const patternId = classifyMate(after, movedPieceAfter, gameMode, enPassantTarget);
       if (patternId) {
         return {
           patternId,

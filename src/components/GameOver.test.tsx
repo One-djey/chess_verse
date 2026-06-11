@@ -93,6 +93,21 @@ describe("GameOver — title logic", () => {
     expect(screen.getByText("gameOver.youLose")).toBeInTheDocument();
   });
 
+  // UX-001 fix: winner===null (stalemate/draw) in P2P must show draw, NOT youLose.
+  // Without a null guard, `null === playerColor` is false for any real playerColor
+  // ("white"/"black"), so both players would incorrectly see "You lose."
+  it("P2P draw (winner=null) shows draw title even when playerColor is known", () => {
+    renderGameOver({
+      isP2PMode: true,
+      winner: null,
+      playerColor: "white",
+      drawReason: "stalemate",
+    });
+    expect(screen.getByText("gameOver.draw")).toBeInTheDocument();
+    expect(screen.queryByText("gameOver.youLose")).not.toBeInTheDocument();
+    expect(screen.queryByText("gameOver.youWin")).not.toBeInTheDocument();
+  });
+
   it("P2P without playerColor falls back to generic color-based titles", () => {
     renderGameOver({ isP2PMode: true, winner: "white", playerColor: null });
     expect(screen.getByText("gameOver.whiteWins")).toBeInTheDocument();

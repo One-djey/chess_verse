@@ -11,6 +11,36 @@ import {
 import { BOARD_SIZE } from "./board";
 import { getPieceCapabilities, applyAssimilationCapture } from "./assimilation";
 
+// ── Castling rights key ──────────────────────────────────────────────────────
+
+/**
+ * Computes a FEN-style castling availability string from the current piece set.
+ * Used exclusively for position hashing (triple-repetition detection).
+ *
+ * FIDE rule 9.2 defines "the same position" as identical piece placement,
+ * same active colour, same castling rights, and same en passant target.
+ * Omitting castling rights from the hash could cause two positions that differ
+ * only in whether a king or rook has moved (and thus lost castling rights) to
+ * hash identically — producing a false triple-repetition draw.
+ *
+ * Mirrors the logic in ChessAI.computeCastlingRights — kept in sync manually.
+ * (Cannot import from ChessAI: it would create a circular dep service → util.)
+ */
+function computeCastlingKey(pieces: Piece[]): string {
+  const wk = pieces.find(p => p.color === "white" && p.type === "king");
+  const bk = pieces.find(p => p.color === "black" && p.type === "king");
+  let rights = "";
+  if (wk && !wk.hasMoved) {
+    if (pieces.find(p => p.color === "white" && p.type === "rook" && p.position.x === 7 && p.position.y === 7 && !p.hasMoved)) rights += "K";
+    if (pieces.find(p => p.color === "white" && p.type === "rook" && p.position.x === 0 && p.position.y === 7 && !p.hasMoved)) rights += "Q";
+  }
+  if (bk && !bk.hasMoved) {
+    if (pieces.find(p => p.color === "black" && p.type === "rook" && p.position.x === 7 && p.position.y === 0 && !p.hasMoved)) rights += "k";
+    if (pieces.find(p => p.color === "black" && p.type === "rook" && p.position.x === 0 && p.position.y === 0 && !p.hasMoved)) rights += "q";
+  }
+  return rights || "-";
+}
+
 // ── Small shared helpers ─────────────────────────────────────────────────────
 
 export const normalizePos = (x: number, y: number): Position => ({
@@ -182,6 +212,9 @@ export const isValidMove = (
   }
 
 
+  // Only consult acquiredTypes in assimilation mode. In all other modes, even a
+  // Piece that somehow carries acquiredTypes (e.g., corrupted P2P state) should
+  // behave as its base type only — preventing cross-mode contamination.
   const capabilities = gameMode.rules?.assimilation
     ? getPieceCapabilities(piece)
     : [piece.type];
@@ -298,6 +331,9 @@ export const isSquareUnderAttack = (
     : [position];
 
   return attackers.some((p) => {
+    // Only consult acquiredTypes in assimilation mode. In all other modes, even a
+    // Piece that somehow carries acquiredTypes (e.g., corrupted P2P state) should
+    // behave as its base type only — preventing cross-mode contamination.
     const caps = gameMode.rules?.assimilation
       ? getPieceCapabilities(p)
       : [p.type];
@@ -403,6 +439,9 @@ function generateMoveCandidates(piece: Piece, gameMode: GameMode): Position[] {
   };
 
   const { x: px, y: py } = piece.position;
+  // Only consult acquiredTypes in assimilation mode. In all other modes, even a
+  // Piece that somehow carries acquiredTypes (e.g., corrupted P2P state) should
+  // behave as its base type only — preventing cross-mode contamination.
   const capabilities = gameMode.rules?.assimilation
     ? getPieceCapabilities(piece)
     : [piece.type];
@@ -700,7 +739,14 @@ export function applyMoveToState(
   const epStr = nextEnPassantTarget
     ? `${nextEnPassantTarget.x}${nextEnPassantTarget.y}`
     : "-";
-  const posHash = `${pieceStr}_${nextTurn}_${epStr}`;
+  // Position hash encodes: pieces + active colour + castling rights + ep target.
+  // All four components are required by FIDE rule 9.2 ("same position") to
+  // correctly detect triple-repetition draws. Castling rights in particular
+  // must be included: a position where a rook has moved (losing castling rights)
+  // is NOT the same as the visually identical position where castling is still
+  // available — omitting it could trigger a false draw.
+  const castlingKey = computeCastlingKey(pieces);
+  const posHash = `${pieceStr}_${nextTurn}_${castlingKey}_${epStr}`;
   const prevHistory = prev.positionHistory ?? {};
   const nextHistory = {
     ...prevHistory,

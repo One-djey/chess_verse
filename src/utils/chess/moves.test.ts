@@ -935,3 +935,73 @@ describe("isDrawByRepetition", () => {
     expect(isDrawByRepetition({ abc: 4 })).toBe(true);
   });
 });
+
+// ── 12. Castling rights in position hash ─────────────────────────────────────
+
+describe("castling rights included in position hash (Fix 1)", () => {
+  /**
+   * FIDE rule 9.2: "same position" requires identical pieces, active colour,
+   * castling rights, AND en passant target. If castling rights are omitted from
+   * the hash, a position where the rook has moved (losing castling availability)
+   * would hash identically to the position before the rook moved — potentially
+   * triggering a false triple-repetition draw.
+   *
+   * This test verifies that moving a rook and back produces a DIFFERENT hash
+   * entry for each resulting position, so the repetition count stays at 1
+   * instead of 2 even though the pieces are visually identical.
+   */
+  it("positions differing only in castling rights get different hashes, no false draw", () => {
+    const king = whiteKing();
+    const rook = makePiece("white", "rook", 7, 7); // unmoved kingside rook
+    const bKing = blackKing();
+    // Extra black rook so black always has a legal move (no stalemate).
+    const bRook = makePiece("black", "rook", 0, 0);
+
+    // Initial state: white king at e1, white rook at h1 (castling available).
+    const s0 = makeState([king, rook, bKing, bRook]);
+
+    // White moves rook to h2 (hasMoved becomes true — castling right lost).
+    const s1 = applyMoveToState(s0, rook, pos(7, 6));
+    // Black plays a neutral rook move.
+    const blackRook1 = s1.pieces.find((p) => p.id === bRook.id)!;
+    const s2 = applyMoveToState(s1, blackRook1, pos(1, 0));
+    // White moves rook back to h1 — pieces are visually identical to s0, but
+    // the rook is now hasMoved=true so castling rights are gone.
+    const wr2 = s2.pieces.find((p) => p.id === rook.id)!;
+    const s3 = applyMoveToState(s2, wr2, pos(7, 7));
+    // Black returns rook to a1.
+    const blackRook3 = s3.pieces.find((p) => p.id === bRook.id)!;
+    const s4 = applyMoveToState(s3, blackRook3, pos(0, 0));
+
+    // At this point pieces are in the same squares as s0 but castling rights differ.
+    // The position history should NOT show any entry >= 3 — no false draw.
+    const history = s4.positionHistory ?? {};
+    expect(isDrawByRepetition(history)).toBe(false);
+    // Maximum repetition count must be 1 (each visual-but-castling-different
+    // position is its own unique hash entry).
+    const maxCount = Math.max(...Object.values(history));
+    expect(maxCount).toBe(1);
+  });
+
+  it("genuine triple repetition (same castling rights) IS detected", () => {
+    // White rook and king oscillate between two positions 3 times.
+    const king = makePiece("white", "king", 4, 7);
+    const rook = makePiece("white", "rook", 0, 4);
+    const bKing = blackKing();
+    const bRook = makePiece("black", "rook", 7, 0);
+
+    let state = makeState([king, rook, bKing, bRook]);
+    // Repeat: white rook a4→a5, black rook h8→h7, white rook a5→a4, black rook h7→h8
+    for (let i = 0; i < 3; i++) {
+      const wr = state.pieces.find((p) => p.id === rook.id)!;
+      state = applyMoveToState(state, wr, pos(0, 3));
+      const br = state.pieces.find((p) => p.id === bRook.id)!;
+      state = applyMoveToState(state, br, pos(7, 1));
+      const wr2 = state.pieces.find((p) => p.id === rook.id)!;
+      state = applyMoveToState(state, wr2, pos(0, 4));
+      const br2 = state.pieces.find((p) => p.id === bRook.id)!;
+      state = applyMoveToState(state, br2, pos(7, 0));
+    }
+    expect(isDrawByRepetition(state.positionHistory ?? {})).toBe(true);
+  });
+});
