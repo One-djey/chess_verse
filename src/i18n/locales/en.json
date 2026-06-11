@@ -83,6 +83,8 @@
     "black": "Black",
     "stalemate": "Stalemate — no legal moves",
     "onlyKings": "Only kings remain",
+    "repetition": "Draw by threefold repetition",
+    "fiftyMoves": "Draw by 50-move rule",
     "duration": "Duration",
     "movesPlayed": "Moves played",
     "aiLevel": "AI Level",

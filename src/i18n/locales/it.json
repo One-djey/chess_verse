@@ -83,6 +83,8 @@
     "black": "Nero",
     "stalemate": "Stallo: nessuna mossa legale",
     "onlyKings": "Rimangono solo i re",
+    "repetition": "Patta per triplice ripetizione",
+    "fiftyMoves": "Patta per la regola delle 50 mosse",
     "duration": "Durata",
     "movesPlayed": "Mosse giocate",
     "aiLevel": "Livello IA",

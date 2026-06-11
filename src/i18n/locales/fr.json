@@ -83,6 +83,8 @@
     "black": "Noirs",
     "stalemate": "Pat : aucun mouvement légal",
     "onlyKings": "Il ne reste que les rois",
+    "repetition": "Nulle par triple répétition",
+    "fiftyMoves": "Nulle par la règle des 50 coups",
     "duration": "Durée",
     "movesPlayed": "Coups joués",
     "aiLevel": "Niveau IA",

@@ -97,6 +97,11 @@ export function useP2PGame({
           type: "sync_state",
           pieces: currentState.pieces,
           seq: seqRef.current,
+          currentTurn: currentState.currentTurn,
+          enPassantTarget: currentState.enPassantTarget,
+          halfMoveClock: currentState.halfMoveClock,
+          positionHistory: currentState.positionHistory,
+          isCheck: currentState.isCheck,
         });
       });
 
@@ -165,6 +170,11 @@ export function useP2PGame({
         setGameState((prev) => ({
           ...prev,
           pieces: msg.pieces,
+          currentTurn: msg.currentTurn,
+          enPassantTarget: msg.enPassantTarget,
+          halfMoveClock: msg.halfMoveClock,
+          positionHistory: msg.positionHistory,
+          isCheck: msg.isCheck,
           selectedPiece: null,
           validMoves: [],
         }));

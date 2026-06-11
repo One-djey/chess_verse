@@ -451,6 +451,8 @@ describe("useP2PGame — host sync_request handler", () => {
     expect(sent.pieces).toHaveLength(result.current.gameState.pieces.length);
     const rook = sent.pieces.find((p: Piece) => p.id === "br")!;
     expect(rook.position).toEqual(pos(0, 5)); // rook moved
+    expect(sent.currentTurn).toBe(result.current.gameState.currentTurn);
+    expect(sent.isCheck).toBe(result.current.gameState.isCheck);
   });
 
   it("responds to sync_request even at seq 0 (before any moves)", () => {
@@ -463,6 +465,8 @@ describe("useP2PGame — host sync_request handler", () => {
     expect(sent.type).toBe("sync_state");
     expect(sent.seq).toBe(0);
     expect(sent.pieces).toHaveLength(result.current.gameState.pieces.length);
+    expect(sent.currentTurn).toBe(result.current.gameState.currentTurn);
+    expect(sent.isCheck).toBe(result.current.gameState.isCheck);
   });
 });
 
@@ -901,6 +905,9 @@ describe("useP2PGame — integration: full resync loop", () => {
     expect(guestState.pieces).toHaveLength(hostState.pieces.length);
     // seq aligned
     expect(guestSetup.result.current.seqRef.current).toBe(1);
+    // Turn and check status aligned with host
+    expect(guestState.currentTurn).toBe(hostState.currentTurn);
+    expect(guestState.isCheck).toBe(hostState.isCheck);
     // The rook that was unknown to the guest is now present at (0,5)
     const guestRook = guestState.pieces.find((p) => p.id === "br");
     expect(guestRook).toBeDefined();
@@ -1001,6 +1008,9 @@ describe("useP2PGame — integration: full resync loop", () => {
     expect(guestState.pieces).toHaveLength(hostState.pieces.length);
     // seq counter aligned with host.
     expect(guestSetup.result.current.seqRef.current).toBe(1);
+    // Turn and check status aligned with host
+    expect(guestState.currentTurn).toBe(hostState.currentTurn);
+    expect(guestState.isCheck).toBe(hostState.isCheck);
     // Every host piece is present at the correct position on the guest side.
     for (const hp of hostState.pieces) {
       const gp = guestState.pieces.find((p) => p.id === hp.id);

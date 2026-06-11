@@ -18,7 +18,7 @@ import { RematchState } from "../types/p2p";
 
 interface GameOverProps {
   winner: PieceColor | null;
-  drawReason?: "stalemate" | "only-kings";
+  drawReason?: "stalemate" | "only-kings" | "repetition" | "fifty-moves";
   surrenderedBy?: PieceColor;
   duration: number;
   moveCount: number;
@@ -179,7 +179,11 @@ export default function GameOver({
             <p className="text-sm text-gray-500 mb-6">
               {drawReason === "stalemate"
                 ? t("gameOver.stalemate")
-                : t("gameOver.onlyKings")}
+                : drawReason === "repetition"
+                  ? t("gameOver.repetition")
+                  : drawReason === "fifty-moves"
+                    ? t("gameOver.fiftyMoves")
+                    : t("gameOver.onlyKings")}
             </p>
           )}
 

@@ -59,6 +59,11 @@ export type SyncStateMessage = {
   type: "sync_state";
   pieces: Piece[];
   seq: number; // host's current authoritative sequence counter at the time of broadcast
+  currentTurn: PieceColor;
+  enPassantTarget?: Position;
+  halfMoveClock?: number;
+  positionHistory?: Record<string, number>;
+  isCheck: boolean;
 };
 
 export type ResignMessage = {

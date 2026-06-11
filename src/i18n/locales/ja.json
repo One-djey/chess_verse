@@ -83,6 +83,8 @@
     "black": "黒",
     "stalemate": "ステールメート：合法手なし",
     "onlyKings": "キングのみ残っています",
+    "repetition": "千日手による引き分け",
+    "fiftyMoves": "50手ルールによる引き分け",
     "duration": "対局時間",
     "movesPlayed": "手数",
     "aiLevel": "AIレベル",

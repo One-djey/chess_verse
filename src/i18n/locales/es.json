@@ -83,6 +83,8 @@
     "black": "Negras",
     "stalemate": "Ahogado: sin movimientos legales",
     "onlyKings": "Solo quedan los reyes",
+    "repetition": "Tablas por triple repetición",
+    "fiftyMoves": "Tablas por la regla de los 50 movimientos",
     "duration": "Duración",
     "movesPlayed": "Movimientos jugados",
     "aiLevel": "Nivel IA",

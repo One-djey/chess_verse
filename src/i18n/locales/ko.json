@@ -83,6 +83,8 @@
     "black": "흑",
     "stalemate": "스테일메이트: 합법적인 이동 없음",
     "onlyKings": "킹만 남아 있습니다",
+    "repetition": "삼중 반복으로 무승부",
+    "fiftyMoves": "50수 규칙으로 무승부",
     "duration": "시간",
     "movesPlayed": "진행한 수",
     "aiLevel": "AI 레벨",

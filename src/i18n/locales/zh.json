@@ -83,6 +83,8 @@
     "black": "黑方",
     "stalemate": "逼和：无合法走法",
     "onlyKings": "仅剩国王",
+    "repetition": "三次重复局面和棋",
+    "fiftyMoves": "五十步规则和棋",
     "duration": "时长",
     "movesPlayed": "走棋数",
     "aiLevel": "AI等级",
