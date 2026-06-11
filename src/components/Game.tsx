@@ -413,19 +413,9 @@ export default function Game() {
     if (chess.gameState.pieces.length === 0) return;
     if (p2p.isP2PMode) return;
 
-    // Check for draw by repetition or 50-move rule
-    if (isDrawByRepetition(chess.gameState.positionHistory ?? {})) {
-      chess.setGameState((prev) => {
-        if (prev.gameOver) return prev;
-        return {
-          ...prev,
-          gameOver: true,
-          winner: null,
-          drawReason: "repetition",
-        };
-      });
-      return;
-    }
+    // Check for draw by 50-move rule or repetition (50-move checked first: it
+    // fires at the precise half-move boundary; repetition accumulates earlier
+    // and would otherwise shadow it in back-and-forth endgames).
     if (isDrawBy50Moves(chess.gameState.halfMoveClock ?? 0)) {
       chess.setGameState((prev) => {
         if (prev.gameOver) return prev;
@@ -434,6 +424,18 @@ export default function Game() {
           gameOver: true,
           winner: null,
           drawReason: "fifty-moves",
+        };
+      });
+      return;
+    }
+    if (isDrawByRepetition(chess.gameState.positionHistory ?? {})) {
+      chess.setGameState((prev) => {
+        if (prev.gameOver) return prev;
+        return {
+          ...prev,
+          gameOver: true,
+          winner: null,
+          drawReason: "repetition",
         };
       });
       return;
