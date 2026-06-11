@@ -18,9 +18,7 @@ import P2PStatusBar from "./P2PStatusBar";
 import {
   Piece,
   Position,
-  GameMode,
   PieceColor,
-  MoveRecord,
 } from "../types/chess";
 import {
   getValidMoves,
@@ -34,7 +32,8 @@ import {
   MoveContext,
   getSmartFallbackMove,
 } from "../utils/chess";
-import { gameModes } from "../utils/gameModes";
+import { detectScholarsMate } from "../utils/chess/tactics";
+import { resolveGameMode } from "../utils/gameLogic";
 import { useP2P } from "../hooks/useP2P";
 import { useChessGame } from "../hooks/useChessGame";
 import { useP2PGame } from "../hooks/useP2PGame";
@@ -47,47 +46,25 @@ import { recordGame } from "../services/statsService";
 import type { PlayType } from "../services/statsService";
 import type { PieceType } from "../types/chess";
 
-/**
- * Detects the exact Scholar's Mate pattern (white side):
- * 1. e2→e4  2. Q→h5  3. B→c4  4. Q×f7#
- * Board uses y=0 at top (white promotes at y=0, starts at y=6/7).
- */
-function detectScholarsMate(moves: MoveRecord[]): boolean {
-  if (moves.length < 7) return false;
-  const m0 = moves[0]; // white ply 1: pawn e2(4,6)→e4(4,4)
-  const m2 = moves[2]; // white ply 2: queen →h5(7,3)
-  const m4 = moves[4]; // white ply 3: bishop →c4(2,4)
-  const m6 = moves[6]; // white ply 4: queen ×f7(5,1)#
-  return (
-    m0.piece.color === "white" &&
-    m0.piece.type === "pawn" &&
-    m0.from.x === 4 &&
-    m0.from.y === 6 &&
-    m0.to.x === 4 &&
-    m0.to.y === 4 &&
-    m2.piece.color === "white" &&
-    m2.piece.type === "queen" &&
-    m2.to.x === 7 &&
-    m2.to.y === 3 &&
-    m4.piece.color === "white" &&
-    m4.piece.type === "bishop" &&
-    m4.to.x === 2 &&
-    m4.to.y === 4 &&
-    m6.piece.color === "white" &&
-    m6.piece.type === "queen" &&
-    m6.to.x === 5 &&
-    m6.to.y === 1 &&
-    m6.capturedPiece !== null
-  );
-}
-
-function resolveGameMode(
-  modeId: string | undefined,
-  p2pMode: GameMode | null,
-): GameMode {
-  if (modeId === "p2p" && p2pMode) return p2pMode;
-  return gameModes.find((m) => m.id === modeId) ?? gameModes[0];
-}
+// NOTE: The following pure functions were extracted to utility modules (REC-001):
+// - detectScholarsMate → src/utils/chess/tactics.ts
+// - resolveGameMode    → src/utils/gameLogic.ts
+//
+// Two items from the original REC-001 report were intentionally NOT extracted:
+//
+// 1. "Session stats accumulation" (sessionStatsRef, hintsFollowedRef, wasPromotedRef):
+//    These refs are React-managed — their lifecycle is tied to the component mount/unmount
+//    and to useEffect reset triggers. Extracting them would require threading the ref
+//    objects through every handler, coupling a utility to React.RefObject<T> and making
+//    the API awkward. The logic itself (increment counters, spread into recordGame) has
+//    no testable invariant beyond what statsService.test.ts already covers.
+//
+// 2. "AI move validation chain" (the applyMove / trigger closure inside the AI useEffect):
+//    This closure calls chess.setGameState, chess.gameStateRef, addLabel, triggerAnnotation
+//    and chess.aiRef — all of which are React state/refs. It is not a pure function and
+//    cannot be extracted without re-designing the whole AI interaction as a service with
+//    callbacks. The correctness of the chain is tested indirectly through useChessGame
+//    integration tests; isolated unit testing would require a full mock of game state.
 
 export default function Game() {
   const { modeId } = useParams();
