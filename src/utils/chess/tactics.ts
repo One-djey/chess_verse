@@ -152,7 +152,7 @@ export function detectScholarsMate(moves: MoveRecord[]): boolean {
  * the move is unremarkable.
  *
  * Priority order (highest first):
- *   promotion > castling > check > discoveredCheck > fork > pin > capture
+ *   promotion > castling > check > discoveredCheck > enPassant > fork > pin > capture
  */
 export function detectTactic(ctx: MoveContext): TacticTag | null {
   if (ctx.wasPromotion) return "promotion";

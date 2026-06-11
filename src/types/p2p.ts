@@ -58,7 +58,7 @@ export type GuestReadyMessage = {
 export type SyncStateMessage = {
   type: "sync_state";
   pieces: Piece[];
-  seq: number; // initial sequence (always 0)
+  seq: number; // host's current authoritative sequence counter at the time of broadcast
 };
 
 export type ResignMessage = {
