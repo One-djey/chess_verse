@@ -24,8 +24,8 @@ dist-ssr
 *.sw?
 .vs/
 
-# Claude GSD task files
-.claude/gsd/
+# Claude internal files
+.claude/
 coverage
 playwright-report
 test-results
