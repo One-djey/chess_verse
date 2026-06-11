@@ -19,6 +19,7 @@ import type {
   RematchStartMessage,
   ResignMessage,
   SyncRequestMessage,
+  SyncStateMessage,
 } from "../types/p2p";
 import { CLASSIC, makePiece, makeState, pos } from "../test/helpers";
 
@@ -249,6 +250,7 @@ describe("useP2PGame — initial state & registration", () => {
       "rematch_request",
       "rematch_start",
       "resign",
+      "sync_state",
     ]);
     expect(room.onPeerLeave).toHaveBeenCalledTimes(1);
   });
@@ -815,5 +817,200 @@ describe("useP2PGame — peer leave", () => {
 
     act(() => getPeerLeaveCb()!());
     expect(result.current.peerLeft).toBe(true);
+  });
+});
+
+// ── INTEGRATION: full resync loop ────────────────────────────────────────────
+
+describe("useP2PGame — integration: full resync loop", () => {
+  it("re-aligns guest state after unknown pieceId triggers a resync round-trip", () => {
+    // ── 1. Mount host ──────────────────────────────────────────────────────
+    // Host has both kings + a black rook.  Black's turn so the host confirms
+    // the rook's move and advances seq to 1.
+    const hostSetup = setup({
+      role: "host",
+      pieces: [
+        ...twoKings(),
+        makePiece("black", "rook", 0, 3, { id: "br" }),
+      ],
+      stateOverrides: { currentTurn: "black" },
+    });
+    // Have the host confirm one legal move so seq and pieces are non-trivial.
+    act(() =>
+      hostSetup.handlers["move_proposal"]!(ROOK_PROPOSAL),
+    );
+    expect(hostSetup.result.current.seqRef.current).toBe(1);
+    // Host state: rook has moved to (0,5).
+    const hostRookAfterMove = hostSetup.result.current.gameState.pieces.find(
+      (p) => p.id === "br",
+    )!;
+    expect(hostRookAfterMove.position).toEqual(pos(0, 5));
+
+    // ── 2. Mount guest with a diverged state ───────────────────────────────
+    // Guest is missing the rook entirely, so any move_confirm referencing
+    // "br" will be an unknown pieceId and trigger a resync request.
+    const guestSetup = setup({
+      role: "guest",
+      pieces: twoKings(), // diverged: rook absent from guest state
+    });
+
+    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+
+    // ── 3. Send a move_confirm with an unknown pieceId to the guest ────────
+    act(() =>
+      guestSetup.handlers["move_confirm"]!({
+        type: "move_confirm",
+        pieceId: "br", // unknown on the guest side
+        from: pos(0, 3),
+        to: pos(0, 5),
+        seq: 1,
+      }),
+    );
+
+    // ── 4. Verify guest called sendSyncRequest and seqRef stayed at 0 ─────
+    expect(guestSetup.raw.sendSyncRequest).toHaveBeenCalledTimes(1);
+    expect(guestSetup.raw.sendSyncRequest).toHaveBeenCalledWith({
+      type: "sync_request",
+    });
+    expect(guestSetup.result.current.seqRef.current).toBe(0);
+    expect(guestSetup.result.current.gameState.pieces).toHaveLength(
+      twoKings().length,
+    );
+
+    // ── 5. Host receives the sync_request ─────────────────────────────────
+    act(() =>
+      hostSetup.handlers["sync_request"]!({ type: "sync_request" }),
+    );
+
+    // ── 6. Capture what the host sent via sendSyncState ───────────────────
+    expect(hostSetup.raw.sendSyncState).toHaveBeenCalledTimes(1);
+    const syncMsg = hostSetup.raw.sendSyncState.mock
+      .calls[0]![0] as SyncStateMessage;
+    expect(syncMsg.type).toBe("sync_state");
+    expect(syncMsg.seq).toBe(1);
+    expect(syncMsg.pieces).toHaveLength(
+      hostSetup.result.current.gameState.pieces.length,
+    );
+
+    // ── 7. Inject the sync_state into the guest ────────────────────────────
+    act(() => guestSetup.handlers["sync_state"]!(syncMsg));
+
+    // ── 8. Guest state now matches the host ───────────────────────────────
+    const guestState = guestSetup.result.current.gameState;
+    const hostState = hostSetup.result.current.gameState;
+    expect(guestState.pieces).toHaveLength(hostState.pieces.length);
+    // seq aligned
+    expect(guestSetup.result.current.seqRef.current).toBe(1);
+    // The rook that was unknown to the guest is now present at (0,5)
+    const guestRook = guestState.pieces.find((p) => p.id === "br");
+    expect(guestRook).toBeDefined();
+    expect(guestRook!.position).toEqual(pos(0, 5));
+    // Positions for every shared piece match between host and guest
+    for (const hp of hostState.pieces) {
+      const gp = guestState.pieces.find((p) => p.id === hp.id);
+      expect(gp).toBeDefined();
+      expect(gp!.position).toEqual(hp.position);
+    }
+
+    errorSpy.mockRestore();
+  });
+
+  it("re-aligns guest state after an illegal move triggers a resync round-trip", () => {
+    // ── 1. Mount host ──────────────────────────────────────────────────────
+    // Host has both kings + a white rook.  White's turn; after setup the host
+    // confirms a legal rook move along the file (seq → 1, rook at (0,3)).
+    const hostSetup = setup({
+      role: "host",
+      pieces: [
+        ...twoKings(),
+        makePiece("black", "rook", 0, 3, { id: "br2" }),
+      ],
+      stateOverrides: { currentTurn: "black" },
+    });
+    // Confirm one legal proposal so the host's seq advances.
+    act(() =>
+      hostSetup.handlers["move_proposal"]!({
+        type: "move_proposal",
+        pieceId: "br2",
+        from: pos(0, 3),
+        to: pos(0, 6),
+      }),
+    );
+    expect(hostSetup.result.current.seqRef.current).toBe(1);
+    const hostRookPos = hostSetup.result.current.gameState.pieces.find(
+      (p) => p.id === "br2",
+    )!.position;
+    expect(hostRookPos).toEqual(pos(0, 6));
+
+    // ── 2. Mount guest with a white rook that can validate moves ───────────
+    // Guest has both kings + a white rook at (0,5).  The host will send a
+    // move_confirm asking the rook to move diagonally — illegal for a rook —
+    // so the guest must request a resync.
+    const guestSetup = setup({
+      role: "guest",
+      pieces: [
+        ...twoKings(),
+        makePiece("white", "rook", 0, 5, { id: "wr2" }),
+      ],
+    });
+
+    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+
+    // ── 3. Send an illegal move_confirm to the guest ───────────────────────
+    // Moving a rook diagonally (0,5) → (1,4) is not in valid moves.
+    act(() =>
+      guestSetup.handlers["move_confirm"]!({
+        type: "move_confirm",
+        pieceId: "wr2",
+        from: pos(0, 5),
+        to: pos(1, 4), // diagonal — illegal for a rook
+        seq: 1,
+      }),
+    );
+
+    // ── 4. Guest calls sendSyncRequest; state and seqRef unchanged ─────────
+    expect(guestSetup.raw.sendSyncRequest).toHaveBeenCalledTimes(1);
+    expect(guestSetup.raw.sendSyncRequest).toHaveBeenCalledWith({
+      type: "sync_request",
+    });
+    expect(guestSetup.result.current.seqRef.current).toBe(0);
+    const guestPiecesBefore = guestSetup.result.current.gameState.pieces;
+    const rookBefore = guestPiecesBefore.find((p) => p.id === "wr2")!;
+    expect(rookBefore.position).toEqual(pos(0, 5)); // position untouched
+
+    // ── 5. Host receives sync_request and sends sync_state ────────────────
+    act(() =>
+      hostSetup.handlers["sync_request"]!({ type: "sync_request" }),
+    );
+    expect(hostSetup.raw.sendSyncState).toHaveBeenCalledTimes(1);
+    const syncMsg = hostSetup.raw.sendSyncState.mock
+      .calls[0]![0] as SyncStateMessage;
+    expect(syncMsg.seq).toBe(1);
+    expect(syncMsg.pieces).toHaveLength(
+      hostSetup.result.current.gameState.pieces.length,
+    );
+
+    // ── 6. Inject sync_state into the guest ───────────────────────────────
+    act(() => guestSetup.handlers["sync_state"]!(syncMsg));
+
+    // ── 7. Guest state now reflects the host's authoritative snapshot ──────
+    const guestState = guestSetup.result.current.gameState;
+    const hostState = hostSetup.result.current.gameState;
+    // Same number of pieces.
+    expect(guestState.pieces).toHaveLength(hostState.pieces.length);
+    // seq counter aligned with host.
+    expect(guestSetup.result.current.seqRef.current).toBe(1);
+    // Every host piece is present at the correct position on the guest side.
+    for (const hp of hostState.pieces) {
+      const gp = guestState.pieces.find((p) => p.id === hp.id);
+      expect(gp).toBeDefined();
+      expect(gp!.position).toEqual(hp.position);
+    }
+    // The divergent white rook that was never on the host is gone.
+    expect(guestState.pieces.find((p) => p.id === "wr2")).toBeUndefined();
+
+    errorSpy.mockRestore();
+    warnSpy.mockRestore();
   });
 });

@@ -156,6 +156,19 @@ export function useP2PGame({
           validMoves: [],
         })),
       );
+      // P2P resilience: apply the authoritative state broadcast by the host
+      // after a resync has been requested. The guest replaces its pieces with
+      // the host's snapshot and aligns its seq counter so subsequent confirms
+      // are processed correctly.
+      actions.onSyncState((msg) => {
+        seqRef.current = msg.seq;
+        setGameState((prev) => ({
+          ...prev,
+          pieces: msg.pieces,
+          selectedPiece: null,
+          validMoves: [],
+        }));
+      });
       actions.onRematchRequest(() => setRematchState("offered"));
       actions.onRematchDecline(() => setRematchState("idle"));
       actions.onRematchStart((msg) => resetGame(msg.pieces));
