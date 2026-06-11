@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { MoveRecord } from "../../types/chess";
-import { makePiece, pos } from "../../test/helpers";
-import { detectScholarsMate } from "./tactics";
+import { makePiece, pos, CLASSIC } from "../../test/helpers";
+import { detectScholarsMate, detectTactic, type MoveContext } from "./tactics";
 
 // ---------------------------------------------------------------------------
 // detectScholarsMate
@@ -120,5 +120,53 @@ describe("detectScholarsMate — false negatives (Scholar's Mate NOT detected)",
     const moves = scholarsMateMoves();
     moves[0] = move("black", "pawn", 4, 6, 4, 4); // same coords, wrong color
     expect(detectScholarsMate(moves)).toBe(false);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// detectTactic — enPassant tag
+// ---------------------------------------------------------------------------
+
+describe("detectTactic — enPassant", () => {
+  function makeCtx(overrides: Partial<MoveContext>): MoveContext {
+    const pawn = makePiece("white", "pawn", 4, 3);
+    return {
+      piece: pawn,
+      from: pos(4, 3),
+      to: pos(3, 2),
+      capturedPiece: null,
+      wasPromotion: false,
+      wasCastling: false,
+      wasEnPassant: false,
+      prevPieces: [pawn],
+      nextPieces: [{ ...pawn, position: pos(3, 2) }],
+      gameMode: CLASSIC,
+      ...overrides,
+    };
+  }
+
+  it("returns 'enPassant' when wasEnPassant is true", () => {
+    expect(detectTactic(makeCtx({ wasEnPassant: true }))).toBe("enPassant");
+  });
+
+  it("returns null (not enPassant) when wasEnPassant is false or omitted", () => {
+    expect(detectTactic(makeCtx({ wasEnPassant: false }))).toBeNull();
+    expect(detectTactic(makeCtx({}))).toBeNull();
+  });
+
+  it("check overrides enPassant (en passant giving check annotates as 'check')", () => {
+    // Place the white pawn such that after ep capture to (3,2), black king at (3,0)
+    // is diagonally forward — not in check from a pawn. Instead we simulate check
+    // by making nextPieces contain a black king that would be in check.
+    // Simplest: the moved pawn ends on a square that directly attacks the black king.
+    // White pawn at (3,2) attacks (2,1) and (4,1) diagonally. Put black king at (2,1).
+    const pawn = makePiece("white", "pawn", 4, 3);
+    const blackKing = makePiece("black", "king", 2, 1);
+    const ctx = makeCtx({
+      wasEnPassant: true,
+      nextPieces: [{ ...pawn, position: pos(3, 2) }, blackKing],
+    });
+    const tag = detectTactic(ctx);
+    expect(tag === "check" || tag === "discoveredCheck").toBe(true);
   });
 });

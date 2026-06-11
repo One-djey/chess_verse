@@ -15,7 +15,8 @@ export type TacticTag =
   | "pin"
   | "capture"
   | "promotion"
-  | "castling";
+  | "castling"
+  | "enPassant";
 
 export interface MoveContext {
   /** The piece that moved (as it was BEFORE the move). */
@@ -25,6 +26,8 @@ export interface MoveContext {
   capturedPiece: Piece | null;
   wasPromotion: boolean;
   wasCastling: boolean;
+  /** True when the move was an en passant capture. */
+  wasEnPassant?: boolean;
   /** Board state BEFORE the move. */
   prevPieces: Piece[];
   /** Board state AFTER the move (result of applyMoveToState). */
@@ -180,6 +183,9 @@ export function detectTactic(ctx: MoveContext): TacticTag | null {
     return "discoveredCheck";
   }
 
+  // en passant ranks above fork/pin/capture: it's a named special move.
+  // Check and discoveredCheck already returned above when applicable.
+  if (ctx.wasEnPassant) return "enPassant";
   if (detectFork(ctx)) return "fork";
   if (detectPin(ctx)) return "pin";
   if (ctx.capturedPiece) return "capture";

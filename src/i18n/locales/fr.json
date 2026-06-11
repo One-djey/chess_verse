@@ -151,7 +151,9 @@
       "promotion": "Promotion !",
       "promotionDesc": "Un pion atteint la dernière rangée",
       "castling": "Roque",
-      "castlingDesc": "Le roi et la tour échangent leurs places"
+      "castlingDesc": "Le roi et la tour échangent leurs places",
+      "enPassant": "En passant !",
+      "enPassantDesc": "Le pion capture le pion ayant avancé de deux cases"
     },
     "moveAnnotations": "Annotations de coup",
     "moveAnnotationsDesc": "Affiche des étiquettes tactiques après chaque coup",

@@ -151,7 +151,9 @@
       "promotion": "¡Promoción!",
       "promotionDesc": "Un peón alcanza la última fila",
       "castling": "Enroque",
-      "castlingDesc": "El rey y la torre intercambian posiciones"
+      "castlingDesc": "El rey y la torre intercambian posiciones",
+      "enPassant": "¡Al paso!",
+      "enPassantDesc": "El peón captura al peón que avanzó dos casillas"
     },
     "moveAnnotations": "Anotaciones de jugada",
     "moveAnnotationsDesc": "Muestra etiquetas tácticas después de cada jugada",

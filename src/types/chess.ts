@@ -42,6 +42,8 @@ export interface MoveRecord {
   to: Position;
   capturedPiece: Piece | null;
   wasPromotion: boolean;
+  /** True when the move was an en passant capture (pawn captures diagonally on empty ep-target square). */
+  isEnPassant?: boolean;
 }
 
 export interface GameState {

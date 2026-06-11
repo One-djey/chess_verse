@@ -1005,3 +1005,120 @@ describe("castling rights included in position hash (Fix 1)", () => {
     expect(isDrawByRepetition(state.positionHistory ?? {})).toBe(true);
   });
 });
+
+// ── 13. Borderless en passant (wrap-around fix) ──────────────────────────────
+
+describe("borderless en passant — wrap-around adjacency", () => {
+  it("pawn at x=7 can capture via en passant a double-pushed pawn that landed at x=0", () => {
+    // Black pawn at (0,1) double-pushes to (0,3), ep target set at (0,2).
+    // White pawn is at (7,3) — in borderless mode, x=7 and x=0 are adjacent.
+    const whitePawn = makePiece("white", "pawn", 7, 3);
+    const blackPawn = makePiece("black", "pawn", 0, 1);
+    const state = makeState(
+      [whitePawn, blackPawn, whiteKing(), blackKing()],
+      BORDERLESS,
+      { currentTurn: "black" },
+    );
+    const after = applyMoveToState(state, blackPawn, pos(0, 3));
+    expect(after.enPassantTarget).toEqual({ x: 0, y: 2 });
+
+    const wp = after.pieces.find((p) => p.id === whitePawn.id)!;
+    const moves = getValidMoves(wp, after.pieces, BORDERLESS, after.enPassantTarget);
+    expect(includesPos(moves, 0, 2)).toBe(true);
+    expect(isValidMove(wp, pos(0, 2), after.pieces, BORDERLESS, after.enPassantTarget)).toBe(true);
+  });
+
+  it("white pawn at x=0 can capture via en passant a double-pushed pawn that landed at x=7", () => {
+    // Black pawn at (7,1) double-pushes to (7,3), ep target set at (7,2).
+    // White pawn is at (0,3) — in borderless mode, x=0 and x=7 are adjacent.
+    const whitePawn = makePiece("white", "pawn", 0, 3);
+    const blackPawn = makePiece("black", "pawn", 7, 1);
+    const state = makeState(
+      [whitePawn, blackPawn, whiteKing(), blackKing()],
+      BORDERLESS,
+      { currentTurn: "black" },
+    );
+    const after = applyMoveToState(state, blackPawn, pos(7, 3));
+    expect(after.enPassantTarget).toEqual({ x: 7, y: 2 });
+
+    const wp = after.pieces.find((p) => p.id === whitePawn.id)!;
+    const moves = getValidMoves(wp, after.pieces, BORDERLESS, after.enPassantTarget);
+    expect(includesPos(moves, 7, 2)).toBe(true);
+  });
+
+  it("wrap-around ep capture removes the correct pawn (x=7→x=0)", () => {
+    const whitePawn = makePiece("white", "pawn", 7, 3);
+    const blackPawn = makePiece("black", "pawn", 0, 1);
+    const state = makeState(
+      [whitePawn, blackPawn, whiteKing(), blackKing()],
+      BORDERLESS,
+      { currentTurn: "black" },
+    );
+    const after = applyMoveToState(state, blackPawn, pos(0, 3));
+    const wp = after.pieces.find((p) => p.id === whitePawn.id)!;
+    const ep = after.enPassantTarget!;
+
+    const captured = applyMoveToState(after, wp, ep);
+    // Black pawn should be gone
+    expect(captured.pieces.find((p) => p.id === blackPawn.id)).toBeUndefined();
+    // White pawn should be at (0,2)
+    const movedWp = captured.pieces.find((p) => p.id === whitePawn.id)!;
+    expect(movedWp.position).toEqual({ x: 0, y: 2 });
+  });
+
+  it("classic en passant (no wrap) still works unchanged in borderless mode", () => {
+    // White pawn at (4,3), black pawn at (3,1) double-pushes to (3,3): adjacent normally.
+    const whitePawn = makePiece("white", "pawn", 4, 3);
+    const blackPawn = makePiece("black", "pawn", 3, 1);
+    const state = makeState(
+      [whitePawn, blackPawn, whiteKing(), blackKing()],
+      BORDERLESS,
+      { currentTurn: "black" },
+    );
+    const after = applyMoveToState(state, blackPawn, pos(3, 3));
+    const wp = after.pieces.find((p) => p.id === whitePawn.id)!;
+    const moves = getValidMoves(wp, after.pieces, BORDERLESS, after.enPassantTarget);
+    expect(includesPos(moves, 3, 2)).toBe(true);
+  });
+});
+
+// ── 14. isEnPassant flag in MoveRecord ────────────────────────────────────────
+
+describe("MoveRecord.isEnPassant", () => {
+  it("is true on an en passant capture", () => {
+    const whitePawn = makePiece("white", "pawn", 4, 3);
+    const blackPawn = makePiece("black", "pawn", 3, 1);
+    const state = makeState(
+      [whitePawn, blackPawn, whiteKing(), blackKing()],
+      CLASSIC,
+      { currentTurn: "black" },
+    );
+    const after = applyMoveToState(state, blackPawn, pos(3, 3));
+    const wp = after.pieces.find((p) => p.id === whitePawn.id)!;
+    const result = applyMoveToState(after, wp, after.enPassantTarget!);
+
+    const lastMove = result.moves[result.moves.length - 1];
+    expect(lastMove.isEnPassant).toBe(true);
+    expect(lastMove.capturedPiece?.id).toBe(blackPawn.id);
+  });
+
+  it("is not set on a regular diagonal pawn capture", () => {
+    const whitePawn = makePiece("white", "pawn", 4, 4);
+    const blackPawn = makePiece("black", "pawn", 3, 3);
+    const state = makeState(
+      [whitePawn, blackPawn, whiteKing(), blackKing()],
+      CLASSIC,
+    );
+    const result = applyMoveToState(state, whitePawn, pos(3, 3));
+    const lastMove = result.moves[result.moves.length - 1];
+    expect(lastMove.isEnPassant).toBeUndefined();
+  });
+
+  it("is not set on a regular pawn push", () => {
+    const whitePawn = makePiece("white", "pawn", 4, 6);
+    const state = makeState([whitePawn, whiteKing(), blackKing()], CLASSIC);
+    const result = applyMoveToState(state, whitePawn, pos(4, 5));
+    const lastMove = result.moves[result.moves.length - 1];
+    expect(lastMove.isEnPassant).toBeUndefined();
+  });
+});

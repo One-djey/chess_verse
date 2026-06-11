@@ -268,6 +268,12 @@ export default function Game() {
           wasCastling:
             piece.type === "king" &&
             Math.abs(piece.position.x - move.to.x) === 2,
+          wasEnPassant:
+            piece.type === "pawn" &&
+            !!prev.enPassantTarget &&
+            move.to.x === prev.enPassantTarget.x &&
+            move.to.y === prev.enPassantTarget.y &&
+            !capturedPiece,
           prevPieces: prev.pieces,
           nextPieces: nextState.pieces,
           gameMode: prev.gameMode,
@@ -803,6 +809,12 @@ export default function Game() {
           piece.type === "pawn" && (target.y === 0 || target.y === 7),
         wasCastling:
           piece.type === "king" && Math.abs(piece.position.x - target.x) === 2,
+        wasEnPassant:
+          piece.type === "pawn" &&
+          !!prev.enPassantTarget &&
+          target.x === prev.enPassantTarget.x &&
+          target.y === prev.enPassantTarget.y &&
+          !capturedPiece,
         prevPieces: prev.pieces,
         nextPieces: nextState.pieces,
         gameMode: prev.gameMode,

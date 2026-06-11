@@ -151,7 +151,9 @@
       "promotion": "Promozione!",
       "promotionDesc": "Un pedone raggiunge l'ultima traversa",
       "castling": "Arrocco",
-      "castlingDesc": "Il re e la torre si scambiano di posto"
+      "castlingDesc": "Il re e la torre si scambiano di posto",
+      "enPassant": "En passant!",
+      "enPassantDesc": "Il pedone cattura il pedone avanzato di due case"
     },
     "moveAnnotations": "Annotazioni mosse",
     "moveAnnotationsDesc": "Mostra etichette tattiche dopo ogni mossa",

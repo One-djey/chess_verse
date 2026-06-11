@@ -151,7 +151,9 @@
       "promotion": "プロモーション！",
       "promotionDesc": "ポーンが最終ランクに到達",
       "castling": "キャスリング",
-      "castlingDesc": "キングとルークが位置を交換"
+      "castlingDesc": "キングとルークが位置を交換",
+      "enPassant": "アンパッサン！",
+      "enPassantDesc": "2マス前進したポーンをすれ違いで取る"
     },
     "moveAnnotations": "手の注釈",
     "moveAnnotationsDesc": "各手の後に戦術ラベルを表示",

@@ -151,7 +151,9 @@
       "promotion": "프로모션!",
       "promotionDesc": "폰이 마지막 랭크에 도달",
       "castling": "캐슬링",
-      "castlingDesc": "킹과 룩이 자리를 교환"
+      "castlingDesc": "킹과 룩이 자리를 교환",
+      "enPassant": "앙파상!",
+      "enPassantDesc": "두 칸 전진한 폰을 지나치며 잡기"
     },
     "moveAnnotations": "수 주석",
     "moveAnnotationsDesc": "각 수 후에 전술 레이블 표시",

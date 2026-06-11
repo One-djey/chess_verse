@@ -151,7 +151,9 @@
       "promotion": "ترقية!",
       "promotionDesc": "بيدق يصل إلى الصف الأخير",
       "castling": "تحصين",
-      "castlingDesc": "الملك والرخ يتبادلان المواضع"
+      "castlingDesc": "الملك والرخ يتبادلان المواضع",
+      "enPassant": "!أخذ بالمرور",
+      "enPassantDesc": "البيدق يأسر البيدق الذي تقدم خطوتين"
     },
     "moveAnnotations": "تعليقات الحركات",
     "moveAnnotationsDesc": "إظهار تسميات تكتيكية بعد كل حركة",

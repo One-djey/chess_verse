@@ -151,7 +151,9 @@
       "promotion": "升变！",
       "promotionDesc": "兵抵达最后一排",
       "castling": "易位",
-      "castlingDesc": "王和车交换位置"
+      "castlingDesc": "王和车交换位置",
+      "enPassant": "过路兵！",
+      "enPassantDesc": "兵吃掉刚走了两格的对方兵"
     },
     "moveAnnotations": "走法注释",
     "moveAnnotationsDesc": "每步棋后显示战术标签",

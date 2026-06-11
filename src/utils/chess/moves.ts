@@ -179,7 +179,10 @@ export const isValidMove = (
   ) {
     const dir = piece.color === "white" ? -1 : 1;
     const absDx = Math.abs(norm.x - piece.position.x);
-    if (absDx === 1 && norm.y === piece.position.y + dir) return true;
+    // In borderless mode, x=0 and x=7 are adjacent (wrap). absDx can be 7 instead of 1.
+    const isAdjacentFile =
+      absDx === 1 || (!!gameMode.rules?.borderless && absDx === BOARD_SIZE - 1);
+    if (isAdjacentFile && norm.y === piece.position.y + dir) return true;
   }
 
 
@@ -292,6 +295,8 @@ export const isSquareUnderAttack = (
 
   // In borderless mode, test all 9 virtual equivalents of the target square
   // (aligned with isInCheck) so that wrap-around attacks are not missed.
+  // Measured overhead: ~4x vs classic (not ×9 — crossesForbiddenEdge provides
+  // early-exit for most virtual positions). Acceptable for a fallback heuristic.
   const targets: Position[] = gameMode.rules?.borderless
     ? Array.from({ length: 3 }, (_, di) =>
         Array.from({ length: 3 }, (_, dj) => ({
@@ -515,8 +520,10 @@ export const getValidMoves = (
     const dir = piece.color === "white" ? -1 : 1;
     const epNorm = normalizePos(enPassantTarget.x, enPassantTarget.y);
     const absDx = Math.abs(epNorm.x - piece.position.x);
-    if (absDx === 1 && epNorm.y === piece.position.y + dir) {
-      // Add the ep square (using virtual coords in borderless, normalised in classic)
+    // In borderless mode, x=0 and x=7 are adjacent (wrap). absDx can be 7 instead of 1.
+    const isAdjacentFile =
+      absDx === 1 || (!!gameMode.rules?.borderless && absDx === BOARD_SIZE - 1);
+    if (isAdjacentFile && epNorm.y === piece.position.y + dir) {
       candidates.push(epNorm);
     }
   }
@@ -647,6 +654,7 @@ export function applyMoveToState(
     to: target,
     capturedPiece: recordCaptured,
     wasPromotion,
+    ...(isEpCapture ? { isEnPassant: true } : {}),
   };
 
   // ── En passant target for next move ─────────────────────────────────────────

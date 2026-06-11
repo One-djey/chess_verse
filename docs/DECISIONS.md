@@ -275,3 +275,51 @@ agent produced locally-correct fixes, but the **merge seams** were the fragile p
 
 - The two doc/code contradictions above are corrected in this revision.
 - Future multi-agent campaigns should gate each merge on green test+lint+build.
+
+---
+
+## ADR-009 — `isSquareUnderAttack` iterates 9 virtual positions in borderless mode (BUG-004)
+
+**Date**: 2026-06-11
+**Status**: Accepted
+
+### Context
+
+`isSquareUnderAttack` is the workhorse of the AI fallback heuristic: it classifies
+every candidate move as "safe" or "risky" by checking whether the destination square
+is attacked. In borderless mode, an attacker can reach a target by going "the long way
+around" (e.g. a rook at x=0 attacks x=6 through x=7→x=0, not just left-to-right).
+`isInCheck` already handled this by testing all 9 virtual king positions (direct +
+8 edge-wrapped equivalents). `isSquareUnderAttack` did not, causing the fallback to
+mis-classify wrap-around attacks as safe.
+
+KNOWN_ISSUES.md noted this as "perf à surveiller" and deferred to a product decision.
+
+### Decision
+
+Align `isSquareUnderAttack` with `isInCheck`: build 9 virtual target positions and
+test each attacker against all of them. `isValidMove` naturally rejects wrap directions
+that violate `crossesForbiddenEdge`, so false positives are not introduced.
+
+### Measured overhead
+
+**10 000 calls on a full starting position, mid-game square (3,3):**
+
+| Mode      | Time   | Ratio |
+|-----------|--------|-------|
+| Classic   | 37 ms  | 1×    |
+| Borderless| 153 ms | ~4×   |
+
+The feared ×9 overhead does not materialise in practice: `crossesForbiddenEdge`
+provides early exit for the majority of virtual positions, reducing the effective
+fan-out to roughly ×4. At ~0.015 ms per call this is negligible for the fallback use
+case (called at most a few hundred times per AI turn).
+
+### Consequences
+
+- Fallback move quality in borderless mode improves: wrap-around threats are
+  correctly classified as risky.
+- Measured perf overhead ~4× vs classic — acceptable; no budget exceeded.
+- If the fallback ever needs to scan more squares (e.g. 16×16 Coliseum extension),
+  the ×9 loop should be re-measured; it could be short-circuited once an attacker
+  is found to avoid redundant checks.
