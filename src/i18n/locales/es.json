@@ -90,6 +90,9 @@
     "accept": "Aceptar",
     "decline": "Rechazar",
     "waitingForOpponent": "Esperando al oponente…",
+    "youWin": "¡Ganaste!",
+    "youLose": "Perdiste.",
+    "peerGone": "El oponente abandonó la partida",
     "playAgain": "Jugar de nuevo",
     "rematch": "Revancha",
     "mainMenu": "Menú principal"

@@ -20,14 +20,14 @@
 | BUG-010 | 🟠 Moyenne | useP2PGame | Guest : `seqRef` avancé même si la pièce du `move_confirm` est introuvable | ✅ Corrigé |
 | BUG-011 | 🟡 Faible | useP2PGame | Host : `from` du `move_proposal` jamais validé | ✅ Corrigé |
 | BUG-012 | 🟡 Faible | legendaryPatterns | Classification des mats imprécise ; setup Berger peut suggérer un coup perdant | ✅ Corrigé |
-| UX-001 | 🟢 Très faible | GameOver | Micro-écarts UI : libellé « Close » non traduit, titre P2P, rematch masqué | ✅ Corrigé (item 1) |
+| UX-001 | 🟢 Très faible | GameOver | Micro-écarts UI : libellé « Close » non traduit, titre P2P, rematch masqué | ✅ Corrigé |
 | UX-002 | 🟢 Très faible | GameSettings | Bouton ✕ sans `aria-label` (non ciblable par lecteur d'écran) | ✅ Corrigé |
 | INFO-001 | ℹ️ Mitigé | ChessAI | Restauration du skill après un hint | ✅ Aucune action requise |
 | INFO-002 | ℹ️ Théorique | ChessAI | `stopPending` peut avaler le `bestmove` suivant | ✅ Aucune action requise |
 | INFO-003 | ℹ️ Théorique | useP2PGame | `onResign` avec `playerColor` null → résultat incohérent | ✅ Corrigé |
 | DOC-001 | 🟠 Moyenne | README | « En passant » annoncé mais non implémenté | ✅ Corrigé |
 | LIM-001 | ℹ️ Design | moves | Pas d'en passant, ni nulle par répétition / 50 coups | — |
-| LIM-002 | ℹ️ Design | P2P | Le guest fait confiance au host sans re-validation | — |
+| LIM-002 | ℹ️ Design | P2P | Le guest fait confiance au host sans re-validation | ✅ Corrigé |
 | REC-001 | 🔧 Refacto | Game.tsx | Logique pure enfouie non testable | ⬜ À trancher |
 
 ---

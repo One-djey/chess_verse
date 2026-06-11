@@ -80,10 +80,21 @@ export default function GameOver({
         : t("gameOver.blackSurrendered");
     }
     if (isP2PMode) {
+      // When playerColor is known, personalise the title ("You win!" / "You lose.").
+      // Without playerColor, fall back to the generic color-based title.
+      if (playerColor != null) {
+        return winner === playerColor
+          ? t("gameOver.youWin")
+          : t("gameOver.youLose");
+      }
       return winner === "white"
         ? t("gameOver.whiteWins")
         : t("gameOver.blackWins");
     }
+    // UX-001 item 4 (intentional): in local pass-and-play without AI both
+    // players share the same screen, so a generic "Victory!" title is correct
+    // regardless of which color won — there is no single "local player" to
+    // personalise toward.
     return aiEnabled && winner === "black"
       ? t("gameOver.defeat")
       : t("gameOver.victory");
@@ -231,10 +242,12 @@ export default function GameOver({
                 {t("gameOver.playAgain")}
               </button>
             )}
-            {isP2PMode && rematchState === "idle" && !peerLeft && (
+            {isP2PMode && rematchState === "idle" && (
               <button
-                onClick={onRematch}
-                className="flex-1 flex items-center justify-center gap-2 bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700 transition font-medium"
+                onClick={peerLeft ? undefined : onRematch}
+                disabled={peerLeft}
+                title={peerLeft ? t("gameOver.peerGone") : undefined}
+                className="flex-1 flex items-center justify-center gap-2 bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700 transition font-medium disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <RefreshCw size={18} /> {t("gameOver.rematch")}
               </button>

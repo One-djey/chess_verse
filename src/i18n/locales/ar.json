@@ -90,6 +90,9 @@
     "accept": "قبول",
     "decline": "رفض",
     "waitingForOpponent": "في انتظار الخصم…",
+    "youWin": "فزت!",
+    "youLose": "خسرت.",
+    "peerGone": "غادر الخصم اللعبة",
     "playAgain": "العب مجدداً",
     "rematch": "انتقام",
     "mainMenu": "القائمة الرئيسية"

@@ -107,6 +107,17 @@ export function useP2PGame({
             );
             return prev;
           }
+          // LIM-002: re-validate the host's move locally before applying it.
+          const validMoves = getValidMoves(piece, prev.pieces, prev.gameMode);
+          const isValid = validMoves.some(
+            (v) => v.x === msg.to.x && v.y === msg.to.y,
+          );
+          if (!isValid) {
+            console.error(
+              "[P2P] Guest: received move not in valid moves from host, ignoring.",
+            );
+            return prev;
+          }
           seqRef.current = msg.seq;
           return applyMoveToState(prev, piece, msg.to, msg.promotionType);
         });

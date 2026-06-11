@@ -90,6 +90,9 @@
     "accept": "承諾",
     "decline": "拒否",
     "waitingForOpponent": "対戦相手を待機中…",
+    "youWin": "あなたの勝ち！",
+    "youLose": "あなたの負け。",
+    "peerGone": "対戦相手が退出しました",
     "playAgain": "もう一度プレイ",
     "rematch": "再戦",
     "mainMenu": "メインメニュー"

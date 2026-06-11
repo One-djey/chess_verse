@@ -82,13 +82,22 @@ describe("GameOver — title logic", () => {
     expect(screen.getByText("gameOver.black")).toBeInTheDocument(); // winner badge
   });
 
-  // NOTE: in P2P the title only names the winning color; playerColor is used
-  // for the defeat *styling* (gray trophy), not the title text.
-  it("shows whiteWins / blackWins titles in P2P mode regardless of playerColor", () => {
+  // UX-001 item 2 fixed: when playerColor is known, show personalised title.
+  it("P2P win — shows youWin when playerColor matches winner", () => {
+    renderGameOver({ isP2PMode: true, winner: "white", playerColor: "white" });
+    expect(screen.getByText("gameOver.youWin")).toBeInTheDocument();
+  });
+
+  it("P2P loss — shows youLose when playerColor doesn't match winner", () => {
     renderGameOver({ isP2PMode: true, winner: "white", playerColor: "black" });
+    expect(screen.getByText("gameOver.youLose")).toBeInTheDocument();
+  });
+
+  it("P2P without playerColor falls back to generic color-based titles", () => {
+    renderGameOver({ isP2PMode: true, winner: "white", playerColor: null });
     expect(screen.getByText("gameOver.whiteWins")).toBeInTheDocument();
     cleanup();
-    renderGameOver({ isP2PMode: true, winner: "black", playerColor: "white" });
+    renderGameOver({ isP2PMode: true, winner: "black", playerColor: null });
     expect(screen.getByText("gameOver.blackWins")).toBeInTheDocument();
   });
 });
@@ -160,13 +169,13 @@ describe("GameOver — rematch states (P2P)", () => {
     expect(onDeclineRematch).toHaveBeenCalledTimes(1);
   });
 
-  // NOTE: when the peer left, the rematch button is *hidden* (not disabled).
-  it("hides the rematch button and shows the opponent-left banner when peerLeft", () => {
+  // UX-001 item 3 fixed: when peerLeft, rematch button is disabled (not hidden).
+  it("peerLeft=true — rematch button is present in the DOM but disabled", () => {
     renderGameOver({ isP2PMode: true, rematchState: "idle", peerLeft: true });
     expect(screen.getByText("gameOver.opponentLeft")).toBeInTheDocument();
-    expect(
-      screen.queryByRole("button", { name: "gameOver.rematch" }),
-    ).not.toBeInTheDocument();
+    const btn = screen.getByRole("button", { name: "gameOver.rematch" });
+    expect(btn).toBeInTheDocument();
+    expect(btn).toBeDisabled();
   });
 });
 

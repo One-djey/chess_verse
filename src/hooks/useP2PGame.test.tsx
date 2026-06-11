@@ -524,6 +524,31 @@ describe("useP2PGame — guest move confirm & reject", () => {
     errorSpy.mockRestore();
   });
 
+  // LIM-002: guest re-validates the host's move against local valid moves
+  it("ignores a move_confirm whose destination is not in valid moves, seqRef stays and console.error is called", () => {
+    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const { handlers, result } = guestRookSetup();
+    const before = result.current.gameState;
+    // The rook is at (0,5); moving diagonally to (1,4) is illegal for a rook.
+    act(() =>
+      handlers["move_confirm"]!({
+        type: "move_confirm",
+        pieceId: "wr",
+        from: pos(0, 5),
+        to: pos(1, 4),
+        seq: 1,
+      }),
+    );
+    expect(result.current.gameState).toBe(before);
+    expect(result.current.seqRef.current).toBe(0); // seqRef NOT advanced
+    expect(errorSpy).toHaveBeenCalledWith(
+      expect.stringContaining("[P2P] Guest: received move not in valid moves"),
+    );
+    errorSpy.mockRestore();
+    warnSpy.mockRestore();
+  });
+
   it("move_reject clears selectedPiece and validMoves only", () => {
     const { handlers, result, initialState } = guestRookSetup();
     const rook = initialState.pieces.find((p) => p.id === "wr")!;
