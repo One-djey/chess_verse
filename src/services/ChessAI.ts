@@ -1,4 +1,5 @@
 import { Piece, PieceColor, PieceType, Position } from "../types/chess";
+import { computeCastlingRights } from "../utils/chess/castling";
 
 export class ChessAI {
   private stockfish: Worker | null = null;
@@ -271,7 +272,7 @@ export class ChessAI {
       if (y < 7) fen += "/";
     }
 
-    const castling = this.computeCastlingRights(pieces);
+    const castling = computeCastlingRights(pieces);
     // En passant field: convert Position to algebraic (column: x→'a'-'h', rank: 8-y)
     const epField = enPassantTarget
       ? this.positionToAlgebraic(enPassantTarget)
@@ -282,37 +283,6 @@ export class ChessAI {
         ? ` w ${castling} ${epField} ${hmc} 1`
         : ` b ${castling} ${epField} ${hmc} 1`;
     return fen;
-  }
-
-  private computeCastlingRights(pieces: Piece[]): string {
-    const whiteKing = pieces.find((p) => p.color === "white" && p.type === "king");
-    const blackKing = pieces.find((p) => p.color === "black" && p.type === "king");
-
-    let rights = "";
-
-    if (whiteKing && !whiteKing.hasMoved) {
-      const kRook = pieces.find(
-        (p) => p.color === "white" && p.type === "rook" && p.position.x === 7 && p.position.y === 7 && !p.hasMoved,
-      );
-      if (kRook) rights += "K";
-      const qRook = pieces.find(
-        (p) => p.color === "white" && p.type === "rook" && p.position.x === 0 && p.position.y === 7 && !p.hasMoved,
-      );
-      if (qRook) rights += "Q";
-    }
-
-    if (blackKing && !blackKing.hasMoved) {
-      const kRook = pieces.find(
-        (p) => p.color === "black" && p.type === "rook" && p.position.x === 7 && p.position.y === 0 && !p.hasMoved,
-      );
-      if (kRook) rights += "k";
-      const qRook = pieces.find(
-        (p) => p.color === "black" && p.type === "rook" && p.position.x === 0 && p.position.y === 0 && !p.hasMoved,
-      );
-      if (qRook) rights += "q";
-    }
-
-    return rights || "-";
   }
 
   private pieceToFENChar(piece: Piece): string {

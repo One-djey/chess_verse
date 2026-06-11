@@ -10,36 +10,7 @@ import {
 } from "../../types/chess";
 import { BOARD_SIZE } from "./board";
 import { getPieceCapabilities, applyAssimilationCapture } from "./assimilation";
-
-// ── Castling rights key ──────────────────────────────────────────────────────
-
-/**
- * Computes a FEN-style castling availability string from the current piece set.
- * Used exclusively for position hashing (triple-repetition detection).
- *
- * FIDE rule 9.2 defines "the same position" as identical piece placement,
- * same active colour, same castling rights, and same en passant target.
- * Omitting castling rights from the hash could cause two positions that differ
- * only in whether a king or rook has moved (and thus lost castling rights) to
- * hash identically — producing a false triple-repetition draw.
- *
- * Mirrors the logic in ChessAI.computeCastlingRights — kept in sync manually.
- * (Cannot import from ChessAI: it would create a circular dep service → util.)
- */
-function computeCastlingKey(pieces: Piece[]): string {
-  const wk = pieces.find(p => p.color === "white" && p.type === "king");
-  const bk = pieces.find(p => p.color === "black" && p.type === "king");
-  let rights = "";
-  if (wk && !wk.hasMoved) {
-    if (pieces.find(p => p.color === "white" && p.type === "rook" && p.position.x === 7 && p.position.y === 7 && !p.hasMoved)) rights += "K";
-    if (pieces.find(p => p.color === "white" && p.type === "rook" && p.position.x === 0 && p.position.y === 7 && !p.hasMoved)) rights += "Q";
-  }
-  if (bk && !bk.hasMoved) {
-    if (pieces.find(p => p.color === "black" && p.type === "rook" && p.position.x === 7 && p.position.y === 0 && !p.hasMoved)) rights += "k";
-    if (pieces.find(p => p.color === "black" && p.type === "rook" && p.position.x === 0 && p.position.y === 0 && !p.hasMoved)) rights += "q";
-  }
-  return rights || "-";
-}
+import { computeCastlingRights } from "./castling";
 
 // ── Small shared helpers ─────────────────────────────────────────────────────
 
@@ -745,7 +716,7 @@ export function applyMoveToState(
   // must be included: a position where a rook has moved (losing castling rights)
   // is NOT the same as the visually identical position where castling is still
   // available — omitting it could trigger a false draw.
-  const castlingKey = computeCastlingKey(pieces);
+  const castlingKey = computeCastlingRights(pieces);
   const posHash = `${pieceStr}_${nextTurn}_${castlingKey}_${epStr}`;
   const prevHistory = prev.positionHistory ?? {};
   const nextHistory = {
