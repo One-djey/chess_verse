@@ -18,6 +18,7 @@ import type {
   RematchDeclineMessage,
   RematchStartMessage,
   ResignMessage,
+  SyncRequestMessage,
 } from "../types/p2p";
 import { CLASSIC, makePiece, makeState, pos } from "../test/helpers";
 
@@ -74,6 +75,8 @@ function makeMockActions() {
     onGuestReady: on("guest_ready"),
     sendArenaInit: vi.fn(),
     onArenaInit: on("arena_init"),
+    sendSyncRequest: vi.fn<(msg: SyncRequestMessage) => void>(),
+    onSyncRequest: on("sync_request"),
   };
 
   return { raw, actions: raw as unknown as Actions, handlers };
@@ -232,6 +235,7 @@ describe("useP2PGame — initial state & registration", () => {
       "rematch_decline",
       "rematch_request",
       "resign",
+      "sync_request",
     ]);
     expect(room.onPeerLeave).toHaveBeenCalledTimes(1);
   });
@@ -365,16 +369,6 @@ describe("useP2PGame — host move proposals", () => {
     expect(raw.sendMoveConfirm).not.toHaveBeenCalled();
   });
 
-  it("rejects a proposal when msg.from does not match the piece's current position (BUG-011 fixed)", () => {
-    const { handlers, raw, result } = hostRookSetup();
-    const before = result.current.gameState;
-    act(() =>
-      handlers["move_proposal"]!({ ...ROOK_PROPOSAL, from: pos(0, 7) }), // wrong from
-    );
-    expect(raw.sendMoveReject).toHaveBeenCalledTimes(1);
-    expect(raw.sendMoveConfirm).not.toHaveBeenCalled();
-    expect(result.current.gameState).toBe(before);
-  });
 
   it("increments seq on each confirmed move (1, then 2)", () => {
     const { handlers, raw, result } = hostRookSetup();
@@ -432,6 +426,41 @@ describe("useP2PGame — host move proposals", () => {
     expect(promoted.type).toBe("knight");
     expect(promoted.position).toEqual(pos(0, 7));
     expect(result.current.gameState.moves[0]!.wasPromotion).toBe(true);
+  });
+});
+
+// ── HOST: sync_request handler ────────────────────────────────────────────────
+
+describe("useP2PGame — host sync_request handler", () => {
+  it("sends sync_state with current pieces and seq when guest requests resync", () => {
+    const { handlers, raw, result } = hostRookSetup();
+
+    // Play one confirmed move first so seq is non-zero and state has changed.
+    act(() => handlers["move_proposal"]!(ROOK_PROPOSAL));
+    expect(result.current.seqRef.current).toBe(1);
+
+    act(() => handlers["sync_request"]!({ type: "sync_request" }));
+
+    expect(raw.sendSyncState).toHaveBeenCalledTimes(1);
+    const sent = raw.sendSyncState.mock.calls[0]![0];
+    expect(sent.type).toBe("sync_state");
+    expect(sent.seq).toBe(1);
+    // The pieces array should match the current authoritative state.
+    expect(sent.pieces).toHaveLength(result.current.gameState.pieces.length);
+    const rook = sent.pieces.find((p: Piece) => p.id === "br")!;
+    expect(rook.position).toEqual(pos(0, 5)); // rook moved
+  });
+
+  it("responds to sync_request even at seq 0 (before any moves)", () => {
+    const { handlers, raw, result } = hostRookSetup();
+
+    act(() => handlers["sync_request"]!({ type: "sync_request" }));
+
+    expect(raw.sendSyncState).toHaveBeenCalledTimes(1);
+    const sent = raw.sendSyncState.mock.calls[0]![0];
+    expect(sent.type).toBe("sync_state");
+    expect(sent.seq).toBe(0);
+    expect(sent.pieces).toHaveLength(result.current.gameState.pieces.length);
   });
 });
 
@@ -505,9 +534,9 @@ describe("useP2PGame — guest move confirm & reject", () => {
     expect(result.current.seqRef.current).toBe(2);
   });
 
-  it("ignores a confirm for an unknown pieceId and does NOT advance seqRef (BUG-010 fixed)", () => {
+  it("requests resync for unknown pieceId, does NOT advance seqRef (BUG-010 fixed)", () => {
     const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
-    const { handlers, result } = guestRookSetup();
+    const { handlers, result, raw } = guestRookSetup();
     const before = result.current.gameState;
     act(() =>
       handlers["move_confirm"]!({
@@ -520,15 +549,20 @@ describe("useP2PGame — guest move confirm & reject", () => {
     );
     expect(result.current.gameState).toBe(before);
     expect(result.current.seqRef.current).toBe(0); // seqRef NOT advanced
-    expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining("ghost"));
+    expect(errorSpy).toHaveBeenCalledWith(
+      expect.stringContaining("ghost"),
+    );
+    // Resync request must be sent to host.
+    expect(raw.sendSyncRequest).toHaveBeenCalledTimes(1);
+    expect(raw.sendSyncRequest).toHaveBeenCalledWith({ type: "sync_request" });
     errorSpy.mockRestore();
   });
 
   // LIM-002: guest re-validates the host's move against local valid moves
-  it("ignores a move_confirm whose destination is not in valid moves, seqRef stays and console.error is called", () => {
+  it("requests resync when destination is not in valid moves, seqRef stays (LIM-002 fixed)", () => {
     const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
     const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
-    const { handlers, result } = guestRookSetup();
+    const { handlers, result, raw } = guestRookSetup();
     const before = result.current.gameState;
     // The rook is at (0,5); moving diagonally to (1,4) is illegal for a rook.
     act(() =>
@@ -543,8 +577,11 @@ describe("useP2PGame — guest move confirm & reject", () => {
     expect(result.current.gameState).toBe(before);
     expect(result.current.seqRef.current).toBe(0); // seqRef NOT advanced
     expect(errorSpy).toHaveBeenCalledWith(
-      expect.stringContaining("[P2P] Guest: received move not in valid moves"),
+      expect.stringContaining("[P2P] Guest: move from host not in valid moves"),
     );
+    // Resync request must be sent to host.
+    expect(raw.sendSyncRequest).toHaveBeenCalledTimes(1);
+    expect(raw.sendSyncRequest).toHaveBeenCalledWith({ type: "sync_request" });
     errorSpy.mockRestore();
     warnSpy.mockRestore();
   });

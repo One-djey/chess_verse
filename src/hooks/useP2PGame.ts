@@ -86,6 +86,20 @@ export function useP2PGame({
         );
       });
 
+      // P2P resilience: when the guest detects divergence it sends sync_request.
+      // The host responds with the current authoritative state so the guest can
+      // re-align. Trade-off: adds a round-trip on divergence, but never leaves
+      // the game permanently stuck in a desync.
+      actions.onSyncRequest(() => {
+        const currentState = gameStateRef.current;
+        if (!currentState) return;
+        actions.sendSyncState({
+          type: "sync_state",
+          pieces: currentState.pieces,
+          seq: seqRef.current,
+        });
+      });
+
       actions.onRematchRequest(() => setRematchState("offered"));
       actions.onRematchDecline(() => setRematchState("idle"));
       actions.onRematchAccept(() => {
@@ -105,20 +119,30 @@ export function useP2PGame({
         setGameState((prev) => {
           const piece = prev.pieces.find((p) => p.id === msg.pieceId);
           if (!piece) {
+            // P2P resilience: instead of silently rejecting (which would leave
+            // the game in a stuck state if host/guest have diverged), we request
+            // a full resync. The host responds with sync_state, which the guest
+            // applies to re-align. seqRef is NOT advanced so the next seq gap
+            // warning still fires, making the divergence visible in logs.
             console.error(
-              `P2P: move_confirm references unknown pieceId "${msg.pieceId}" — ignoring and not advancing seqRef`,
+              `[P2P] Guest: move_confirm references unknown pieceId "${msg.pieceId}" — requesting resync`,
             );
+            actions.sendSyncRequest({ type: "sync_request" });
             return prev;
           }
           // LIM-002: re-validate the host's move locally before applying it.
+          // P2P resilience: instead of silently ignoring an invalid move (which
+          // would leave the game stuck if states have diverged), we request a
+          // full resync so the host can re-align the guest.
           const validMoves = getValidMoves(piece, prev.pieces, prev.gameMode, prev.enPassantTarget);
           const isValid = validMoves.some(
             (v) => v.x === msg.to.x && v.y === msg.to.y,
           );
           if (!isValid) {
             console.error(
-              "[P2P] Guest: received move not in valid moves from host, ignoring.",
+              `[P2P] Guest: move from host not in valid moves — requesting resync`,
             );
+            actions.sendSyncRequest({ type: "sync_request" });
             return prev;
           }
           seqRef.current = msg.seq;
