@@ -8,6 +8,8 @@ import { gameModes } from "./gameModes";
  *   takes precedence (the host decides the game mode for both players).
  * - Otherwise the mode is looked up by `modeId` in the global `gameModes` list,
  *   falling back to the first entry (classic) when the id is unknown/undefined.
+ *
+ * Extracted from Game.tsx (REC-001) — pure function with no React dependencies.
  */
 export function resolveGameMode(
   modeId: string | undefined,

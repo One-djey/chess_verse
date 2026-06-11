@@ -48,6 +48,26 @@ import { recordGame } from "../services/statsService";
 import type { PlayType } from "../services/statsService";
 import type { PieceType } from "../types/chess";
 
+// NOTE: The following pure functions were extracted to utility modules (REC-001):
+// - detectScholarsMate → src/utils/chess/tactics.ts
+// - resolveGameMode    → src/utils/gameLogic.ts
+//
+// Two items from the original REC-001 report were intentionally NOT extracted:
+//
+// 1. "Session stats accumulation" (sessionStatsRef, hintsFollowedRef, wasPromotedRef):
+//    These refs are React-managed — their lifecycle is tied to the component mount/unmount
+//    and to useEffect reset triggers. Extracting them would require threading the ref
+//    objects through every handler, coupling a utility to React.RefObject<T> and making
+//    the API awkward. The logic itself (increment counters, spread into recordGame) has
+//    no testable invariant beyond what statsService.test.ts already covers.
+//
+// 2. "AI move validation chain" (the applyMove / trigger closure inside the AI useEffect):
+//    This closure calls chess.setGameState, chess.gameStateRef, addLabel, triggerAnnotation
+//    and chess.aiRef — all of which are React state/refs. It is not a pure function and
+//    cannot be extracted without re-designing the whole AI interaction as a service with
+//    callbacks. The correctness of the chain is tested indirectly through useChessGame
+//    integration tests; isolated unit testing would require a full mock of game state.
+
 export default function Game() {
   const { modeId } = useParams();
   const navigate = useNavigate();

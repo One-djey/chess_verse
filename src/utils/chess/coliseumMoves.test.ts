@@ -277,7 +277,7 @@ describe("getColiseumValidMoves — king", () => {
 });
 
 // ---------------------------------------------------------------------------
-// isColiseumSquareUnderAttack
+// isColiseumSquareUnderAttack (BUG-009 fix: pawn covers empty diagonals)
 // ---------------------------------------------------------------------------
 
 describe("isColiseumSquareUnderAttack", () => {
@@ -301,11 +301,35 @@ describe("isColiseumSquareUnderAttack", () => {
     ).toBe(false);
   });
 
-  it("reports an empty diagonal square as attacked by a pawn (BUG-009 fixed)", () => {
+  // BUG-009 fix: pawn diagonals cover empty squares (coverage map).
+  // In standard chess pawns only "attack" occupied diagonal squares via getValidMoves;
+  // in Coliseum the inline check ensures empty diagonals are also considered attacked.
+  it("BUG-009: reports an empty diagonal square as attacked by a pawn", () => {
     const pawn = makePiece("white", "pawn", 4, 4);
+    // (5,5) is empty — must still be considered under attack for king-safety checks
     expect(
       isColiseumSquareUnderAttack(pos(5, 5), "white", [pawn], openArena()),
     ).toBe(true);
+  });
+
+  it("BUG-009: pawn covers all 4 empty diagonals (omnidirectional in Coliseum)", () => {
+    const pawn = makePiece("white", "pawn", 3, 4);
+    const arena = openArena();
+    // All 4 diagonal neighbours of (3,4) must be under attack by the pawn
+    expect(isColiseumSquareUnderAttack(pos(2, 3), "white", [pawn], arena)).toBe(true); // forward-left (standard chess "forward")
+    expect(isColiseumSquareUnderAttack(pos(4, 3), "white", [pawn], arena)).toBe(true); // forward-right
+    expect(isColiseumSquareUnderAttack(pos(2, 5), "white", [pawn], arena)).toBe(true); // backward-left (Coliseum-only)
+    expect(isColiseumSquareUnderAttack(pos(4, 5), "white", [pawn], arena)).toBe(true); // backward-right (Coliseum-only)
+  });
+
+  it("pawn does NOT attack orthogonal squares", () => {
+    const pawn = makePiece("white", "pawn", 3, 4);
+    const arena = openArena();
+    // Orthogonal neighbours: pawn can move there, but does not "attack" them
+    expect(isColiseumSquareUnderAttack(pos(3, 3), "white", [pawn], arena)).toBe(false);
+    expect(isColiseumSquareUnderAttack(pos(3, 5), "white", [pawn], arena)).toBe(false);
+    expect(isColiseumSquareUnderAttack(pos(2, 4), "white", [pawn], arena)).toBe(false);
+    expect(isColiseumSquareUnderAttack(pos(4, 4), "white", [pawn], arena)).toBe(false);
   });
 
   it("reports a diagonal square occupied by an enemy as attacked by a pawn", () => {
@@ -348,6 +372,8 @@ describe("isColiseumInCheck", () => {
   });
 
   it("returns true for a pawn checking diagonally (omnidirectional, including 'backwards')", () => {
+    // Coliseum pawns attack all 4 diagonals regardless of color/direction.
+    // White pawn at (5,5) attacks (4,4) diagonally — "backwards" in standard chess.
     const king = makePiece("black", "king", 4, 4);
     const pawn = makePiece("white", "pawn", 5, 5);
     expect(isColiseumInCheck("black", [king, pawn], openArena())).toBe(true);
