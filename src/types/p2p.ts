@@ -77,6 +77,9 @@ export type RematchStartMessage = { type: "rematch_start"; pieces: Piece[] };
 // Host → Guest: Coliseum arena data (sent before sync_state for coliseum mode)
 export type ArenaInitMessage = { type: "arena_init"; arena: Arena };
 
+// Guest → Host: request a full state resync (sent when guest detects divergence)
+export type SyncRequestMessage = { type: "sync_request" };
+
 export type RematchState = "idle" | "requested" | "offered" | "starting";
 
 export type P2PMessage =
@@ -91,4 +94,5 @@ export type P2PMessage =
   | RematchAcceptMessage
   | RematchDeclineMessage
   | RematchStartMessage
-  | ArenaInitMessage;
+  | ArenaInitMessage
+  | SyncRequestMessage;
