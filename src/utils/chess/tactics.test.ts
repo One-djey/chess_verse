@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { detectTactic, type MoveContext } from "./tactics";
-import type { GameMode, Piece, PieceType, Position } from "../../types/chess";
+import { detectTactic, detectScholarsMate, type MoveContext } from "./tactics";
+import type { GameMode, MoveRecord, Piece, PieceType, Position } from "../../types/chess";
 import { ASSIMILATION, CLASSIC, makePiece, pos } from "../../test/helpers";
 
 /**
@@ -264,3 +264,163 @@ describe("detectTactic — capture and quiet moves", () => {
     expect(detectTactic(ctx)).toBeNull();
   });
 });
+
+/** Build a minimal MoveRecord for Scholar's Mate tests. */
+function moveRecord(
+  color: "white" | "black",
+  type: PieceType,
+  fromX: number,
+  fromY: number,
+  toX: number,
+  toY: number,
+  capturedPiece: Piece | null = null,
+): MoveRecord {
+  return {
+    piece: makePiece(color, type, fromX, fromY),
+    from: pos(fromX, fromY),
+    to: pos(toX, toY),
+    capturedPiece,
+    wasPromotion: false,
+  };
+}
+
+// ---------------------------------------------------------------------------
+// detectScholarsMate
+// ---------------------------------------------------------------------------
+
+describe("detectScholarsMate — nominal case", () => {
+  it("returns true for the exact Scholar's Mate move sequence", () => {
+    // Plies 0-6: e4, e5, Qh5, Nc6, Bc4, Nf6, Qxf7#
+    const capturedPawn = makePiece("black", "pawn", 5, 1);
+    const moves: MoveRecord[] = [
+      moveRecord("white", "pawn", 4, 6, 4, 4),           // ply 0: e2→e4
+      moveRecord("black", "pawn", 4, 1, 4, 3),           // ply 1: e7→e5
+      moveRecord("white", "queen", 3, 7, 7, 3),          // ply 2: Qd1→h5
+      moveRecord("black", "knight", 1, 0, 2, 2),         // ply 3: Nb8→c6
+      moveRecord("white", "bishop", 5, 7, 2, 4),         // ply 4: Bf1→c4
+      moveRecord("black", "knight", 6, 0, 5, 2),         // ply 5: Ng8→f6
+      {
+        piece: makePiece("white", "queen", 7, 3),        // ply 6: Qh5×f7#
+        from: pos(7, 3),
+        to: pos(5, 1),
+        capturedPiece: capturedPawn,
+        wasPromotion: false,
+      },
+    ];
+    expect(detectScholarsMate(moves)).toBe(true);
+  });
+});
+
+describe("detectScholarsMate — edge cases", () => {
+  it("returns false for an empty move list", () => {
+    expect(detectScholarsMate([])).toBe(false);
+  });
+
+  it("returns false when there are fewer than 7 plies", () => {
+    const moves: MoveRecord[] = [
+      moveRecord("white", "pawn", 4, 6, 4, 4),
+      moveRecord("black", "pawn", 4, 1, 4, 3),
+      moveRecord("white", "queen", 3, 7, 7, 3),
+      moveRecord("black", "knight", 1, 0, 2, 2),
+      moveRecord("white", "bishop", 5, 7, 2, 4),
+      moveRecord("black", "knight", 6, 0, 5, 2),
+      // missing ply 6
+    ];
+    expect(detectScholarsMate(moves)).toBe(false);
+  });
+
+  it("returns false when the first white move is not the e-pawn to e4", () => {
+    const capturedPawn = makePiece("black", "pawn", 5, 1);
+    const moves: MoveRecord[] = [
+      moveRecord("white", "pawn", 3, 6, 3, 4),           // ply 0: d4 instead of e4
+      moveRecord("black", "pawn", 4, 1, 4, 3),
+      moveRecord("white", "queen", 3, 7, 7, 3),
+      moveRecord("black", "knight", 1, 0, 2, 2),
+      moveRecord("white", "bishop", 5, 7, 2, 4),
+      moveRecord("black", "knight", 6, 0, 5, 2),
+      {
+        piece: makePiece("white", "queen", 7, 3),
+        from: pos(7, 3),
+        to: pos(5, 1),
+        capturedPiece: capturedPawn,
+        wasPromotion: false,
+      },
+    ];
+    expect(detectScholarsMate(moves)).toBe(false);
+  });
+
+  it("returns false when the queen does not go to h5", () => {
+    const capturedPawn = makePiece("black", "pawn", 5, 1);
+    const moves: MoveRecord[] = [
+      moveRecord("white", "pawn", 4, 6, 4, 4),
+      moveRecord("black", "pawn", 4, 1, 4, 3),
+      moveRecord("white", "queen", 3, 7, 6, 3),          // ply 2: Qg5 instead of Qh5
+      moveRecord("black", "knight", 1, 0, 2, 2),
+      moveRecord("white", "bishop", 5, 7, 2, 4),
+      moveRecord("black", "knight", 6, 0, 5, 2),
+      {
+        piece: makePiece("white", "queen", 6, 3),
+        from: pos(6, 3),
+        to: pos(5, 1),
+        capturedPiece: capturedPawn,
+        wasPromotion: false,
+      },
+    ];
+    expect(detectScholarsMate(moves)).toBe(false);
+  });
+
+  it("returns false when the bishop does not go to c4", () => {
+    const capturedPawn = makePiece("black", "pawn", 5, 1);
+    const moves: MoveRecord[] = [
+      moveRecord("white", "pawn", 4, 6, 4, 4),
+      moveRecord("black", "pawn", 4, 1, 4, 3),
+      moveRecord("white", "queen", 3, 7, 7, 3),
+      moveRecord("black", "knight", 1, 0, 2, 2),
+      moveRecord("white", "bishop", 5, 7, 3, 5),          // ply 4: Bd3 instead of Bc4
+      moveRecord("black", "knight", 6, 0, 5, 2),
+      {
+        piece: makePiece("white", "queen", 7, 3),
+        from: pos(7, 3),
+        to: pos(5, 1),
+        capturedPiece: capturedPawn,
+        wasPromotion: false,
+      },
+    ];
+    expect(detectScholarsMate(moves)).toBe(false);
+  });
+
+  it("returns false when the final queen move lands on a different square", () => {
+    const moves: MoveRecord[] = [
+      moveRecord("white", "pawn", 4, 6, 4, 4),
+      moveRecord("black", "pawn", 4, 1, 4, 3),
+      moveRecord("white", "queen", 3, 7, 7, 3),
+      moveRecord("black", "knight", 1, 0, 2, 2),
+      moveRecord("white", "bishop", 5, 7, 2, 4),
+      moveRecord("black", "knight", 6, 0, 5, 2),
+      moveRecord("white", "queen", 7, 3, 4, 3),           // ply 6: Qe5 instead of Qxf7
+    ];
+    expect(detectScholarsMate(moves)).toBe(false);
+  });
+
+  it("returns false when the final queen move captures nothing (no capturedPiece)", () => {
+    const moves: MoveRecord[] = [
+      moveRecord("white", "pawn", 4, 6, 4, 4),
+      moveRecord("black", "pawn", 4, 1, 4, 3),
+      moveRecord("white", "queen", 3, 7, 7, 3),
+      moveRecord("black", "knight", 1, 0, 2, 2),
+      moveRecord("white", "bishop", 5, 7, 2, 4),
+      moveRecord("black", "knight", 6, 0, 5, 2),
+      moveRecord("white", "queen", 7, 3, 5, 1),           // ply 6: Qf7 but no capture
+    ];
+    expect(detectScholarsMate(moves)).toBe(false);
+  });
+
+  it("returns false when the 8th+ ply sequence otherwise matches but only 7 plies given", () => {
+    // 7 plies with ply 0 not matching — already covered; just verify boundary
+    const moves: MoveRecord[] = new Array(7).fill(
+      moveRecord("black", "pawn", 0, 0, 0, 1),
+    );
+    expect(detectScholarsMate(moves)).toBe(false);
+  });
+});
+
