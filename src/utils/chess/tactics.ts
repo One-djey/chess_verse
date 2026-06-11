@@ -110,40 +110,24 @@ function detectPin(ctx: MoveContext): boolean {
 }
 
 /**
- * Detects the exact Scholar's Mate pattern (white side):
- *   1. e2→e4  2. Q→h5  3. B→c4  4. Q×f7#
+ * Detects Scholar's Mate (white side): white plays exactly 4 moves and the
+ * last white move is the queen capturing on f7 (x=5, y=1).
+ *
+ * This covers all move-order variants (e.g. Bc4 before Qh5) and is aligned
+ * with the legendaryPatterns.ts classifyMate() detection used for annotations.
  *
  * Coordinate system: y=0 is rank 8 (black back rank), y=7 is rank 1 (white back rank).
- * The move list is one entry per half-move (ply), white plays even indices.
- *
- * Extracted from Game.tsx (REC-001) — pure function with no React dependencies.
  */
 export function detectScholarsMate(moves: MoveRecord[]): boolean {
   if (moves.length < 7) return false;
-  const m0 = moves[0]; // white ply 1: pawn e2(4,6)→e4(4,4)
-  const m2 = moves[2]; // white ply 2: queen →h5(7,3)
-  const m4 = moves[4]; // white ply 3: bishop →c4(2,4)
-  const m6 = moves[6]; // white ply 4: queen ×f7(5,1)#
+  const whiteMoves = moves.filter((m) => m.piece.color === "white");
+  if (whiteMoves.length !== 4) return false;
+  const last = whiteMoves[3];
   return (
-    m0.piece.color === "white" &&
-    m0.piece.type === "pawn" &&
-    m0.from.x === 4 &&
-    m0.from.y === 6 &&
-    m0.to.x === 4 &&
-    m0.to.y === 4 &&
-    m2.piece.color === "white" &&
-    m2.piece.type === "queen" &&
-    m2.to.x === 7 &&
-    m2.to.y === 3 &&
-    m4.piece.color === "white" &&
-    m4.piece.type === "bishop" &&
-    m4.to.x === 2 &&
-    m4.to.y === 4 &&
-    m6.piece.color === "white" &&
-    m6.piece.type === "queen" &&
-    m6.to.x === 5 &&
-    m6.to.y === 1 &&
-    m6.capturedPiece !== null
+    last.piece.type === "queen" &&
+    last.to.x === 5 &&
+    last.to.y === 1 &&
+    last.capturedPiece !== null
   );
 }
 
