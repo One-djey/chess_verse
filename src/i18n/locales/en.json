@@ -455,6 +455,8 @@
       "earlyBirdDesc": "Play a game before 8 AM",
       "marathon": "Marathon",
       "marathonDesc": "Accumulate 42 hours of play",
+      "magnusCarlsen": "Magnus Carlsen",
+      "magnusCarlsenDesc": "Beat the AI at maximum difficulty without any assistance",
       "whatElse": "What Else?",
       "whatElseDesc": "Support the project with a coffee",
       "contributor": "Contributor",

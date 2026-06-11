@@ -14,6 +14,16 @@ export type LocalSettings = {
   showMoveAnnotations: boolean;
 };
 
+export const ASSISTANCE_OPTIONS: (keyof LocalSettings)[] = [
+  "showDangerIndicator",
+  "showHint",
+  "showMoveAnnotations",
+];
+
+export function isAnyAssistanceActive(settings: LocalSettings): boolean {
+  return ASSISTANCE_OPTIONS.some((key) => settings[key]);
+}
+
 const STORAGE_KEY = "chess_settings";
 const DEFAULT_SETTINGS: LocalSettings = {
   aiEnabled: true,

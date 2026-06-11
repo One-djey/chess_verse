@@ -1,11 +1,4 @@
-import {
-  describe,
-  it,
-  expect,
-  vi,
-  beforeEach,
-  afterEach,
-} from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 // Static import is only used for PURE exports (constants & pure helpers).
 // All stateful functions (getStats/saveStats/recordGame/…) are accessed via a
 // per-test dynamic import (see beforeEach) because the module keeps a mutable
@@ -127,7 +120,8 @@ function baseStats(overrides: Partial<ChessverseStats> = {}): ChessverseStats {
     lastPlayedDate: null,
     coliseumGames: 0,
     coliseumWins: 0,
-  ...overrides,
+    beatMaxAINoAssist: 0,
+    ...overrides,
   };
 }
 
@@ -270,7 +264,11 @@ describe("recordGame nominal", () => {
 describe("surrender counting", () => {
   it("increments surrenders when the player surrenders (loss)", () => {
     svc.recordGame(
-      makeGame({ winner: "black", playerColor: "white", surrenderedBy: "white" }),
+      makeGame({
+        winner: "black",
+        playerColor: "white",
+        surrenderedBy: "white",
+      }),
     );
     const stats = svc.getStats();
     expect(stats.surrenders).toBe(1);
@@ -279,7 +277,11 @@ describe("surrender counting", () => {
 
   it("does NOT increment surrenders when the opponent surrenders (player wins)", () => {
     svc.recordGame(
-      makeGame({ winner: "white", playerColor: "white", surrenderedBy: "black" }),
+      makeGame({
+        winner: "white",
+        playerColor: "white",
+        surrenderedBy: "black",
+      }),
     );
     const stats = svc.getStats();
     expect(stats.surrenders).toBe(0);
@@ -397,33 +399,121 @@ describe("day streaks", () => {
 describe("maxAILevelBeaten", () => {
   it("is updated on a win vs AI with the difficulty level", () => {
     svc.recordGame(
-      makeGame({ playType: "ai", winner: "white", playerColor: "white", aiDifficulty: 5 }),
+      makeGame({
+        playType: "ai",
+        winner: "white",
+        playerColor: "white",
+        aiDifficulty: 5,
+      }),
     );
     expect(svc.getStats().maxAILevelBeaten).toBe(5);
   });
 
   it("takes the max: beating level 5 then level 3 keeps 5", () => {
     svc.recordGame(
-      makeGame({ playType: "ai", winner: "white", playerColor: "white", aiDifficulty: 5 }),
+      makeGame({
+        playType: "ai",
+        winner: "white",
+        playerColor: "white",
+        aiDifficulty: 5,
+      }),
     );
     svc.recordGame(
-      makeGame({ playType: "ai", winner: "white", playerColor: "white", aiDifficulty: 3 }),
+      makeGame({
+        playType: "ai",
+        winner: "white",
+        playerColor: "white",
+        aiDifficulty: 3,
+      }),
     );
     expect(svc.getStats().maxAILevelBeaten).toBe(5);
   });
 
   it("is NOT updated on a loss vs a high-level AI", () => {
     svc.recordGame(
-      makeGame({ playType: "ai", winner: "black", playerColor: "white", aiDifficulty: 18 }),
+      makeGame({
+        playType: "ai",
+        winner: "black",
+        playerColor: "white",
+        aiDifficulty: 18,
+      }),
     );
     expect(svc.getStats().maxAILevelBeaten).toBe(0);
   });
 
   it("is NOT updated on a non-AI win even if aiDifficulty is set", () => {
     svc.recordGame(
-      makeGame({ playType: "local", winner: "white", playerColor: "white", aiDifficulty: 12 }),
+      makeGame({
+        playType: "local",
+        winner: "white",
+        playerColor: "white",
+        aiDifficulty: 12,
+      }),
     );
     expect(svc.getStats().maxAILevelBeaten).toBe(0);
+  });
+});
+
+// ── beatMaxAINoAssist (Magnus Carlsen badge) ─────────────────────────────────
+
+describe("beatMaxAINoAssist counter", () => {
+  const win20NoAssist = () =>
+    makeGame({
+      playType: "ai",
+      winner: "white",
+      playerColor: "white",
+      aiDifficulty: 20,
+      assistanceUsedDuringGame: false,
+    });
+
+  it("increments on a win at level 20 without any assistance", () => {
+    svc.recordGame(win20NoAssist());
+    expect(svc.getStats().beatMaxAINoAssist).toBe(1);
+  });
+
+  it("accumulates across multiple qualifying wins", () => {
+    svc.recordGame(win20NoAssist());
+    svc.recordGame(win20NoAssist());
+    expect(svc.getStats().beatMaxAINoAssist).toBe(2);
+  });
+
+  it("does NOT increment on a loss at level 20 without assistance", () => {
+    svc.recordGame(
+      makeGame({
+        playType: "ai",
+        winner: "black",
+        playerColor: "white",
+        aiDifficulty: 20,
+        assistanceUsedDuringGame: false,
+      }),
+    );
+    expect(svc.getStats().beatMaxAINoAssist).toBe(0);
+  });
+
+  it("does NOT increment on a win at level 19 without assistance", () => {
+    svc.recordGame(
+      makeGame({
+        playType: "ai",
+        winner: "white",
+        playerColor: "white",
+        aiDifficulty: 19,
+        assistanceUsedDuringGame: false,
+      }),
+    );
+    expect(svc.getStats().beatMaxAINoAssist).toBe(0);
+  });
+
+  it("does NOT increment on a win at level 20 when assistance was used", () => {
+    svc.recordGame(
+      makeGame({
+        playType: "ai",
+        winner: "white",
+        playerColor: "white",
+        aiDifficulty: 20,
+        assistanceUsedDuringGame: true,
+      }),
+    );
+    expect(svc.getStats().beatMaxAINoAssist).toBe(0);
   });
 });
 
@@ -514,10 +604,18 @@ describe("badge counters", () => {
 
   it("scholarsMates increments only on a win flagged wasScholarsMate", () => {
     svc.recordGame(
-      makeGame({ winner: "white", playerColor: "white", wasScholarsMate: true }),
+      makeGame({
+        winner: "white",
+        playerColor: "white",
+        wasScholarsMate: true,
+      }),
     );
     svc.recordGame(
-      makeGame({ winner: "black", playerColor: "white", wasScholarsMate: true }),
+      makeGame({
+        winner: "black",
+        playerColor: "white",
+        wasScholarsMate: true,
+      }),
     );
     expect(svc.getStats().scholarsMates).toBe(1);
   });
@@ -604,6 +702,10 @@ describe("BADGES", () => {
       below: { totalDurationMs: 42 * 3_600_000 - 60_000 },
       at: { totalDurationMs: 42 * 3_600_000 },
     },
+    magnus_carlsen: {
+      below: { beatMaxAINoAssist: 0 },
+      at: { beatMaxAINoAssist: 1 },
+    },
   };
 
   it("the test table covers every badge id exactly", () => {
@@ -657,6 +759,7 @@ describe("BADGES", () => {
           hintsFollowed: 1000,
           maxAILevelBeaten: 1000,
           totalDurationMs: 1000 * 3_600_000,
+          beatMaxAINoAssist: 1000,
         }),
       );
       expect(beyond.current).toBe(beyond.target);

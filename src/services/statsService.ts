@@ -23,6 +23,7 @@ export interface GameRecord {
   wasScholarsMate?: boolean; // game ended with Scholar's Mate by player
   hintsFollowedInGame?: number; // hint suggestions followed during the game
   language?: string; // UI language when the game was played
+  assistanceUsedDuringGame?: boolean; // any assistance option was active at any point
 }
 
 export interface ChessverseStats {
@@ -78,6 +79,9 @@ export interface ChessverseStats {
   // Coliseum mode counters
   coliseumGames: number; // total Coliseum games played
   coliseumWins: number; // total Coliseum wins
+
+  // Magnus Carlsen badge
+  beatMaxAINoAssist: number; // times the player beat AI level 20 without any assistance
 }
 
 // ── Constants ─────────────────────────────────────────────────────────────────
@@ -118,6 +122,7 @@ const DEFAULT_STATS: ChessverseStats = {
   lastPlayedDate: null,
   coliseumGames: 0,
   coliseumWins: 0,
+  beatMaxAINoAssist: 0,
 };
 
 // ── ELO rank system ───────────────────────────────────────────────────────────
@@ -414,6 +419,16 @@ export const BADGES: Badge[] = [
     }),
   },
   {
+    id: "magnus_carlsen",
+    i18nKey: "profile.badges.magnusCarlsen",
+    icon: "⭐",
+    isUnlocked: (s) => s.beatMaxAINoAssist >= 1,
+    progress: (s) => ({
+      current: Math.min(s.beatMaxAINoAssist, 1),
+      target: 1,
+    }),
+  },
+  {
     id: "marathon",
     i18nKey: "profile.badges.marathon",
     icon: "⏱️",
@@ -442,7 +457,9 @@ export function saveStats(stats: ChessverseStats): void {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(stats));
   } catch {
-    console.warn("[statsService] localStorage quota exceeded — stats not saved.");
+    console.warn(
+      "[statsService] localStorage quota exceeded — stats not saved.",
+    );
   }
 }
 
@@ -555,6 +572,14 @@ export function recordGame(game: GameRecord): void {
   if (game.hintsFollowedInGame) stats.hintsFollowed += game.hintsFollowedInGame;
   if (game.language && !stats.languagesUsed.includes(game.language)) {
     stats.languagesUsed = [...stats.languagesUsed, game.language];
+  }
+  if (
+    isWin &&
+    game.playType === "ai" &&
+    game.aiDifficulty === 20 &&
+    !game.assistanceUsedDuringGame
+  ) {
+    stats.beatMaxAINoAssist += 1;
   }
 
   // ── Day streak ──

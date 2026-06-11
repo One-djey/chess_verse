@@ -15,11 +15,7 @@ import ChessBoard from "./ChessBoard";
 import GameOver from "./GameOver";
 import NavBar from "./NavBar";
 import P2PStatusBar from "./P2PStatusBar";
-import {
-  Piece,
-  Position,
-  PieceColor,
-} from "../types/chess";
+import { Piece, Position, PieceColor } from "../types/chess";
 import {
   getValidMoves,
   hasRawMoves,
@@ -37,7 +33,7 @@ import {
 import { detectScholarsMate } from "../utils/chess/tactics";
 import { resolveGameMode } from "../utils/gameLogic";
 import { useP2P } from "../hooks/useP2P";
-import { useChessGame } from "../hooks/useChessGame";
+import { useChessGame, isAnyAssistanceActive } from "../hooks/useChessGame";
 import { useP2PGame } from "../hooks/useP2PGame";
 import { useSkin } from "../hooks/useSkin";
 import { useBoardSkinStyle } from "../hooks/useBoardSkinStyle";
@@ -94,6 +90,8 @@ export default function Game() {
   const hintsFollowedRef = React.useRef(0);
   /** Whether the player promoted a pawn during this game. */
   const wasPromotedRef = React.useRef(false);
+  /** Whether any assistance option was active at any point during this game. */
+  const assistanceUsedRef = React.useRef(false);
 
   // If we enter a non-P2P game while P2P state is still active (e.g. user navigated
   // away via the NavBar without going through handleLeaveP2P), clean up the stale state.
@@ -136,7 +134,15 @@ export default function Game() {
     sessionStatsRef.current = { pieceMoves: {}, piecesLost: {} };
     hintsFollowedRef.current = 0;
     wasPromotedRef.current = false;
+    assistanceUsedRef.current = false;
   }, [chess.gameState.startTime]);
+
+  // Latch: once any assistance option is enabled during a game, record it permanently.
+  React.useEffect(() => {
+    if (isAnyAssistanceActive(chess.settings)) {
+      assistanceUsedRef.current = true;
+    }
+  }, [chess.settings]);
 
   // ── Game-over modal visibility ────────────────────────────────────────────
   // Tracks whether the GameOver modal is shown. Automatically opens when the
@@ -286,12 +292,22 @@ export default function Game() {
           setTimeout(() => {
             const nextColor: PieceColor =
               movingColor === "white" ? "black" : "white";
-            const nextHint = detectLegendaryPattern(nextPieces, nextColor, gm, nextEP);
+            const nextHint = detectLegendaryPattern(
+              nextPieces,
+              nextColor,
+              gm,
+              nextEP,
+            );
             if (nextHint && nextHint.movesAway === 1) {
               addLabel("legendary", nextHint);
               return;
             }
-            const post = detectLegendaryPattern(nextPieces, movingColor, gm, nextEP);
+            const post = detectLegendaryPattern(
+              nextPieces,
+              movingColor,
+              gm,
+              nextEP,
+            );
             if (post && post.movesAway === 2) addLabel("legendary", post);
           }, 0);
         }
@@ -461,7 +477,8 @@ export default function Game() {
         };
       });
     }
-  }, [ // eslint-disable-line react-hooks/exhaustive-deps
+  }, [
+    // eslint-disable-line react-hooks/exhaustive-deps
     chess.gameState.currentTurn,
     chess.gameState.pieces,
     chess.gameState.gameMode,
@@ -749,6 +766,7 @@ export default function Game() {
         isWin && playerColor === "white" && detectScholarsMate(moves),
       hintsFollowedInGame: hintsFollowedRef.current,
       language: i18n.language,
+      assistanceUsedDuringGame: assistanceUsedRef.current,
     });
   }, [chess.gameState.gameOver]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -829,12 +847,22 @@ export default function Game() {
         setTimeout(() => {
           const nextColor: PieceColor =
             movingColor === "white" ? "black" : "white";
-          const nextHint = detectLegendaryPattern(nextPieces, nextColor, gm, nextEP);
+          const nextHint = detectLegendaryPattern(
+            nextPieces,
+            nextColor,
+            gm,
+            nextEP,
+          );
           if (nextHint && nextHint.movesAway === 1) {
             addLabel("legendary", nextHint);
             return;
           }
-          const post = detectLegendaryPattern(nextPieces, movingColor, gm, nextEP);
+          const post = detectLegendaryPattern(
+            nextPieces,
+            movingColor,
+            gm,
+            nextEP,
+          );
           if (post && post.movesAway === 2) addLabel("legendary", post);
         }, 0);
       }
