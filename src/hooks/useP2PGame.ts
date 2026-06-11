@@ -54,13 +54,19 @@ export function useP2PGame({
         const piece = state.pieces.find(
           (p) => p.id === msg.pieceId && p.color === "black",
         );
-        if (!piece || state.currentTurn !== "black" || state.gameOver) {
+        const fromMismatch =
+          piece &&
+          (msg.from.x !== piece.position.x || msg.from.y !== piece.position.y);
+        if (!piece || fromMismatch || state.currentTurn !== "black" || state.gameOver) {
           actions.sendMoveReject({ type: "move_reject" });
           return;
         }
-        const valid = getValidMoves(piece, state.pieces, state.gameMode).some(
-          (v) => v.x === msg.to.x && v.y === msg.to.y,
-        );
+        const valid = getValidMoves(
+          piece,
+          state.pieces,
+          state.gameMode,
+          state.enPassantTarget,
+        ).some((v) => v.x === msg.to.x && v.y === msg.to.y);
         if (!valid) {
           actions.sendMoveReject({ type: "move_reject" });
           return;
@@ -96,12 +102,27 @@ export function useP2PGame({
             `P2P seq gap: expected ${seqRef.current + 1}, got ${msg.seq}`,
           );
         }
-        seqRef.current = msg.seq;
         setGameState((prev) => {
           const piece = prev.pieces.find((p) => p.id === msg.pieceId);
-          return piece
-            ? applyMoveToState(prev, piece, msg.to, msg.promotionType)
-            : prev;
+          if (!piece) {
+            console.error(
+              `P2P: move_confirm references unknown pieceId "${msg.pieceId}" — ignoring and not advancing seqRef`,
+            );
+            return prev;
+          }
+          // LIM-002: re-validate the host's move locally before applying it.
+          const validMoves = getValidMoves(piece, prev.pieces, prev.gameMode, prev.enPassantTarget);
+          const isValid = validMoves.some(
+            (v) => v.x === msg.to.x && v.y === msg.to.y,
+          );
+          if (!isValid) {
+            console.error(
+              "[P2P] Guest: received move not in valid moves from host, ignoring.",
+            );
+            return prev;
+          }
+          seqRef.current = msg.seq;
+          return applyMoveToState(prev, piece, msg.to, msg.promotionType);
         });
       });
       actions.onMoveReject(() =>
@@ -117,11 +138,12 @@ export function useP2PGame({
     }
 
     actions.onResign(() => {
+      if (playerColor === null) return;
       const opp: PieceColor = playerColor === "white" ? "black" : "white";
       setGameState((prev) => ({
         ...prev,
         gameOver: true,
-        winner: playerColor ?? "white",
+        winner: playerColor,
         surrenderedBy: opp,
       }));
     });

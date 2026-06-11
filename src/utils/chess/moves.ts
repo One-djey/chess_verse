@@ -11,6 +11,36 @@ import {
 import { BOARD_SIZE } from "./board";
 import { getPieceCapabilities, applyAssimilationCapture } from "./assimilation";
 
+// ── Castling rights key ──────────────────────────────────────────────────────
+
+/**
+ * Computes a FEN-style castling availability string from the current piece set.
+ * Used exclusively for position hashing (triple-repetition detection).
+ *
+ * FIDE rule 9.2 defines "the same position" as identical piece placement,
+ * same active colour, same castling rights, and same en passant target.
+ * Omitting castling rights from the hash could cause two positions that differ
+ * only in whether a king or rook has moved (and thus lost castling rights) to
+ * hash identically — producing a false triple-repetition draw.
+ *
+ * Mirrors the logic in ChessAI.computeCastlingRights — kept in sync manually.
+ * (Cannot import from ChessAI: it would create a circular dep service → util.)
+ */
+function computeCastlingKey(pieces: Piece[]): string {
+  const wk = pieces.find(p => p.color === "white" && p.type === "king");
+  const bk = pieces.find(p => p.color === "black" && p.type === "king");
+  let rights = "";
+  if (wk && !wk.hasMoved) {
+    if (pieces.find(p => p.color === "white" && p.type === "rook" && p.position.x === 7 && p.position.y === 7 && !p.hasMoved)) rights += "K";
+    if (pieces.find(p => p.color === "white" && p.type === "rook" && p.position.x === 0 && p.position.y === 7 && !p.hasMoved)) rights += "Q";
+  }
+  if (bk && !bk.hasMoved) {
+    if (pieces.find(p => p.color === "black" && p.type === "rook" && p.position.x === 7 && p.position.y === 0 && !p.hasMoved)) rights += "k";
+    if (pieces.find(p => p.color === "black" && p.type === "rook" && p.position.x === 0 && p.position.y === 0 && !p.hasMoved)) rights += "q";
+  }
+  return rights || "-";
+}
+
 // ── Small shared helpers ─────────────────────────────────────────────────────
 
 export const normalizePos = (x: number, y: number): Position => ({
@@ -146,6 +176,7 @@ export const isValidMove = (
   target: Position,
   pieces: Piece[],
   gameMode: GameMode,
+  enPassantTarget?: Position,
 ): boolean => {
   if (!gameMode.rules?.borderless) {
     if (target.x < 0 || target.x > 7 || target.y < 0 || target.y > 7)
@@ -167,7 +198,26 @@ export const isValidMove = (
   )
     return false;
 
-  const capabilities = getPieceCapabilities(piece);
+  // En passant: allow a pawn to move diagonally onto the enPassantTarget square
+  // even though it is empty.
+  if (
+    enPassantTarget &&
+    piece.type === "pawn" &&
+    norm.x === enPassantTarget.x &&
+    norm.y === enPassantTarget.y
+  ) {
+    const dir = piece.color === "white" ? -1 : 1;
+    const absDx = Math.abs(norm.x - piece.position.x);
+    if (absDx === 1 && norm.y === piece.position.y + dir) return true;
+  }
+
+
+  // Only consult acquiredTypes in assimilation mode. In all other modes, even a
+  // Piece that somehow carries acquiredTypes (e.g., corrupted P2P state) should
+  // behave as its base type only — preventing cross-mode contamination.
+  const capabilities = gameMode.rules?.assimilation
+    ? getPieceCapabilities(piece)
+    : [piece.type];
   return capabilities.some((type) =>
     isValidMoveForSingleType(type, piece, target, pieces, gameMode),
   );
@@ -225,32 +275,81 @@ export const wouldBeInCheck = (
   return isInCheck(piece.color, simulated, gameMode);
 };
 
+/**
+ * Like wouldBeInCheck but also removes the en passant captured pawn when
+ * the move is an en passant capture. The captured pawn sits at the same rank
+ * as the moving pawn (from.y) and same file as the destination (to.x).
+ */
+function wouldBeInCheckAfterEnPassant(
+  piece: Piece,
+  target: Position,
+  pieces: Piece[],
+  gameMode: GameMode,
+  enPassantTarget?: Position,
+): boolean {
+  const norm = normalizePos(target.x, target.y);
+
+  // Detect en passant capture: pawn moves diagonally to empty square that matches ep target
+  const isEpCapture =
+    enPassantTarget &&
+    piece.type === "pawn" &&
+    norm.x === enPassantTarget.x &&
+    norm.y === enPassantTarget.y &&
+    getPieceAt(norm, pieces) === null;
+
+  if (!isEpCapture) return wouldBeInCheck(piece, target, pieces, gameMode);
+
+  // Remove the captured pawn at (to.x, from.y) and simulate the move
+  const capturedPawnPos = normalizePos(norm.x, piece.position.y);
+  const simulated = pieces
+    .filter(
+      (p) =>
+        !(p.position.x === capturedPawnPos.x && p.position.y === capturedPawnPos.y),
+    )
+    .filter((p) => !(p.position.x === norm.x && p.position.y === norm.y))
+    .map((p) => (p === piece ? { ...p, position: norm } : p));
+  return isInCheck(piece.color, simulated, gameMode);
+}
+
 export const isSquareUnderAttack = (
   position: Position,
   attackerColor: PieceColor,
   pieces: Piece[],
   gameMode: GameMode,
-): boolean =>
-  pieces
-    .filter((p) => p.color === attackerColor)
-    .some((p) => {
-      const caps = getPieceCapabilities(p);
-      // Pawns (and pieces with acquired pawn movement) attack diagonally,
-      // even onto empty squares — this can't be detected via isValidMove alone.
-      if (caps.includes("pawn")) {
-        const dir = p.color === "white" ? -1 : 1;
-        if (
-          Math.abs(p.position.x - position.x) === 1 &&
-          position.y - p.position.y === dir
-        )
+): boolean => {
+  const attackers = pieces.filter((p) => p.color === attackerColor);
+
+  // In borderless mode, test all 9 virtual equivalents of the target square
+  // (aligned with isInCheck) so that wrap-around attacks are not missed.
+  const targets: Position[] = gameMode.rules?.borderless
+    ? Array.from({ length: 3 }, (_, di) =>
+        Array.from({ length: 3 }, (_, dj) => ({
+          x: position.x + (di - 1) * BOARD_SIZE,
+          y: position.y + (dj - 1) * BOARD_SIZE,
+        })),
+      ).flat()
+    : [position];
+
+  return attackers.some((p) => {
+    // Only consult acquiredTypes in assimilation mode. In all other modes, even a
+    // Piece that somehow carries acquiredTypes (e.g., corrupted P2P state) should
+    // behave as its base type only — preventing cross-mode contamination.
+    const caps = gameMode.rules?.assimilation
+      ? getPieceCapabilities(p)
+      : [p.type];
+    // Pawns attack diagonally even onto empty squares.
+    if (caps.includes("pawn")) {
+      const dir = p.color === "white" ? -1 : 1;
+      for (const t of targets) {
+        if (Math.abs(p.position.x - t.x) === 1 && t.y - p.position.y === dir)
           return true;
       }
-      // All non-pawn capabilities are correctly handled by isValidMove.
-      return (
-        caps.filter((t) => t !== "pawn").length > 0 &&
-        isValidMove(p, position, pieces, gameMode)
-      );
-    });
+    }
+    // All non-pawn capabilities are correctly handled by isValidMove.
+    if (caps.filter((t) => t !== "pawn").length === 0) return false;
+    return targets.some((t) => isValidMove(p, t, pieces, gameMode));
+  });
+};
 
 // ── Castling ─────────────────────────────────────────────────────────────────
 
@@ -340,7 +439,12 @@ function generateMoveCandidates(piece: Piece, gameMode: GameMode): Position[] {
   };
 
   const { x: px, y: py } = piece.position;
-  const capabilities = getPieceCapabilities(piece);
+  // Only consult acquiredTypes in assimilation mode. In all other modes, even a
+  // Piece that somehow carries acquiredTypes (e.g., corrupted P2P state) should
+  // behave as its base type only — preventing cross-mode contamination.
+  const capabilities = gameMode.rules?.assimilation
+    ? getPieceCapabilities(piece)
+    : [piece.type];
 
   for (const type of capabilities) {
     switch (type) {
@@ -427,18 +531,30 @@ export const getValidMoves = (
   piece: Piece,
   pieces: Piece[],
   gameMode: GameMode,
+  enPassantTarget?: Position,
 ): Position[] => {
   const castling =
     piece.type === "king" && !piece.hasMoved
       ? getCastlingMoves(piece, pieces, gameMode).map((m) => m.kingTarget)
       : [];
 
+  // Build candidate squares; for pawns, add the en passant target if applicable.
   const candidates = generateMoveCandidates(piece, gameMode);
+  if (enPassantTarget && piece.type === "pawn") {
+    const dir = piece.color === "white" ? -1 : 1;
+    const epNorm = normalizePos(enPassantTarget.x, enPassantTarget.y);
+    const absDx = Math.abs(epNorm.x - piece.position.x);
+    if (absDx === 1 && epNorm.y === piece.position.y + dir) {
+      // Add the ep square (using virtual coords in borderless, normalised in classic)
+      candidates.push(epNorm);
+    }
+  }
+
   const regular: Position[] = [];
   for (const { x, y } of candidates) {
     if (
-      isValidMove(piece, { x, y }, pieces, gameMode) &&
-      !wouldBeInCheck(piece, { x, y }, pieces, gameMode)
+      isValidMove(piece, { x, y }, pieces, gameMode, enPassantTarget) &&
+      !wouldBeInCheckAfterEnPassant(piece, { x, y }, pieces, gameMode, enPassantTarget)
     )
       regular.push({ x, y });
   }
@@ -449,10 +565,11 @@ export const hasLegalMoves = (
   color: PieceColor,
   pieces: Piece[],
   gameMode: GameMode,
+  enPassantTarget?: Position,
 ): boolean =>
   pieces
     .filter((p) => p.color === color)
-    .some((p) => getValidMoves(p, pieces, gameMode).length > 0);
+    .some((p) => getValidMoves(p, pieces, gameMode, enPassantTarget).length > 0);
 
 /** Returns true if the piece has at least one geometrically valid move, ignoring king-safety. */
 export const hasRawMoves = (
@@ -476,12 +593,32 @@ export function applyMoveToState(
   promotionType?: PieceType,
 ): GameState {
   const target = normalizePos(rawTarget.x, rawTarget.y);
+  const from = piece.position;
   const castling = findCastlingMove(piece, target, prev.pieces, prev.gameMode);
+  const prevEP = prev.enPassantTarget;
 
   const captured = getPieceAt(target, prev.pieces);
+
+  // Detect en passant capture: pawn moves diagonally to empty square matching ep target
+  const isEpCapture =
+    prevEP &&
+    piece.type === "pawn" &&
+    target.x === prevEP.x &&
+    target.y === prevEP.y &&
+    captured === null;
+
   let pieces = captured
     ? prev.pieces.filter((p) => p.id !== captured.id)
     : [...prev.pieces];
+
+  // Remove the captured pawn in an en passant capture (it's at (to.x, from.y))
+  if (isEpCapture) {
+    const capturedPawnPos = normalizePos(target.x, from.y);
+    pieces = pieces.filter(
+      (p) =>
+        !(p.position.x === capturedPawnPos.x && p.position.y === capturedPawnPos.y),
+    );
+  }
 
   // Move piece (with pawn promotion and optional assimilation capture)
   pieces = pieces.map((p) => {
@@ -518,13 +655,42 @@ export function applyMoveToState(
     ((piece.color === "white" && target.y === 0) ||
       (piece.color === "black" && target.y === 7));
 
+  // Determine the effective captured piece for the move record
+  const recordCaptured: typeof captured =
+    isEpCapture
+      ? (() => {
+          const capturedPawnPos = normalizePos(target.x, from.y);
+          return (
+            prev.pieces.find(
+              (p) =>
+                p.position.x === capturedPawnPos.x &&
+                p.position.y === capturedPawnPos.y,
+            ) ?? null
+          );
+        })()
+      : (captured ?? null);
+
   const moveRecord: MoveRecord = {
     piece,
-    from: piece.position,
+    from,
     to: target,
-    capturedPiece: captured ?? null,
+    capturedPiece: recordCaptured,
     wasPromotion,
   };
+
+  // ── En passant target for next move ─────────────────────────────────────────
+  let nextEnPassantTarget: Position | undefined = undefined;
+  if (piece.type === "pawn" && Math.abs(target.y - from.y) === 2) {
+    // Pawn double push: set ep target to the square the pawn skipped
+    const epY = (from.y + target.y) / 2;
+    nextEnPassantTarget = normalizePos(target.x, epY);
+  }
+
+  // ── Half-move clock (50-move rule) ───────────────────────────────────────────
+  const isCapture = captured !== null || isEpCapture;
+  const isPawnMove = piece.type === "pawn";
+  const nextHalfMoveClock =
+    isPawnMove || isCapture ? 0 : (prev.halfMoveClock ?? 0) + 1;
 
   const nextTurn = switchTurn(prev.currentTurn);
   const moveCount = {
@@ -542,6 +708,8 @@ export function applyMoveToState(
     moveCount,
     moves: [...prev.moves, moveRecord],
     surrenderedBy: undefined,
+    enPassantTarget: nextEnPassantTarget,
+    halfMoveClock: nextHalfMoveClock,
   };
 
   if (captured?.type === "king")
@@ -561,14 +729,53 @@ export function applyMoveToState(
       drawReason: "only-kings",
     };
 
+  // ── Position history (triple-repetition) ────────────────────────────────────
+  const sortedPieces = [...pieces].sort(
+    (a, b) => a.position.x - b.position.x || a.position.y - b.position.y,
+  );
+  const pieceStr = sortedPieces
+    .map((p) => `${p.type[0]}${p.color[0]}${p.position.x}${p.position.y}`)
+    .join(",");
+  const epStr = nextEnPassantTarget
+    ? `${nextEnPassantTarget.x}${nextEnPassantTarget.y}`
+    : "-";
+  // Position hash encodes: pieces + active colour + castling rights + ep target.
+  // All four components are required by FIDE rule 9.2 ("same position") to
+  // correctly detect triple-repetition draws. Castling rights in particular
+  // must be included: a position where a rook has moved (losing castling rights)
+  // is NOT the same as the visually identical position where castling is still
+  // available — omitting it could trigger a false draw.
+  const castlingKey = computeCastlingKey(pieces);
+  const posHash = `${pieceStr}_${nextTurn}_${castlingKey}_${epStr}`;
+  const prevHistory = prev.positionHistory ?? {};
+  const nextHistory = {
+    ...prevHistory,
+    [posHash]: (prevHistory[posHash] ?? 0) + 1,
+  };
+
   const nextInCheck = isInCheck(nextTurn, pieces, prev.gameMode);
-  const nextHasLegal = hasLegalMoves(nextTurn, pieces, prev.gameMode);
+  const nextHasLegal = hasLegalMoves(nextTurn, pieces, prev.gameMode, nextEnPassantTarget);
 
   return {
     ...base,
+    positionHistory: nextHistory,
     isCheck: nextInCheck,
     gameOver: !nextHasLegal,
     winner: nextInCheck && !nextHasLegal ? prev.currentTurn : null,
     drawReason: !nextInCheck && !nextHasLegal ? "stalemate" : undefined,
   };
+}
+
+// ── Draw-detection helpers ───────────────────────────────────────────────────
+
+/** Returns true if any position has occurred 3 or more times (triple-repetition draw). */
+export function isDrawByRepetition(
+  positionHistory: Record<string, number>,
+): boolean {
+  return Object.values(positionHistory).some((count) => count >= 3);
+}
+
+/** Returns true if the half-move clock has reached 100 (50 full moves without pawn move or capture). */
+export function isDrawBy50Moves(halfMoveClock: number): boolean {
+  return halfMoveClock >= 100;
 }

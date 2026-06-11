@@ -18,9 +18,7 @@ import P2PStatusBar from "./P2PStatusBar";
 import {
   Piece,
   Position,
-  GameMode,
   PieceColor,
-  MoveRecord,
 } from "../types/chess";
 import {
   getValidMoves,
@@ -33,8 +31,11 @@ import {
   detectTactic,
   MoveContext,
   getSmartFallbackMove,
+  isDrawByRepetition,
+  isDrawBy50Moves,
 } from "../utils/chess";
-import { gameModes } from "../utils/gameModes";
+import { detectScholarsMate } from "../utils/chess/tactics";
+import { resolveGameMode } from "../utils/gameLogic";
 import { useP2P } from "../hooks/useP2P";
 import { useChessGame } from "../hooks/useChessGame";
 import { useP2PGame } from "../hooks/useP2PGame";
@@ -46,48 +47,6 @@ import { CampDecoration, SideCamp } from "./CampDecoration";
 import { recordGame } from "../services/statsService";
 import type { PlayType } from "../services/statsService";
 import type { PieceType } from "../types/chess";
-
-/**
- * Detects the exact Scholar's Mate pattern (white side):
- * 1. e2→e4  2. Q→h5  3. B→c4  4. Q×f7#
- * Board uses y=0 at top (white promotes at y=0, starts at y=6/7).
- */
-function detectScholarsMate(moves: MoveRecord[]): boolean {
-  if (moves.length < 7) return false;
-  const m0 = moves[0]; // white ply 1: pawn e2(4,6)→e4(4,4)
-  const m2 = moves[2]; // white ply 2: queen →h5(7,3)
-  const m4 = moves[4]; // white ply 3: bishop →c4(2,4)
-  const m6 = moves[6]; // white ply 4: queen ×f7(5,1)#
-  return (
-    m0.piece.color === "white" &&
-    m0.piece.type === "pawn" &&
-    m0.from.x === 4 &&
-    m0.from.y === 6 &&
-    m0.to.x === 4 &&
-    m0.to.y === 4 &&
-    m2.piece.color === "white" &&
-    m2.piece.type === "queen" &&
-    m2.to.x === 7 &&
-    m2.to.y === 3 &&
-    m4.piece.color === "white" &&
-    m4.piece.type === "bishop" &&
-    m4.to.x === 2 &&
-    m4.to.y === 4 &&
-    m6.piece.color === "white" &&
-    m6.piece.type === "queen" &&
-    m6.to.x === 5 &&
-    m6.to.y === 1 &&
-    m6.capturedPiece !== null
-  );
-}
-
-function resolveGameMode(
-  modeId: string | undefined,
-  p2pMode: GameMode | null,
-): GameMode {
-  if (modeId === "p2p" && p2pMode) return p2pMode;
-  return gameModes.find((m) => m.id === modeId) ?? gameModes[0];
-}
 
 export default function Game() {
   const { modeId } = useParams();
@@ -216,6 +175,7 @@ export default function Game() {
         piece,
         currentPieces,
         chess.gameStateRef.current.gameMode,
+        chess.gameStateRef.current.enPassantTarget,
       ).some((v) => v.x === move.to.x && v.y === move.to.y);
       if (!valid) {
         // Stockfish suggested a move that violates special-mode rules
@@ -296,15 +256,16 @@ export default function Game() {
           const movingColor = prev.currentTurn;
           const gm = prev.gameMode;
           const nextPieces = nextState.pieces;
+          const nextEP = nextState.enPassantTarget;
           setTimeout(() => {
             const nextColor: PieceColor =
               movingColor === "white" ? "black" : "white";
-            const nextHint = detectLegendaryPattern(nextPieces, nextColor, gm);
+            const nextHint = detectLegendaryPattern(nextPieces, nextColor, gm, nextEP);
             if (nextHint && nextHint.movesAway === 1) {
               addLabel("legendary", nextHint);
               return;
             }
-            const post = detectLegendaryPattern(nextPieces, movingColor, gm);
+            const post = detectLegendaryPattern(nextPieces, movingColor, gm, nextEP);
             if (post && post.movesAway === 2) addLabel("legendary", post);
           }, 0);
         }
@@ -330,6 +291,8 @@ export default function Game() {
       try {
         const move = await chess.aiRef.current.getNextMove(
           chess.gameStateRef.current.pieces,
+          chess.gameStateRef.current.enPassantTarget,
+          chess.gameStateRef.current.halfMoveClock,
         );
         if (!cancelled) applyMove(move);
       } catch (e) {
@@ -417,17 +380,45 @@ export default function Game() {
   }, [chess.gameState.currentTurn, chess.aiEnabled, chess.gameState.gameOver]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Safety net: catch any checkmate/stalemate that applyMoveToState might have missed.
+  // Also checks for repetition and 50-move rule draws.
   // Runs after every turn change or board update. In P2P the host is authoritative.
   React.useEffect(() => {
     if (chess.gameState.gameOver) return;
     if (chess.gameState.pieces.length === 0) return;
     if (p2p.isP2PMode) return;
 
+    // Check for draw by repetition or 50-move rule
+    if (isDrawByRepetition(chess.gameState.positionHistory ?? {})) {
+      chess.setGameState((prev) => {
+        if (prev.gameOver) return prev;
+        return {
+          ...prev,
+          gameOver: true,
+          winner: null,
+          drawReason: "repetition",
+        };
+      });
+      return;
+    }
+    if (isDrawBy50Moves(chess.gameState.halfMoveClock ?? 0)) {
+      chess.setGameState((prev) => {
+        if (prev.gameOver) return prev;
+        return {
+          ...prev,
+          gameOver: true,
+          winner: null,
+          drawReason: "fifty-moves",
+        };
+      });
+      return;
+    }
+
     if (
       !hasLegalMoves(
         chess.gameState.currentTurn,
         chess.gameState.pieces,
         chess.gameState.gameMode,
+        chess.gameState.enPassantTarget,
       )
     ) {
       const inCheck = chess.gameState.isCheck;
@@ -442,12 +433,14 @@ export default function Game() {
         };
       });
     }
-  }, [
-    // eslint-disable-line react-hooks/exhaustive-deps
+  }, [ // eslint-disable-line react-hooks/exhaustive-deps
     chess.gameState.currentTurn,
     chess.gameState.pieces,
     chess.gameState.gameMode,
     chess.gameState.gameOver,
+    chess.gameState.enPassantTarget,
+    chess.gameState.positionHistory,
+    chess.gameState.halfMoveClock,
     p2p.isP2PMode,
   ]);
 
@@ -466,8 +459,12 @@ export default function Game() {
       .filter((p) => p.color === chess.gameState.currentTurn)
       .forEach((p) => {
         if (
-          getValidMoves(p, chess.gameState.pieces, chess.gameState.gameMode)
-            .length > 0
+          getValidMoves(
+            p,
+            chess.gameState.pieces,
+            chess.gameState.gameMode,
+            chess.gameState.enPassantTarget,
+          ).length > 0
         ) {
           ids.add(p.id);
         }
@@ -477,6 +474,7 @@ export default function Game() {
     chess.gameState.pieces,
     chess.gameState.currentTurn,
     chess.gameState.gameMode,
+    chess.gameState.enPassantTarget,
     p2p.isP2PMode,
     p2p.playerColor,
   ]);
@@ -539,7 +537,12 @@ export default function Game() {
         return;
       }
       chess.aiRef.current
-        .getHintMove(chess.gameState.pieces, chess.gameState.currentTurn)
+        .getHintMove(
+          chess.gameState.pieces,
+          chess.gameState.currentTurn,
+          chess.gameState.enPassantTarget,
+          chess.gameState.halfMoveClock,
+        )
         .then((move) => {
           if (!cancelled) setHintMove(move);
         })
@@ -735,6 +738,7 @@ export default function Game() {
       piece,
       chess.gameState.pieces,
       chess.gameState.gameMode,
+      chess.gameState.enPassantTarget,
     );
     if (moves.length === 0) {
       let variant: LabelVariant;
@@ -787,15 +791,16 @@ export default function Game() {
         const movingColor = prev.currentTurn;
         const gm = prev.gameMode;
         const nextPieces = nextState.pieces;
+        const nextEP = nextState.enPassantTarget;
         setTimeout(() => {
           const nextColor: PieceColor =
             movingColor === "white" ? "black" : "white";
-          const nextHint = detectLegendaryPattern(nextPieces, nextColor, gm);
+          const nextHint = detectLegendaryPattern(nextPieces, nextColor, gm, nextEP);
           if (nextHint && nextHint.movesAway === 1) {
             addLabel("legendary", nextHint);
             return;
           }
-          const post = detectLegendaryPattern(nextPieces, movingColor, gm);
+          const post = detectLegendaryPattern(nextPieces, movingColor, gm, nextEP);
           if (post && post.movesAway === 2) addLabel("legendary", post);
         }, 0);
       }
