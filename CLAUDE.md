@@ -96,7 +96,7 @@ Breadcrumb map:
 
 ## Game modes
 
-Defined in `src/components/GameModes.tsx` as `gameModes[]`. Each entry has `id`, `image`, `rules`. Titles/descriptions come from translations: `t('modes.<id>.title')`.
+Defined in `src/utils/gameModes.ts` as `gameModes[]`. Each entry has `id`, `image`, `rules`. Titles/descriptions come from translations: `t('modes.<id>.title')`.
 
 | id             | Key rules                                                                                                 |
 | -------------- | --------------------------------------------------------------------------------------------------------- |
@@ -171,3 +171,4 @@ Accessible via a **Support section** at the bottom of the Settings modal (gear i
 - `chessverse_language` — UI language
 - `chessverse_stats` — Player stats (see `ChessverseStats` in `statsService.ts`): game counts, win/loss/draw, ELO, heatmap, piece stats, streaks, badge counters. Recorded at the end of every game via `recordGame()` called in `Game.tsx`'s `gameOver` effect.
 - `chessverse_skin` — selected piece skin (`classic` | `fantasy`)
+- `chessverse_board_skin` — selected board skin (`default` | `royal-arena`)
