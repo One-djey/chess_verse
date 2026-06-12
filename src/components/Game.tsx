@@ -121,7 +121,7 @@ export default function Game() {
     role: p2p.role,
     playerColor: p2p.playerColor,
     actions: p2p.actions,
-    room: p2p.room,
+    connectionState: p2p.connectionState,
     gameMode,
     setGameState: chess.setGameState,
     gameStateRef: chess.gameStateRef,

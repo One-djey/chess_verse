@@ -1,7 +1,7 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 import type { Piece, Position, PieceColor } from "../types/chess";
 import type { Arena, ColiseumGameState } from "../types/coliseum";
-import type { RematchState } from "../types/p2p";
+import type { P2PConnectionState, RematchState } from "../types/p2p";
 import {
   getColiseumLegalMoves,
   isColiseumInCheck,
@@ -11,14 +11,13 @@ import {
 import { generateColiseumArena } from "../utils/chess/coliseumGenerator";
 import { arenaToChessPieces } from "./useColiseumGame";
 import { makeRoomActions } from "../services/TrysteroService";
-import type { Room } from "@trystero-p2p/core";
 
 interface Params {
   arena: Arena;
   role: "host" | "guest" | null;
   playerColor: PieceColor | null;
   actions: ReturnType<typeof makeRoomActions> | null;
-  room: Room | null;
+  connectionState: P2PConnectionState;
 }
 
 function createInitialState(arena: Arena, pieces?: Piece[]): ColiseumGameState {
@@ -84,7 +83,7 @@ export function useColiseumP2PGame({
   role,
   playerColor,
   actions,
-  room,
+  connectionState,
 }: Params) {
   const startTimeRef = useRef<number>(Date.now());
   const [state, setState] = useState<ColiseumGameState>(() =>
@@ -93,7 +92,10 @@ export function useColiseumP2PGame({
   const stateRef = useRef<ColiseumGameState>(state);
   const seqRef = useRef(0);
   const [rematchState, setRematchState] = useState<RematchState>("idle");
-  const [peerLeft, setPeerLeft] = useState(false);
+  // BUG-013: derived from connectionState rather than a local onPeerLeave
+  // registration — Trystero's room.onPeerLeave is a single-slot setter, so
+  // registering here would clobber P2PContext's handler (the sole owner).
+  const peerLeft = connectionState === "disconnected";
 
   useEffect(() => {
     stateRef.current = state;
@@ -141,7 +143,6 @@ export function useColiseumP2PGame({
         actions.sendRematchStart({ type: "rematch_start", pieces });
         seqRef.current = 0;
         setRematchState("idle");
-        setPeerLeft(false);
         startTimeRef.current = Date.now();
         setState(createInitialState(newArena, pieces));
       });
@@ -170,7 +171,6 @@ export function useColiseumP2PGame({
         const newArena = pendingArenaRef.current;
         seqRef.current = 0;
         setRematchState("idle");
-        setPeerLeft(false);
         startTimeRef.current = Date.now();
         setState(
           newArena
@@ -191,8 +191,7 @@ export function useColiseumP2PGame({
       }));
     });
 
-    room?.onPeerLeave(() => setPeerLeft(true));
-  }, [actions, role, playerColor, room]);
+  }, [actions, role, playerColor]);
 
   const handlePieceSelect = useCallback(
     (piece: Piece) => {
@@ -280,7 +279,6 @@ export function useColiseumP2PGame({
       actions?.sendRematchStart({ type: "rematch_start", pieces });
       seqRef.current = 0;
       setRematchState("idle");
-      setPeerLeft(false);
       startTimeRef.current = Date.now();
       setState(createInitialState(newArena, pieces));
     } else {

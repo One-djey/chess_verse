@@ -11,11 +11,12 @@ export function getPieceCapabilities(piece: Piece): PieceType[] {
 
 /**
  * Returns the capturing piece enriched with the captured piece's movement types.
- * The capturing piece's own base type is excluded from acquiredTypes (redundant).
+ * The capturing piece's own base type is excluded from acquiredTypes (redundant),
+ * and "king" is never acquired (BUG-015 — only royal pieces move like kings).
  */
 export function applyAssimilationCapture(capturingPiece: Piece, capturedPiece: Piece): Piece {
   const toAcquire = [capturedPiece.type, ...(capturedPiece.acquiredTypes ?? [])];
   const merged = [...new Set([...(capturingPiece.acquiredTypes ?? []), ...toAcquire])]
-    .filter(t => t !== capturingPiece.type);
+    .filter(t => t !== capturingPiece.type && t !== 'king');
   return { ...capturingPiece, ...(merged.length ? { acquiredTypes: merged } : {}) };
 }

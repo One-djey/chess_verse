@@ -29,6 +29,9 @@
 | LIM-001 | ℹ️ Design | moves | Pas d'en passant, ni nulle par répétition / 50 coups | ✅ Corrigé |
 | LIM-002 | ℹ️ Design | P2P | Le guest fait confiance au host sans re-validation | ✅ Corrigé |
 | REC-001 | 🔧 Refacto | Game.tsx | Logique pure enfouie non testable | ✅ Corrigé |
+| BUG-013 | 🟠 Moyenne | useP2PGame / useColiseumP2PGame | `onPeerLeave` du hook écrase celui de `P2PContext` (slot unique Trystero) | ✅ Corrigé |
+| BUG-014 | 🟡 Faible | BoardSkinContext | Skin de plateau non validé à la lecture du storage | ✅ Corrigé |
+| BUG-015 | 🟢 Très faible | assimilation | `applyAssimilationCapture` peut acquérir le type `king` | ✅ Corrigé |
 
 ---
 
@@ -219,6 +222,33 @@ Relevés par les tests composants (verrouillés par `// NOTE:` dans `src/compone
 - **Constat** : `Game.tsx` (~1 180 lignes) contient de la logique pure non testable isolément : `detectScholarsMate(moves)` (l.~55-82), `resolveGameMode(modeId, p2pMode)` (l.~84-90), accumulation des stats de session, chaîne de validation des coups IA.
 - **Recommandation** : extraire vers `src/utils/` (ex. `src/utils/chess/scholarsMate.ts`) et couvrir unitairement ; aucune modification de comportement. Prérequis utile avant tout travail E2E sur `Game.tsx`.
 - **Résolution** : `detectScholarsMate` extrait vers `src/utils/chess/tactics.ts` ; `resolveGameMode` extrait vers `src/utils/gameLogic.ts` (nouveau fichier). Game.tsx importe depuis ces nouveaux emplacements. 23 tests unitaires ajoutés (9 Scholar's Mate + 4 detectTactic smoke + 10 resolveGameMove). Aucun changement de comportement.
+
+## BUG-013 — `onPeerLeave` du hook écrase celui de `P2PContext`
+
+- **Sévérité** : 🟠 Moyenne (en partie P2P, la barre de statut ne signale jamais la déconnexion de l'adversaire : `connectionState` reste `"connected"` après son départ).
+- **Cause racine** : `room.onPeerLeave` de Trystero est un *setter à slot unique* — chaque enregistrement **remplace** le précédent. `P2PContext` enregistre `setConnectionState("disconnected")` à la création de la room, puis `useP2PGame` / `useColiseumP2PGame` enregistraient leur propre handler (`setPeerLeft(true)`) en arrivant en jeu, écrasant celui du contexte.
+- **Localisation** : `src/hooks/useP2PGame.ts:198` et `src/hooks/useColiseumP2PGame.ts:194` (avant fix) ; handlers du contexte dans `src/context/P2PContext.tsx:116,185`.
+- **Solutions envisageables** :
+  - **A. Un seul propriétaire** : `P2PContext` garde l'unique `onPeerLeave` ; les hooks reçoivent `connectionState` en paramètre et **dérivent** `peerLeft = connectionState === "disconnected"` (les hooks n'ont plus besoin de `room`).
+  - B. Handler combiné dans les hooks (rappelle les deux effets) — fragile, recrée le couplage.
+- **Recommandation** : **A** — supprime l'état dupliqué et le paramètre `room` des deux hooks. Effort : faible. Risque : nul (les `setPeerLeft(false)` des chemins rematch étaient du poids mort : pas de rematch possible avec un pair parti).
+- **Résolution** : option A appliquée. `room` retiré des `Params` des deux hooks ; `peerLeft` dérivé ; tests réécrits (`useP2PGame.test.tsx` — dérivation + plus aucun appel à `room.onPeerLeave`) et nouveau `useColiseumP2PGame.test.tsx` minimal.
+
+## BUG-014 — Skin de plateau non validé à la lecture du storage
+
+- **Sévérité** : 🟡 Faible (même famille que BUG-006 : une valeur arbitraire dans `chessverse_board_skin` est acceptée telle quelle et casse le rendu du plateau).
+- **Cause racine** : `BoardSkinContext` lit la chaîne brute du `localStorage` avec un cast (`saved as BoardSkin`) sans la valider, contrairement à `SkinContext` (corrigé en BUG-006).
+- **Localisation** : `src/context/BoardSkinContext.tsx:20` ; liste de référence `BOARD_SKINS` dans `src/utils/boardSkin.ts`.
+- **Solution** : valider à la lecture — `BOARD_SKINS.some(s => s.id === saved) ? saved : DEFAULT_SKIN` (même pattern que BUG-006).
+- **Résolution** : validation ajoutée + nouveau `src/context/BoardSkinContext.test.tsx` (miroir de `SkinContext.test.tsx`, cas « valeur inconnue → défaut » inclus).
+
+## BUG-015 — `applyAssimilationCapture` peut acquérir le type `king`
+
+- **Sévérité** : 🟢 Très faible (théorique : la capture d'un roi termine la partie immédiatement ; mais une pièce capturant un roi — ou héritant d'`acquiredTypes` corrompus — gagnerait ses déplacements, violant l'invariant « seules les pièces royales bougent comme un roi »).
+- **Cause racine** : le filtre de fusion n'exclut que le type propre de la pièce capturante, pas `king`.
+- **Localisation** : `src/utils/chess/assimilation.ts:19`.
+- **Solution** : étendre le filtre — `.filter(t => t !== capturingPiece.type && t !== "king")`.
+- **Résolution** : filtre étendu + cas ajoutés à `assimilation.test.ts` (capture d'un roi, non-propagation depuis des `acquiredTypes` contenant `king`). Seuil de couverture 100 L/100 F/90 B inchangé.
 
 ---
 

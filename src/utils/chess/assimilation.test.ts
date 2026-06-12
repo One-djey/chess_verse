@@ -91,6 +91,26 @@ describe("applyAssimilationCapture", () => {
     expect(afterSecond.acquiredTypes).toEqual(["rook", "bishop", "queen"]);
   });
 
+  // BUG-015: "king" must never be acquired — capturing a king ends the game,
+  // but a piece must not gain king movement in the meantime (or inherit it
+  // from a corrupted acquiredTypes chain).
+  it("does not acquire 'king' when capturing a king (BUG-015 fixed)", () => {
+    const pawn = makePiece("white", "pawn", 3, 3);
+    const king = makePiece("black", "king", 3, 3);
+    const result = applyAssimilationCapture(pawn, king);
+    expect(result.acquiredTypes).toBeUndefined();
+    expect("acquiredTypes" in result).toBe(false);
+  });
+
+  it("does not propagate 'king' from the captured piece's acquiredTypes (BUG-015 fixed)", () => {
+    const pawn = makePiece("white", "pawn", 3, 3);
+    const rook = makePiece("black", "rook", 3, 3, {
+      acquiredTypes: ["king", "bishop"],
+    });
+    const result = applyAssimilationCapture(pawn, rook);
+    expect(result.acquiredTypes).toEqual(["rook", "bishop"]);
+  });
+
   it("keeps the capturer's id, color, type and position", () => {
     const pawn = makePiece("white", "pawn", 2, 5, { id: "capturer-1" });
     const queen = makePiece("black", "queen", 2, 5);

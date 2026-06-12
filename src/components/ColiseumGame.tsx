@@ -25,7 +25,6 @@ import type { Piece, PieceColor } from "../types/chess";
 import type { RematchState } from "../types/p2p";
 import type { P2PConnectionState } from "../types/p2p";
 import { makeRoomActions } from "../services/TrysteroService";
-import type { Room } from "@trystero-p2p/core";
 
 // ── Shared UI ────────────────────────────────────────────────────────────────
 
@@ -431,7 +430,6 @@ interface ColiseumGameP2PProps {
   role: "host" | "guest";
   playerColor: PieceColor | null;
   actions: ReturnType<typeof makeRoomActions> | null;
-  room: Room | null;
 }
 
 function ColiseumGameP2P({
@@ -439,7 +437,6 @@ function ColiseumGameP2P({
   role,
   playerColor,
   actions,
-  room,
 }: ColiseumGameP2PProps) {
   const navigate = useNavigate();
   const { connectionState, leaveRoom } = useP2P();
@@ -456,7 +453,7 @@ function ColiseumGameP2P({
     handleRematch,
     handleAcceptRematch,
     handleDeclineRematch,
-  } = useColiseumP2PGame({ arena, role, playerColor, actions, room });
+  } = useColiseumP2PGame({ arena, role, playerColor, actions, connectionState });
 
   const handleLeave = () => {
     leaveRoom();
@@ -492,8 +489,7 @@ function ColiseumGameP2P({
 
 export default function ColiseumGame() {
   const { t } = useTranslation();
-  const { isP2PMode, role, playerColor, actions, room, initialArena } =
-    useP2P();
+  const { isP2PMode, role, playerColor, actions, initialArena } = useP2P();
 
   if (isP2PMode && role) {
     if (!initialArena) {
@@ -511,7 +507,6 @@ export default function ColiseumGame() {
         role={role}
         playerColor={playerColor}
         actions={actions}
-        room={room}
       />
     );
   }

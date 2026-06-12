@@ -1,20 +1,19 @@
 import { useEffect, useRef, useState } from "react";
 import { GameState, Piece, GameMode, PieceColor } from "../types/chess";
-import { RematchState } from "../types/p2p";
+import { P2PConnectionState, RematchState } from "../types/p2p";
 import {
   getInitialPieces,
   applyMoveToState,
   getValidMoves,
 } from "../utils/chess";
 import { makeRoomActions } from "../services/TrysteroService";
-import type { Room } from "@trystero-p2p/core";
 
 interface Params {
   isP2PMode: boolean;
   role: "host" | "guest" | null;
   playerColor: PieceColor | null;
   actions: ReturnType<typeof makeRoomActions> | null;
-  room: Room | null;
+  connectionState: P2PConnectionState;
   gameMode: GameMode;
   setGameState: React.Dispatch<React.SetStateAction<GameState>>;
   gameStateRef: React.MutableRefObject<GameState | null>;
@@ -26,7 +25,7 @@ export function useP2PGame({
   role,
   playerColor,
   actions,
-  room,
+  connectionState,
   gameMode,
   setGameState,
   gameStateRef,
@@ -34,12 +33,14 @@ export function useP2PGame({
 }: Params) {
   const seqRef = useRef(0);
   const [rematchState, setRematchState] = useState<RematchState>("idle");
-  const [peerLeft, setPeerLeft] = useState(false);
+  // BUG-013: derived from connectionState rather than a local onPeerLeave
+  // registration — Trystero's room.onPeerLeave is a single-slot setter, so
+  // registering here would clobber P2PContext's handler (the sole owner).
+  const peerLeft = connectionState === "disconnected";
 
   const resetGame = (pieces: Piece[]) => {
     seqRef.current = 0;
     setRematchState("idle");
-    setPeerLeft(false);
     chessResetGame(pieces);
   };
 
@@ -195,8 +196,11 @@ export function useP2PGame({
       }));
     });
 
-    room?.onPeerLeave(() => setPeerLeft(true));
-  }, [isP2PMode, actions, role, playerColor, room]); // eslint-disable-line react-hooks/exhaustive-deps
+    // setGameState is a stable React setState dispatch and gameMode is fixed
+    // for the lifetime of a room session, so neither needs to re-trigger
+    // handler registration.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isP2PMode, actions, role, playerColor]);
 
   // ── Rematch handlers (called from GameOver modal) ─────────────────────────
   const handleRematch = () => {
