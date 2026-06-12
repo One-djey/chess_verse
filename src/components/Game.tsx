@@ -424,6 +424,8 @@ export default function Game() {
   // Safety net: catch any checkmate/stalemate that applyMoveToState might have missed.
   // Also checks for repetition and 50-move rule draws.
   // Runs after every turn change or board update. In P2P the host is authoritative.
+  // Destructured so the deps list can name the stable setter instead of `chess`.
+  const { setGameState } = chess;
   React.useEffect(() => {
     if (chess.gameState.gameOver) return;
     if (chess.gameState.pieces.length === 0) return;
@@ -433,7 +435,7 @@ export default function Game() {
     // fires at the precise half-move boundary; repetition accumulates earlier
     // and would otherwise shadow it in back-and-forth endgames).
     if (isDrawBy50Moves(chess.gameState.halfMoveClock ?? 0)) {
-      chess.setGameState((prev) => {
+      setGameState((prev) => {
         if (prev.gameOver) return prev;
         return {
           ...prev,
@@ -445,7 +447,7 @@ export default function Game() {
       return;
     }
     if (isDrawByRepetition(chess.gameState.positionHistory ?? {})) {
-      chess.setGameState((prev) => {
+      setGameState((prev) => {
         if (prev.gameOver) return prev;
         return {
           ...prev,
@@ -467,7 +469,7 @@ export default function Game() {
     ) {
       const inCheck = chess.gameState.isCheck;
       const loser = chess.gameState.currentTurn;
-      chess.setGameState((prev) => {
+      setGameState((prev) => {
         if (prev.gameOver) return prev;
         return {
           ...prev,
@@ -478,15 +480,16 @@ export default function Game() {
       });
     }
   }, [
-    // eslint-disable-line react-hooks/exhaustive-deps
     chess.gameState.currentTurn,
     chess.gameState.pieces,
     chess.gameState.gameMode,
     chess.gameState.gameOver,
+    chess.gameState.isCheck,
     chess.gameState.enPassantTarget,
     chess.gameState.positionHistory,
     chess.gameState.halfMoveClock,
     p2p.isP2PMode,
+    setGameState,
   ]);
 
   // ── Movable pieces ────────────────────────────────────────────────────────

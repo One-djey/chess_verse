@@ -229,7 +229,7 @@ function ColiseumUI({
       }
     }
     prevMovesLength.current = state.moves.length;
-  }, [state.moves, t]);
+  }, [state.moves, coordOffset.x, coordOffset.lastRow, t]);
 
   const wrappedHandlePieceSelect = useCallback(
     (piece: Piece) => {
