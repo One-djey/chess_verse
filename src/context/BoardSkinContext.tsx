@@ -1,5 +1,5 @@
 import { createContext, useState, type ReactNode } from "react";
-import { type BoardSkin } from "../utils/boardSkin";
+import { BOARD_SKINS, type BoardSkin } from "../utils/boardSkin";
 
 const STORAGE_KEY = "chessverse_board_skin";
 const DEFAULT_SKIN: BoardSkin = "default";
@@ -16,8 +16,12 @@ export const BoardSkinContext = createContext<BoardSkinContextValue | null>(
 export function BoardSkinProvider({ children }: { children: ReactNode }) {
   const [boardSkin, setBoardSkinState] = useState<BoardSkin>(() => {
     try {
+      // BUG-014: validate against known skins — an arbitrary stored value
+      // would silently break the board rendering.
       const saved = localStorage.getItem(STORAGE_KEY);
-      return (saved as BoardSkin) ?? DEFAULT_SKIN;
+      return BOARD_SKINS.some((s) => s.id === saved)
+        ? (saved as BoardSkin)
+        : DEFAULT_SKIN;
     } catch {
       return DEFAULT_SKIN;
     }

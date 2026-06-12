@@ -9,6 +9,7 @@ import type {
   PieceColor,
 } from "../types/chess";
 import type {
+  P2PConnectionState,
   P2PMessage,
   MoveProposalMessage,
   MoveConfirmMessage,
@@ -36,7 +37,6 @@ import { useP2PGame } from "./useP2PGame";
 
 type HookParams = Parameters<typeof useP2PGame>[0];
 type Actions = NonNullable<HookParams["actions"]>;
-type RoomT = NonNullable<HookParams["room"]>;
 
 // ── Mock room actions ─────────────────────────────────────────────────────────
 // Each onX registration captures the handler into `handlers` keyed by message
@@ -93,7 +93,7 @@ interface HarnessProps {
   role: HookParams["role"];
   playerColor: PieceColor | null;
   actions: HookParams["actions"];
-  room: HookParams["room"];
+  connectionState: P2PConnectionState;
   gameMode: GameMode;
   initialState: GameState;
   chessResetSpy: (pieces: Piece[]) => void;
@@ -109,7 +109,7 @@ function useHarness(props: HarnessProps) {
     role: props.role,
     playerColor: props.playerColor,
     actions: props.actions,
-    room: props.room,
+    connectionState: props.connectionState,
     gameMode: props.gameMode,
     setGameState,
     gameStateRef,
@@ -130,6 +130,7 @@ interface SetupOpts {
   gameMode?: GameMode;
   isP2PMode?: boolean;
   nullActions?: boolean;
+  connectionState?: P2PConnectionState;
 }
 
 function twoKings(): Piece[] {
@@ -142,13 +143,6 @@ function twoKings(): Piece[] {
 function setup(opts: SetupOpts) {
   const { raw, actions, handlers } = makeMockActions();
   const chessResetSpy = vi.fn();
-  let peerLeaveCb: (() => void) | undefined;
-  const room = {
-    onPeerLeave: vi.fn((cb: () => void) => {
-      peerLeaveCb = cb;
-    }),
-    leave: vi.fn(),
-  } as unknown as RoomT;
 
   const gameMode = opts.gameMode ?? CLASSIC;
   const playerColor =
@@ -165,27 +159,28 @@ function setup(opts: SetupOpts) {
     opts.stateOverrides,
   );
 
-  const utils = renderHook(() =>
-    useHarness({
-      isP2PMode: opts.isP2PMode ?? true,
-      role: opts.role,
-      playerColor,
-      actions: opts.nullActions ? null : actions,
-      room,
-      gameMode,
-      initialState,
-      chessResetSpy,
-    }),
-  );
+  const baseProps: HarnessProps = {
+    isP2PMode: opts.isP2PMode ?? true,
+    role: opts.role,
+    playerColor,
+    actions: opts.nullActions ? null : actions,
+    connectionState: opts.connectionState ?? "connected",
+    gameMode,
+    initialState,
+    chessResetSpy,
+  };
+
+  const utils = renderHook((p: HarnessProps) => useHarness(p), {
+    initialProps: baseProps,
+  });
 
   return {
     ...utils,
     raw,
     handlers,
     chessResetSpy,
-    room,
+    baseProps,
     initialState,
-    getPeerLeaveCb: () => peerLeaveCb,
   };
 }
 
@@ -229,7 +224,7 @@ describe("useP2PGame — initial state & registration", () => {
   });
 
   it("registers exactly the host-side handlers for role host", () => {
-    const { handlers, room } = setup({ role: "host" });
+    const { handlers } = setup({ role: "host" });
     expect(Object.keys(handlers).sort()).toEqual([
       "move_proposal",
       "rematch_accept",
@@ -238,11 +233,10 @@ describe("useP2PGame — initial state & registration", () => {
       "resign",
       "sync_request",
     ]);
-    expect(room.onPeerLeave).toHaveBeenCalledTimes(1);
   });
 
   it("registers exactly the guest-side handlers for role guest", () => {
-    const { handlers, room } = setup({ role: "guest" });
+    const { handlers } = setup({ role: "guest" });
     expect(Object.keys(handlers).sort()).toEqual([
       "move_confirm",
       "move_reject",
@@ -252,22 +246,19 @@ describe("useP2PGame — initial state & registration", () => {
       "resign",
       "sync_state",
     ]);
-    expect(room.onPeerLeave).toHaveBeenCalledTimes(1);
   });
 
   it("registers nothing when isP2PMode is false", () => {
-    const { handlers, room } = setup({ role: "host", isP2PMode: false });
+    const { handlers } = setup({ role: "host", isP2PMode: false });
     expect(Object.keys(handlers)).toHaveLength(0);
-    expect(room.onPeerLeave).not.toHaveBeenCalled();
   });
 
   it("registers nothing when actions is null, but rematch handlers still work", () => {
-    const { handlers, result, room } = setup({
+    const { handlers, result } = setup({
       role: "guest",
       nullActions: true,
     });
     expect(Object.keys(handlers)).toHaveLength(0);
-    expect(room.onPeerLeave).not.toHaveBeenCalled();
     // NOTE: with a null actions object the hook still flips local rematch
     // state even though nothing was actually sent over the wire.
     act(() => result.current.handleRematch());
@@ -713,11 +704,10 @@ describe("useP2PGame — rematch state machine", () => {
     expect(result.current.rematchState).toBe("starting");
   });
 
-  it("incoming rematch_start (guest) resets with the host's pieces, seq and peerLeft", () => {
+  it("incoming rematch_start (guest) resets with the host's pieces and seq", () => {
     vi.spyOn(console, "warn").mockImplementation(() => {});
-    const { handlers, result, chessResetSpy, getPeerLeaveCb } =
-      guestRookSetup();
-    // Dirty everything first: a confirmed move and a peer-left flag.
+    const { handlers, result, chessResetSpy } = guestRookSetup();
+    // Dirty the state first with a confirmed move.
     act(() =>
       handlers["move_confirm"]!({
         type: "move_confirm",
@@ -727,9 +717,7 @@ describe("useP2PGame — rematch state machine", () => {
         seq: 1,
       }),
     );
-    act(() => getPeerLeaveCb()!());
     expect(result.current.seqRef.current).toBe(1);
-    expect(result.current.peerLeft).toBe(true);
 
     const fresh = twoKings();
     act(() =>
@@ -740,7 +728,6 @@ describe("useP2PGame — rematch state machine", () => {
     expect(result.current.gameState.pieces).toBe(fresh);
     expect(result.current.gameState.currentTurn).toBe("white");
     expect(result.current.seqRef.current).toBe(0);
-    expect(result.current.peerLeft).toBe(false);
     expect(result.current.rematchState).toBe("idle");
   });
 
@@ -814,13 +801,26 @@ describe("useP2PGame — resign", () => {
 
 // ── Peer leave ────────────────────────────────────────────────────────────────
 
-describe("useP2PGame — peer leave", () => {
-  it("sets peerLeft when the room reports a peer leaving", () => {
-    const { result, getPeerLeaveCb } = setup({ role: "guest" });
+// BUG-013: Trystero's room.onPeerLeave is a single-slot setter — registering a
+// handler REPLACES the previous one. The hook used to register its own handler
+// there, clobbering P2PContext's setConnectionState("disconnected") so the
+// status bar never showed the disconnection. peerLeft is now DERIVED from
+// connectionState and P2PContext stays the sole owner of onPeerLeave.
+describe("useP2PGame — peer leave (BUG-013)", () => {
+  it("derives peerLeft from connectionState", () => {
+    const { result, rerender, baseProps } = setup({ role: "guest" });
     expect(result.current.peerLeft).toBe(false);
 
-    act(() => getPeerLeaveCb()!());
+    rerender({ ...baseProps, connectionState: "disconnected" });
     expect(result.current.peerLeft).toBe(true);
+  });
+
+  it("peerLeft is false for every non-disconnected connection state", () => {
+    const { result, rerender, baseProps } = setup({ role: "host" });
+    for (const cs of ["idle", "waiting", "connecting", "connected"] as const) {
+      rerender({ ...baseProps, connectionState: cs });
+      expect(result.current.peerLeft).toBe(false);
+    }
   });
 });
 

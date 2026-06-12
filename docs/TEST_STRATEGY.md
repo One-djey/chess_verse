@@ -60,6 +60,8 @@
 | `src/utils/chess/coliseumMoves.ts` | ~208 | aucune | **P1** |
 | `src/utils/chess/legendaryPatterns.ts` | ~464 | aucune | **P1** |
 | `src/services/statsService.ts` | ~641 | `localStorage`, `new Date()` | **P0 ✅** (stub + fake timers) |
+| `src/utils/chess/coliseumGenerator.ts` | ~860 | `Math.random` (seedable), `performance.now` (budget 950 ms) | **P1 ✅** (invariants sur runs seedés — pas de seuil de couverture : génératif/budget temps, un seuil par fichier serait flaky) |
+| `src/utils/gameModes.ts` | ~42 | aucune (pure data) | **P0 ✅** (seuil 100/100/100) |
 
 ### 3.2 Logique stateful — mocks requis
 
@@ -68,7 +70,10 @@
 | `src/services/ChessAI.ts` (~301 l.) | `Worker` (protocole UCI), `setTimeout` | **P1** |
 | `src/hooks/useChessGame.ts` (~143 l.) | `localStorage`, `Date.now`, `ChessAI` | P1 |
 | `src/hooks/useP2PGame.ts` (~162 l.) | actions Trystero (callbacks de room) | **P1** |
+| `src/hooks/useColiseumGame.ts` (~207 l.) | `coliseumGenerator` (arène artisanale), `statsService`, timers | **P1 ✅** |
+| `src/hooks/useColiseumP2PGame.ts` (~320 l.) | actions Trystero | P1 (couverture minimale ✅ — dérivation `peerLeft`, init, surrender ; suite complète → F-7) |
 | `src/context/P2PContext.tsx` (~226 l.) | `trystero.joinRoom`, room lifecycle | P2 |
+| `src/context/BoardSkinContext.tsx` (~40 l.) | `localStorage` | P2 ✅ (miroir de SkinContext) |
 | `src/context/SkinContext.tsx` (~34 l.) | `localStorage` | P2 |
 | `src/i18n/index.ts` (~41 l.) | i18next + détecteur navigateur | P2 (sanity locales) |
 
@@ -304,6 +309,7 @@ Constats faits pendant l'analyse — **non corrigés** par cette initiative, à 
 | F-4 | **Extraction de la logique pure de `Game.tsx`** (= REC-001 de KNOWN_ISSUES.md) : `detectScholarsMate`, `resolveGameMode`, stats de session | ~1 180 lignes non testables unitairement | Avant tout gros chantier dans `Game.tsx` |
 | F-5 | **Mutation testing (Stryker)** sur les modules P0 | Mesure objective de la force des suites : un mutant survivant = une assertion manquante | Quand le rythme de dev ralentit, en tâche de fond |
 | F-6 | **Projet Playwright webkit + visual regression** (screenshots échiquier/skins) | Couverture navigateur et régressions visuelles des skins | Premier bug spécifique Safari, ou refonte CSS de l'échiquier |
+| F-7 | **Suite complète `useColiseumP2PGame`** (messages move_proposal/confirm, rematch avec arena_init) | Couvert aujourd'hui a minima (peerLeft, init, surrender) ; une suite complète dupliquerait le harnais ~600 l. de `useP2PGame.test.tsx` pour une logique quasi identique | Premier bug coliseum-P2P signalé, ou tout refactor du hook |
 
 ## 8. Maintien à jour des tests — politique de développement
 

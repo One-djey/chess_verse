@@ -45,6 +45,15 @@ export default defineConfig({
           functions: 100,
           branches: 100,
         },
+        // Pure data — exhaustively covered by gameModes.test.ts.
+        // Note : pas de seuil pour coliseumGenerator.ts (génératif, budget
+        // temps 950 ms, chemins fallback) — un seuil par fichier serait flaky ;
+        // ses invariants sont verrouillés par coliseumGenerator.test.ts.
+        "src/utils/gameModes.ts": {
+          lines: 100,
+          functions: 100,
+          branches: 100,
+        },
       },
     },
   },
