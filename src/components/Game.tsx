@@ -149,9 +149,20 @@ export default function Game() {
   // game ends; can be dismissed by the user to inspect the final board state.
   const [gameOverVisible, setGameOverVisible] = React.useState(false);
 
+  // Duration frozen at the moment gameOver transitions to true so that the
+  // GameOver modal always shows the same value (Date.now() at render time
+  // would keep advancing on every re-render).
+  const [frozenDuration, setFrozenDuration] = React.useState(0);
+
   React.useEffect(() => {
-    if (chess.gameState.gameOver) setGameOverVisible(true);
-  }, [chess.gameState.gameOver]);
+    if (chess.gameState.gameOver) {
+      setGameOverVisible(true);
+      const { firstMoveTime } = chess.gameState;
+      setFrozenDuration(firstMoveTime !== undefined ? Date.now() - firstMoveTime : 0);
+    } else {
+      setFrozenDuration(0);
+    }
+  }, [chess.gameState.gameOver]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── AI move trigger ────────────────────────────────────────────────────────
   React.useEffect(() => {
@@ -1223,7 +1234,7 @@ export default function Game() {
           winner={chess.gameState.winner}
           drawReason={chess.gameState.drawReason}
           surrenderedBy={chess.gameState.surrenderedBy}
-          duration={chess.gameState.firstMoveTime !== undefined ? Date.now() - chess.gameState.firstMoveTime : 0}
+          duration={frozenDuration}
           moveCount={
             chess.gameState.winner
               ? chess.gameState.moveCount[chess.gameState.winner]
