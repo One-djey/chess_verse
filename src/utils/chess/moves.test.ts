@@ -1122,3 +1122,35 @@ describe("MoveRecord.isEnPassant", () => {
     expect(lastMove.isEnPassant).toBeUndefined();
   });
 });
+
+// ── firstMoveTime ─────────────────────────────────────────────────────────────
+
+describe("firstMoveTime", () => {
+  const wKing = () => makePiece("white", "king", 4, 7);
+  const bKing = () => makePiece("black", "king", 4, 0);
+
+  it("is undefined before any move is played", () => {
+    const state = makeState([wKing(), bKing()], CLASSIC);
+    expect(state.firstMoveTime).toBeUndefined();
+  });
+
+  it("is set to approximately Date.now() after the first move", () => {
+    const pawn = makePiece("white", "pawn", 4, 6);
+    const state = makeState([pawn, wKing(), bKing()], CLASSIC);
+    const before = Date.now();
+    const after1 = applyMoveToState(state, pawn, pos(4, 5));
+    const afterTs = Date.now();
+    expect(after1.firstMoveTime).toBeGreaterThanOrEqual(before);
+    expect(after1.firstMoveTime).toBeLessThanOrEqual(afterTs);
+  });
+
+  it("is preserved (not overwritten) on subsequent moves", () => {
+    const pawn = makePiece("white", "pawn", 4, 6);
+    const bPawn = makePiece("black", "pawn", 4, 1);
+    const state = makeState([pawn, bPawn, wKing(), bKing()], CLASSIC);
+    const after1 = applyMoveToState(state, pawn, pos(4, 5));
+    const firstTs = after1.firstMoveTime!;
+    const after2 = applyMoveToState(after1, bPawn, pos(4, 2));
+    expect(after2.firstMoveTime).toBe(firstTs);
+  });
+});

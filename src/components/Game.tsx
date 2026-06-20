@@ -149,9 +149,20 @@ export default function Game() {
   // game ends; can be dismissed by the user to inspect the final board state.
   const [gameOverVisible, setGameOverVisible] = React.useState(false);
 
+  // Duration frozen at the moment gameOver transitions to true so that the
+  // GameOver modal always shows the same value (Date.now() at render time
+  // would keep advancing on every re-render).
+  const [frozenDuration, setFrozenDuration] = React.useState(0);
+
   React.useEffect(() => {
-    if (chess.gameState.gameOver) setGameOverVisible(true);
-  }, [chess.gameState.gameOver]);
+    if (chess.gameState.gameOver) {
+      setGameOverVisible(true);
+      const { firstMoveTime } = chess.gameState;
+      setFrozenDuration(firstMoveTime !== undefined ? Date.now() - firstMoveTime : 0);
+    } else {
+      setFrozenDuration(0);
+    }
+  }, [chess.gameState.gameOver]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── AI move trigger ────────────────────────────────────────────────────────
   React.useEffect(() => {
@@ -724,10 +735,12 @@ export default function Game() {
       surrenderedBy,
       drawReason,
       moveCount,
-      startTime,
+      firstMoveTime,
       gameMode,
       moves,
     } = chess.gameState;
+    const now = Date.now();
+    const gameDuration = firstMoveTime !== undefined ? now - firstMoveTime : 0;
     window.dataLayer = window.dataLayer || [];
     window.dataLayer.push({
       event: "game_end",
@@ -735,7 +748,7 @@ export default function Game() {
       play_type: playType,
       result: winner ? `${winner}_wins` : "draw",
       end_reason: surrenderedBy ? "surrender" : (drawReason ?? "checkmate"),
-      duration_seconds: Math.round((Date.now() - startTime) / 1000),
+      duration_seconds: Math.round(gameDuration / 1000),
       move_count: moveCount.white + moveCount.black,
     });
 
@@ -756,7 +769,7 @@ export default function Game() {
       winner,
       surrenderedBy,
       drawReason,
-      duration: Date.now() - startTime,
+      duration: gameDuration,
       moveCount: totalMoves,
       aiDifficulty: chess.aiEnabled ? chess.settings.aiDifficulty : undefined,
       pieceMoves: { ...sessionStatsRef.current.pieceMoves },
@@ -1221,7 +1234,7 @@ export default function Game() {
           winner={chess.gameState.winner}
           drawReason={chess.gameState.drawReason}
           surrenderedBy={chess.gameState.surrenderedBy}
-          duration={Date.now() - chess.gameState.startTime}
+          duration={frozenDuration}
           moveCount={
             chess.gameState.winner
               ? chess.gameState.moveCount[chess.gameState.winner]
