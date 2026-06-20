@@ -689,6 +689,7 @@ export function applyMoveToState(
     surrenderedBy: undefined,
     enPassantTarget: nextEnPassantTarget,
     halfMoveClock: nextHalfMoveClock,
+    firstMoveTime: prev.firstMoveTime ?? Date.now(),
   };
 
   if (captured?.type === "king")

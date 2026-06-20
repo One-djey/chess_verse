@@ -53,6 +53,8 @@ export interface GameState {
   validMoves: Position[];
   isCheck: boolean;
   startTime: number;
+  /** Timestamp of the first move played; undefined until a move is made. */
+  firstMoveTime?: number;
   moveCount: { white: number; black: number };
   /** Full move history — one entry per half-move (ply). */
   moves: MoveRecord[];
