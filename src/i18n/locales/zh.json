@@ -40,7 +40,20 @@
       "title": "斗兽场",
       "description": "每场对局棋盘形态各异，充满变数。",
       "localOnlyBanner": "斗兽场仅支持本地对战，此模式无 AI 对手。"
+    },
+    "zombie-horde": {
+      "title": "丧尸潮",
+      "description": "在无尽的丧尸棋子浪潮中生存下去。在被将死之前尽可能多地消灭它们！"
     }
+  },
+  "zombieHorde": {
+    "wave": "波次",
+    "zombiesKilled": "已消灭丧尸",
+    "hordeThinking": "丧尸潮正在移动...",
+    "defeatTitle": "你被丧尸潮淹没了",
+    "victoryTitle": "我是传奇！",
+    "wavesCleared": "已通过波次",
+    "score": "得分"
   },
   "p2p": {
     "joinGame": "加入游戏",
@@ -464,7 +477,9 @@
       "coward": "懦夫",
       "cowardDesc": "投降10次",
       "assiduous": "坚持不懈",
-      "assiduousDesc": "连续7天游玩"
+      "assiduousDesc": "连续7天游玩",
+      "iAmLegend": "我是传奇",
+      "iAmLegendDesc": "幸存过所有10波丧尸并击败最终丧尸潮"
     },
     "pieces": {
       "queen": "后",

@@ -40,7 +40,20 @@
       "title": "Colisée",
       "description": "Un plateau aux formes organiques tiré au sort à chaque partie.",
       "localOnlyBanner": "Le Colisée se joue en local uniquement. Pas d'adversaire IA dans ce mode."
+    },
+    "zombie-horde": {
+      "title": "Horde Zombie",
+      "description": "Survivez à des vagues interminables de pièces zombies. Tuez-en le plus possible avant d'être maté !"
     }
+  },
+  "zombieHorde": {
+    "wave": "Vague",
+    "zombiesKilled": "Zombies tués",
+    "hordeThinking": "La horde se déplace...",
+    "defeatTitle": "La horde vous a submergé",
+    "victoryTitle": "Je suis une légende !",
+    "wavesCleared": "Vagues éliminées",
+    "score": "Score"
   },
   "p2p": {
     "joinGame": "Rejoindre la partie",
@@ -464,7 +477,9 @@
       "coward": "Lâche",
       "cowardDesc": "Abandonner 10 parties",
       "assiduous": "Assidu",
-      "assiduousDesc": "Jouer 7 jours d'affilée"
+      "assiduousDesc": "Jouer 7 jours d'affilée",
+      "iAmLegend": "Je suis une légende",
+      "iAmLegendDesc": "A survécu aux 10 vagues zombies et vaincu la horde finale"
     },
     "pieces": {
       "queen": "Dame",

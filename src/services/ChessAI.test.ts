@@ -453,6 +453,65 @@ describe("destroy and restart", () => {
   });
 });
 
+// ── getNextMove with options (depth + searchMoves) ───────────────────────────
+
+describe("getNextMove with options", () => {
+  it("sends 'go depth N' instead of 'go movetime' when options.depth is set", () => {
+    const { ai, worker } = readyAI();
+    void ai
+      .getNextMove(kingsAndPawns(), undefined, undefined, { depth: 3 })
+      .catch(() => {});
+    expect(worker.posted).toContain("go depth 3");
+    expect(worker.posted.every((m) => !m.startsWith("go movetime"))).toBe(true);
+  });
+
+  it("appends searchmoves clause when searchMoves are provided with depth", () => {
+    const { ai, worker } = readyAI();
+    void ai
+      .getNextMove(kingsAndPawns(), undefined, undefined, {
+        depth: 3,
+        searchMoves: [
+          { from: { x: 4, y: 1 }, to: { x: 4, y: 2 } },
+          { from: { x: 4, y: 1 }, to: { x: 4, y: 3 } },
+        ],
+      })
+      .catch(() => {});
+    expect(worker.posted).toContain("go depth 3 searchmoves e7e6 e7e5");
+  });
+
+  it("sends 'go depth N' without searchmoves when searchMoves array is empty", () => {
+    const { ai, worker } = readyAI();
+    void ai
+      .getNextMove(kingsAndPawns(), undefined, undefined, {
+        depth: 2,
+        searchMoves: [],
+      })
+      .catch(() => {});
+    expect(worker.posted).toContain("go depth 2");
+    expect(worker.posted.every((m) => !m.includes("searchmoves"))).toBe(true);
+  });
+
+  it("still sends 'go movetime' when options is undefined", () => {
+    const { ai, worker } = readyAI();
+    ai.setDifficulty(1);
+    void ai.getNextMove(kingsAndPawns()).catch(() => {});
+    expect(worker.posted).toContain("go movetime 100");
+  });
+
+  it("resolves correctly when using depth + searchmoves", async () => {
+    const { ai, worker } = readyAI();
+    const promise = ai.getNextMove(kingsAndPawns(), undefined, undefined, {
+      depth: 3,
+      searchMoves: [{ from: { x: 4, y: 1 }, to: { x: 4, y: 3 } }],
+    });
+    emit(worker, "bestmove e7e5");
+    await expect(promise).resolves.toMatchObject({
+      from: { x: 4, y: 1 },
+      to: { x: 4, y: 3 },
+    });
+  });
+});
+
 // ── FEN: en passant and half-move clock ──────────────────────────────────────
 
 describe("FEN: en passant target and half-move clock", () => {

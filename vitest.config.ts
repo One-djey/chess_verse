@@ -54,6 +54,16 @@ export default defineConfig({
           functions: 100,
           branches: 100,
         },
+        "src/utils/chess/zombieWaves.ts": {
+          lines: 90,
+          functions: 90,
+          branches: 85,
+        },
+        "src/services/ZombieAIPool.ts": {
+          lines: 85,
+          functions: 85,
+          branches: 80,
+        },
       },
     },
   },

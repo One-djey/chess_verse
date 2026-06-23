@@ -40,7 +40,20 @@
       "title": "コロッセオ",
       "description": "毎回異なる有機的形状のボードで対局する。",
       "localOnlyBanner": "コロッセオはローカル専用です。このモードではAI対戦は利用できません。"
+    },
+    "zombie-horde": {
+      "title": "ゾンビホード",
+      "description": "ゾンビ駒の波を生き抜け。チェックメイトされる前にできるだけ多く倒せ！"
     }
+  },
+  "zombieHorde": {
+    "wave": "ウェーブ",
+    "zombiesKilled": "倒したゾンビ",
+    "hordeThinking": "ホードが動いています...",
+    "defeatTitle": "ホードに圧倒されました",
+    "victoryTitle": "私は伝説だ！",
+    "wavesCleared": "クリアしたウェーブ",
+    "score": "スコア"
   },
   "p2p": {
     "joinGame": "ゲームに参加",
@@ -464,7 +477,9 @@
       "coward": "臆病者",
       "cowardDesc": "10回降参する",
       "assiduous": "勤勉家",
-      "assiduousDesc": "7日連続でプレイする"
+      "assiduousDesc": "7日連続でプレイする",
+      "iAmLegend": "私は伝説だ",
+      "iAmLegendDesc": "10ウェーブをすべて生き抜き最後のホードを倒した"
     },
     "pieces": {
       "queen": "クイーン",

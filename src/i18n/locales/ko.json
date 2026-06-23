@@ -40,7 +40,20 @@
       "title": "콜로세움",
       "description": "매 게임 다른 형태의 유기적 보드에서 펼쳐집니다.",
       "localOnlyBanner": "콜로세움은 로컬 전용입니다. 이 모드에서는 AI 상대를 이용할 수 없습니다."
+    },
+    "zombie-horde": {
+      "title": "좀비 무리",
+      "description": "끝없는 좀비 말의 물결에서 살아남으세요. 체크메이트 전에 최대한 많이 처치하세요!"
     }
+  },
+  "zombieHorde": {
+    "wave": "웨이브",
+    "zombiesKilled": "처치한 좀비",
+    "hordeThinking": "무리가 이동 중...",
+    "defeatTitle": "무리에게 압도당했습니다",
+    "victoryTitle": "나는 전설이다!",
+    "wavesCleared": "클리어한 웨이브",
+    "score": "점수"
   },
   "p2p": {
     "joinGame": "게임 참가",
@@ -464,7 +477,9 @@
       "coward": "겁쟁이",
       "cowardDesc": "10번 항복하기",
       "assiduous": "성실한 플레이어",
-      "assiduousDesc": "7일 연속 플레이하기"
+      "assiduousDesc": "7일 연속 플레이하기",
+      "iAmLegend": "나는 전설이다",
+      "iAmLegendDesc": "10개의 좀비 웨이브를 모두 생존하고 최후의 무리를 물리쳤습니다"
     },
     "pieces": {
       "queen": "퀸",

@@ -213,7 +213,11 @@ export default function P2PLobby() {
   // ── HOST STEP 1 – Mode selection ──────────────────────────────────────────
   if (!roomId) {
     return (
-      <GameModeSelect playType="multiplayer" onSelect={handleCreateGame} />
+      <GameModeSelect
+        playType="multiplayer"
+        onSelect={handleCreateGame}
+        filterModes={(mode) => !mode.rules?.zombieHorde}
+      />
     );
   }
 

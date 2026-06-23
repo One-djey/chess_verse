@@ -121,6 +121,7 @@ function baseStats(overrides: Partial<ChessverseStats> = {}): ChessverseStats {
     coliseumGames: 0,
     coliseumWins: 0,
     beatMaxAINoAssist: 0,
+    zombieHordeWins: 0,
     ...overrides,
   };
 }
@@ -574,6 +575,20 @@ describe("badge counters", () => {
     expect(stats.coliseumWins).toBe(1);
   });
 
+  it("increments zombieHordeWins only when zombieHordeWon is true", () => {
+    svc.recordGame(
+      makeGame({ mode: "zombie-horde", winner: "white", zombieHordeWon: true }),
+    );
+    svc.recordGame(
+      makeGame({ mode: "zombie-horde", winner: "black", zombieHordeWon: false }),
+    );
+    svc.recordGame(
+      makeGame({ mode: "zombie-horde", winner: "black" }), // no zombieHordeWon field
+    );
+    const stats = svc.getStats();
+    expect(stats.zombieHordeWins).toBe(1);
+  });
+
   it("modesPlayed keeps unique mode ids only", () => {
     svc.recordGame(makeGame({ mode: "classic" }));
     svc.recordGame(makeGame({ mode: "classic" }));
@@ -706,6 +721,10 @@ describe("BADGES", () => {
       below: { beatMaxAINoAssist: 0 },
       at: { beatMaxAINoAssist: 1 },
     },
+    i_am_legend: {
+      below: { zombieHordeWins: 0 },
+      at: { zombieHordeWins: 1 },
+    },
   };
 
   it("the test table covers every badge id exactly", () => {
@@ -760,6 +779,7 @@ describe("BADGES", () => {
           maxAILevelBeaten: 1000,
           totalDurationMs: 1000 * 3_600_000,
           beatMaxAINoAssist: 1000,
+          zombieHordeWins: 1000,
         }),
       );
       expect(beyond.current).toBe(beyond.target);

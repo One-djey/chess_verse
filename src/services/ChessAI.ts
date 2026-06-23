@@ -130,6 +130,10 @@ export class ChessAI {
     pieces: Piece[],
     enPassantTarget?: Position,
     halfMoveClock?: number,
+    options?: {
+      searchMoves?: { from: Position; to: Position }[];
+      depth?: number;
+    },
   ): Promise<{ from: Position; to: Position; promotionType?: PieceType }> {
     if (!this.stockfish || !this.isReady) {
       throw new Error("L'IA n'est pas encore initialisée");
@@ -146,7 +150,22 @@ export class ChessAI {
     const fen = this.piecesToFENForColor(pieces, "black", enPassantTarget, halfMoveClock);
     this.isSearching = true;
     this.stockfish.postMessage(`position fen ${fen}`);
-    this.stockfish.postMessage(`go movetime ${this.movetime}`);
+
+    let goCmd = `go movetime ${this.movetime}`;
+    if (options?.depth !== undefined) {
+      const smStr =
+        options.searchMoves && options.searchMoves.length > 0
+          ? ` searchmoves ${options.searchMoves
+              .map(
+                (m) =>
+                  this.positionToAlgebraic(m.from) +
+                  this.positionToAlgebraic(m.to),
+              )
+              .join(" ")}`
+          : "";
+      goCmd = `go depth ${options.depth}${smStr}`;
+    }
+    this.stockfish.postMessage(goCmd);
 
     return new Promise((resolve, reject) => {
       const resolver = (move: {
@@ -232,7 +251,7 @@ export class ChessAI {
     return { x: file, y: rank };
   }
 
-  private positionToAlgebraic(pos: Position): string {
+  protected positionToAlgebraic(pos: Position): string {
     const file = String.fromCharCode(pos.x + 97);
     const rank = 8 - pos.y;
     return `${file}${rank}`;

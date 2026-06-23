@@ -24,6 +24,7 @@ export interface GameRecord {
   hintsFollowedInGame?: number; // hint suggestions followed during the game
   language?: string; // UI language when the game was played
   assistanceUsedDuringGame?: boolean; // any assistance option was active at any point
+  zombieHordeWon?: boolean; // player cleared all 10 zombie waves
 }
 
 export interface ChessverseStats {
@@ -82,6 +83,9 @@ export interface ChessverseStats {
 
   // Magnus Carlsen badge
   beatMaxAINoAssist: number; // times the player beat AI level 20 without any assistance
+
+  // Zombie Horde mode
+  zombieHordeWins: number; // times the player cleared all 10 zombie waves
 }
 
 // ── Constants ─────────────────────────────────────────────────────────────────
@@ -123,6 +127,7 @@ const DEFAULT_STATS: ChessverseStats = {
   coliseumGames: 0,
   coliseumWins: 0,
   beatMaxAINoAssist: 0,
+  zombieHordeWins: 0,
 };
 
 // ── ELO rank system ───────────────────────────────────────────────────────────
@@ -438,6 +443,14 @@ export const BADGES: Badge[] = [
       target: 42,
     }),
   },
+  // ── Zombie Horde ──────────────────────────────────────────────────────────
+  {
+    id: "i_am_legend",
+    i18nKey: "profile.badges.iAmLegend",
+    icon: "🧟",
+    isUnlocked: (s) => s.zombieHordeWins >= 1,
+    progress: (s) => ({ current: Math.min(s.zombieHordeWins, 1), target: 1 }),
+  },
 ];
 
 // ── Service ───────────────────────────────────────────────────────────────────
@@ -581,6 +594,7 @@ export function recordGame(game: GameRecord): void {
   ) {
     stats.beatMaxAINoAssist += 1;
   }
+  if (game.zombieHordeWon) stats.zombieHordeWins += 1;
 
   // ── Day streak ──
   if (stats.lastPlayedDate !== today) {

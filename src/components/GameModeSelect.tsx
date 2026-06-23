@@ -10,6 +10,8 @@ interface GameModeSelectProps {
   onSelect: (mode: GameMode) => void;
   /** Optional extra breadcrumb items appended after the play-type crumb */
   extraCrumbs?: Crumb[];
+  /** Optional filter to exclude specific modes (e.g., P2P-incompatible modes) */
+  filterModes?: (mode: GameMode) => boolean;
 }
 
 const PLAY_TYPE_CONFIG = {
@@ -21,6 +23,7 @@ export default function GameModeSelect({
   playType,
   onSelect,
   extraCrumbs,
+  filterModes,
 }: GameModeSelectProps) {
   const { t } = useTranslation();
   const { ring } = PLAY_TYPE_CONFIG[playType];
@@ -43,7 +46,7 @@ export default function GameModeSelect({
         </h1>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {gameModes.map((mode) => (
+          {gameModes.filter((mode) => !filterModes || filterModes(mode)).map((mode) => (
             <div
               key={mode.id}
               onClick={() => onSelect(mode)}

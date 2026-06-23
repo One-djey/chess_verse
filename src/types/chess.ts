@@ -32,6 +32,7 @@ export interface GameMode {
     randomPieces?: boolean;
     assimilation?: boolean;
     coliseum?: boolean;
+    zombieHorde?: boolean;
   };
 }
 

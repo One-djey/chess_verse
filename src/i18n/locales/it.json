@@ -40,7 +40,20 @@
       "title": "Colosseo",
       "description": "Una scacchiera a forma organica diversa per ogni partita.",
       "localOnlyBanner": "Il Colosseo è solo locale. Nessun avversario IA in questa modalità."
+    },
+    "zombie-horde": {
+      "title": "Orda Zombie",
+      "description": "Sopravvivi a interminabili ondate di pezzi zombie. Uccidine quanti più puoi prima dello scacco matto!"
     }
+  },
+  "zombieHorde": {
+    "wave": "Ondata",
+    "zombiesKilled": "Zombie eliminati",
+    "hordeThinking": "L'orda si muove...",
+    "defeatTitle": "L'orda ti ha sopraffatto",
+    "victoryTitle": "Sono una leggenda!",
+    "wavesCleared": "Ondate superate",
+    "score": "Punteggio"
   },
   "p2p": {
     "joinGame": "Unisciti alla partita",
@@ -464,7 +477,9 @@
       "coward": "Codardo",
       "cowardDesc": "Arrendersi 10 volte",
       "assiduous": "Assiduo",
-      "assiduousDesc": "Giocare 7 giorni di fila"
+      "assiduousDesc": "Giocare 7 giorni di fila",
+      "iAmLegend": "Sono una leggenda",
+      "iAmLegendDesc": "Sopravvissuto a tutte le 10 ondate zombie e sconfitto l'orda finale"
     },
     "pieces": {
       "queen": "Regina",
