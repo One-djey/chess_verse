@@ -131,32 +131,42 @@ describe("handlePieceSelect", () => {
   });
 
   it("does nothing while zombies are thinking", async () => {
-    mockGetMoves.mockImplementation(pendingMoves);
+    // Move 1: default noMoves mock — first move has no pre-existing zombies so
+    // the zombie phase completes immediately even if the mock is pendingMoves.
+    // We let wave 1 spawn normally so zombies exist for move 2.
     const { result } = renderHook(() => useZombieHordeGame());
 
-    const whitePawn = result.current.state.pieces.find(
+    const ePawn = result.current.state.pieces.find(
       (p) => p.color === "white" && p.type === "pawn" && p.position.x === 4,
     );
+    act(() => { result.current.handlePieceSelect(ePawn!); });
+    await act(async () => { result.current.handleMove({ x: 4, y: 4 }); });
+    // Wave 1 now has spawned; zombies are on the board
+    expect(result.current.state.wave.currentWave).toBe(1);
 
-    act(() => {
-      result.current.handlePieceSelect(whitePawn!);
-    });
+    // Move 2: switch to pendingMoves so the zombie AI never resolves
+    mockGetMoves.mockImplementation(pendingMoves);
+
+    const dPawn = result.current.state.pieces.find(
+      (p) => p.color === "white" && p.type === "pawn" && p.position.x === 3,
+    );
+    act(() => { result.current.handlePieceSelect(dPawn!); });
 
     // await act drains microtasks: executeWhiteMove's setState({ isZombiesThinking: true })
     // is processed, but pendingMoves() never resolves so setState({ false }) never runs.
     await act(async () => {
-      result.current.handleMove({ x: 4, y: 4 });
+      result.current.handleMove({ x: 3, y: 4 });
     });
 
     // Zombie AI is pending; isZombiesThinking should be true
     expect(result.current.state.wave.isZombiesThinking).toBe(true);
 
     // Piece selection is blocked while thinking
-    const anotherPawn = result.current.state.pieces.find(
-      (p) => p.color === "white" && p.type === "pawn" && p.position.x === 3,
+    const cPawn = result.current.state.pieces.find(
+      (p) => p.color === "white" && p.type === "pawn" && p.position.x === 2,
     );
     act(() => {
-      result.current.handlePieceSelect(anotherPawn!);
+      result.current.handlePieceSelect(cPawn!);
     });
     expect(result.current.state.selectedPiece).toBeNull();
   });
@@ -343,3 +353,95 @@ describe("zombie phase completion", () => {
     expect(result.current.state.wave.isZombiesThinking).toBe(false);
   });
 });
+
+// ── Newly spawned pieces don't move on spawn turn ─────────────────────────────
+
+describe("newly spawned zombie pieces", () => {
+  it("do not move on the turn they are spawned (only pre-existing zombies move)", async () => {
+    // mockGetMoves resolves with an empty map (default), so we can track which
+    // zombies were passed to the pool. We intercept getMovesForAllZombies args.
+    const capturedZombieArgs: string[][] = [];
+    mockGetMoves.mockImplementation(
+      (_pieces: unknown, zombiePieces: { id: string }[]) => {
+        capturedZombieArgs.push(zombiePieces.map((z) => z.id));
+        return Promise.resolve(new Map());
+      },
+    );
+
+    const { result } = renderHook(() => useZombieHordeGame());
+
+    // First move: 0 existing zombies → wave 1 spawns. The newly spawned pieces
+    // must NOT appear in the getMovesForAllZombies call this turn.
+    const whitePawn = result.current.state.pieces.find(
+      (p) => p.color === "white" && p.type === "pawn" && p.position.x === 4,
+    );
+    act(() => {
+      result.current.handlePieceSelect(whitePawn!);
+    });
+    await act(async () => {
+      result.current.handleMove({ x: 4, y: 4 });
+    });
+
+    // Wave 1 spawned but the pool was called with 0 existing zombies (none before
+    // the spawn). So getMovesForAllZombies should have received an empty list
+    // — or not been called at all since existingZombies is empty.
+    if (capturedZombieArgs.length > 0) {
+      expect(capturedZombieArgs[0]).toHaveLength(0);
+    }
+
+    // The spawned black pieces should now be on the board
+    const blackPieces = result.current.state.pieces.filter((p) => p.color === "black");
+    expect(blackPieces.length).toBeGreaterThan(0);
+  });
+});
+
+// ── King capture triggers defeat ──────────────────────────────────────────────
+
+describe("king capture", () => {
+  it("sets gameOver=true and winner='zombie' if a zombie move captures the white king", async () => {
+    // Setup: first white move spawns wave 1 (existingZombies = 0 pre-spawn,
+    // so no zombies move on turn 1). After that, wave 1 zombies exist.
+    // On turn 2, the mock makes one zombie "teleport" to the king's square.
+    const { result } = renderHook(() => useZombieHordeGame());
+
+    // Turn 1: spawn wave 1
+    const ePawn = result.current.state.pieces.find(
+      (p) => p.color === "white" && p.type === "pawn" && p.position.x === 4,
+    );
+    act(() => { result.current.handlePieceSelect(ePawn!); });
+    await act(async () => { result.current.handleMove({ x: 4, y: 4 }); });
+    expect(result.current.state.wave.currentWave).toBe(1);
+
+    // Capture white king position after turn 1
+    const whiteKing = result.current.state.pieces.find(
+      (p) => p.color === "white" && p.type === "king",
+    )!;
+
+    // Turn 2 mock: first zombie moves to the white king's square (illegal but tests
+    // the defensive king-capture detection in runZombiePhase)
+    mockGetMoves.mockImplementation(
+      (_pieces: unknown, zombiePieces: { id: string; position: { x: number; y: number } }[]) => {
+        const moveMap = new Map<string, { from: { x: number; y: number }; to: { x: number; y: number } }>();
+        if (zombiePieces.length > 0) {
+          moveMap.set(zombiePieces[0].id, {
+            from: zombiePieces[0].position,
+            to: whiteKing.position,
+          });
+        }
+        return Promise.resolve(moveMap);
+      },
+    );
+
+    // Turn 2: d-pawn moves forward
+    const dPawn = result.current.state.pieces.find(
+      (p) => p.color === "white" && p.type === "pawn" && p.position.x === 3,
+    );
+    act(() => { result.current.handlePieceSelect(dPawn!); });
+    await act(async () => { result.current.handleMove({ x: 3, y: 4 }); });
+
+    // The zombie "captured" the king → game must be over
+    expect(result.current.state.gameOver).toBe(true);
+    expect(result.current.state.winner).toBe("zombie");
+  });
+});
+

@@ -209,11 +209,13 @@ export function useZombieHordeGame() {
   // ── Zombie AI phase (async) ──────────────────────────────────────────────────
 
   const runZombiePhase = useCallback(
-    async (pieces: Piece[], currentWave: number, zombiesKilled: number) => {
+    async (pieces: Piece[], currentWave: number, zombiesKilled: number, movableZombies?: Piece[]) => {
       const pool = poolRef.current;
       if (!pool) return;
 
-      const zombiePieces = pieces.filter((p) => p.color === "black");
+      // Only pieces that existed BEFORE this turn's spawn can move.
+      // Newly spawned pieces sit still for one full turn.
+      const zombiePieces = movableZombies ?? pieces.filter((p) => p.color === "black");
 
       if (zombiePieces.length === 0) {
         setState((prev) => ({
@@ -232,6 +234,23 @@ export function useZombieHordeGame() {
       }
 
       const piecesAfterZombies = applyZombieMoves(pieces, zombiePieces, moveMap);
+
+      // Defensive: if a zombie captured the white king directly, trigger defeat immediately.
+      // (In legal chess this shouldn't happen, but zombies compute moves independently.)
+      const whiteKingAlive = piecesAfterZombies.some(
+        (p) => p.color === "white" && p.type === "king",
+      );
+      if (!whiteKingAlive) {
+        setState((prev) => ({
+          ...prev,
+          pieces: piecesAfterZombies,
+          isCheck: false,
+          gameOver: true,
+          winner: "zombie",
+          wave: { ...prev.wave, currentWave, zombiesKilled, isZombiesThinking: false },
+        }));
+        return;
+      }
 
       const nowInCheck = isInCheck("white", piecesAfterZombies, CLASSIC_MODE);
       const hasLegal = hasLegalMoves(
@@ -325,6 +344,10 @@ export function useZombieHordeGame() {
         return;
       }
 
+      // Zombies that were already on the board before this turn's spawn can move.
+      // Newly spawned pieces will be excluded from the move phase this turn.
+      const existingZombies = newPieces.filter((p) => p.color === "black");
+
       // Spawn check
       let piecesAfterSpawn = newPieces;
       let nextWave = currentWave;
@@ -361,8 +384,8 @@ export function useZombieHordeGame() {
       setEnPassantTarget(newEnPassantTarget);
       setTotalZombiesSpawned(newTotalSpawned);
 
-      // Run zombie AI
-      await runZombiePhase(piecesAfterSpawn, nextWave, newZombiesKilled);
+      // Run zombie AI — only pre-existing zombies move, newly spawned ones stay still
+      await runZombiePhase(piecesAfterSpawn, nextWave, newZombiesKilled, existingZombies);
     },
     [runZombiePhase],
   );
