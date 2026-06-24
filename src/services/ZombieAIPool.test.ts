@@ -133,7 +133,9 @@ describe("getMovesForAllZombies", () => {
     expect(result.has("zh1")).toBe(true);
   });
 
-  it("omits pieces whose worker rejects (partial failure)", async () => {
+  it("uses getSmartFallbackMove when Stockfish rejects (partial failure)", async () => {
+    // When Stockfish returns (none) for pawn1, the fallback picks a legal move for it.
+    // pawn2 gets a normal bestmove response.
     const pool = readyPool(2);
     const pawn1 = makePiece("black", "pawn", 2, 1, { id: "zh0" });
     const pawn2 = makePiece("black", "pawn", 5, 1, { id: "zh1" });
@@ -142,12 +144,26 @@ describe("getMovesForAllZombies", () => {
     const movePromise = pool.getMovesForAllZombies(pieces, [pawn1, pawn2]);
 
     const [w0, w1] = MockWorker.instances;
-    emit(w0, "bestmove (none)"); // pawn1 fails
-    emit(w1, "bestmove f7f6");   // pawn2 succeeds
+    emit(w0, "bestmove (none)"); // pawn1: Stockfish fails → fallback used
+    emit(w1, "bestmove f7f6");   // pawn2: succeeds normally
 
     const result = await movePromise;
-    expect(result.has("zh0")).toBe(false); // failed
-    expect(result.has("zh1")).toBe(true);  // succeeded
+    // pawn1 gets a fallback move (it has legal destinations: c7c6 or c7c5)
+    expect(result.has("zh0")).toBe(true);
+    expect(result.get("zh0")?.from).toEqual({ x: 2, y: 1 });
+    // pawn2 gets its Stockfish move
+    expect(result.has("zh1")).toBe(true);
+  });
+
+  it("omits zombie from result when no legal moves and Stockfish fails", async () => {
+    // A pawn at y=7 (bottom of board) has no valid moves. The early-exit before
+    // calling Stockfish already handles this — result should be null/omitted.
+    const pool = readyPool(1);
+    const blockedPawn = makePiece("black", "pawn", 4, 7, { id: "zh-blocked" });
+    const pieces = [makePiece("white", "king", 0, 0), blockedPawn];
+
+    const result = await pool.getMovesForAllZombies(pieces, [blockedPawn]);
+    expect(result.has("zh-blocked")).toBe(false);
   });
 
   it("sends searchmoves in the go command for each zombie", async () => {

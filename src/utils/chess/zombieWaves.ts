@@ -71,6 +71,7 @@ export function shouldSpawnWave(
   activeZombies: number,
   playerMovesSinceLastSpawn: number,
 ): boolean {
+  if (wave > 10) return false;
   const { minActive, delayMoves } = getSpawnThreshold(wave);
   if (activeZombies < minActive) return true;
   return playerMovesSinceLastSpawn >= delayMoves;

@@ -2,6 +2,7 @@ import type { Piece, Position } from "../types/chess";
 import { ChessAI } from "./ChessAI";
 import { gameModes } from "../utils/gameModes";
 import { getValidMoves } from "../utils/chess/moves";
+import { getSmartFallbackMove } from "../utils/chess/aiFallback";
 
 const ZOMBIE_DEPTH = 3;
 
@@ -57,7 +58,15 @@ export class ZombieAIPool {
           depth: ZOMBIE_DEPTH,
         })
         .then((move) => ({ id: zombie.id, move }))
-        .catch(() => ({ id: zombie.id, move: null }));
+        .catch(() => {
+          // Stockfish can't evaluate positions without a black king (zombie horde).
+          // Fall back to getSmartFallbackMove scoped to this zombie only.
+          const fallback = getSmartFallbackMove(
+            [...pieces.filter((p) => p.color === "white"), zombie],
+            CLASSIC_MODE,
+          );
+          return { id: zombie.id, move: fallback };
+        });
     });
 
     const results = await Promise.allSettled(requests);

@@ -141,6 +141,17 @@ describe("shouldSpawnWave", () => {
     expect(shouldSpawnWave(10, 5, 1)).toBe(true);
     expect(shouldSpawnWave(10, 5, 0)).toBe(false);
   });
+
+  it("never spawns wave 11 or higher (hard cap at wave 10)", () => {
+    expect(shouldSpawnWave(11, 0, 0)).toBe(false);
+    expect(shouldSpawnWave(11, 0, 100)).toBe(false);
+    expect(shouldSpawnWave(15, 0, 0)).toBe(false);
+  });
+
+  it("wave 10 is still spawnable", () => {
+    // minActive=5 for wave 10: 0 active zombies → spawn
+    expect(shouldSpawnWave(10, 0, 0)).toBe(true);
+  });
 });
 
 // ── countActiveZombies ───────────────────────────────────────────────────────
