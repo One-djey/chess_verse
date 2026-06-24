@@ -74,6 +74,14 @@ vi.mock("./GameOver", () => ({
   ),
 }));
 
+vi.mock("../services/ChessAI", () => ({
+  ChessAI: vi.fn().mockImplementation(() => ({
+    ready: false,
+    getHintMove: vi.fn().mockRejectedValue(new Error("mock")),
+    destroy: vi.fn(),
+  })),
+}));
+
 // ── Setup ────────────────────────────────────────────────────────────────────
 
 afterEach(() => {
