@@ -38,9 +38,10 @@ import { useP2P } from "../hooks/useP2P";
 import { useChessGame, isAnyAssistanceActive } from "../hooks/useChessGame";
 import { useP2PGame } from "../hooks/useP2PGame";
 import { useSkin } from "../hooks/useSkin";
-import { useBoardSkinStyle } from "../hooks/useBoardSkinStyle";
 import { useBoardSkin } from "../hooks/useBoardSkin";
 import { getBoardSkinDef } from "../utils/boardSkin";
+import { BoardSkinContext } from "../context/BoardSkinContext";
+import type { BoardSkin } from "../utils/boardSkin";
 import { CampDecoration, SideCamp } from "./CampDecoration";
 import { recordGame } from "../services/statsService";
 import type { PlayType } from "../services/statsService";
@@ -1045,124 +1046,90 @@ export default function Game() {
     : t("modeSelect.local");
 
   const { layout, overlayOutside, sideMargin, boardSize } = useGameLayout();
-  const boardSkinStyle = useBoardSkinStyle();
-  const { boardSkin } = useBoardSkin();
-  const campSkinDef = getBoardSkinDef(boardSkin);
+  const { boardSkin, setBoardSkin } = useBoardSkin();
+  const forcedBoardSkin = gameModes.find((m) => m.id === modeId)?.forcedSkins
+    ?.board as BoardSkin | undefined;
+  const effectiveBoardSkin: BoardSkin =
+    forcedBoardSkin && boardSkin !== "default" ? forcedBoardSkin : boardSkin;
+  const effectiveBoardDef = getBoardSkinDef(effectiveBoardSkin);
+  const boardSkinStyle = effectiveBoardDef.ground
+    ? {
+        backgroundImage: `url(${effectiveBoardDef.ground})`,
+        backgroundRepeat: "repeat" as const,
+        backgroundSize: "1000px 1000px",
+      }
+    : {};
+  const campSkinDef = effectiveBoardDef;
   // When camp decorations are present, always use CampDecoration (flex flow) so the camps
   // extend naturally toward screen edges — the "side" layout constrains them to sideMargin.
   const hasCamps = !!(campSkinDef.campTop || campSkinDef.campBottom);
 
   return (
-    <div
-      className={`h-screen overflow-hidden flex flex-col ${boardSkinStyle.backgroundImage ? "" : "bg-gray-100"}`}
-      style={boardSkinStyle}
+    <BoardSkinContext.Provider
+      value={{ boardSkin: effectiveBoardSkin, setBoardSkin }}
     >
-      <NavBar
-        breadcrumbs={[
-          { label: playTypeLabel, path: p2p.isP2PMode ? "/p2p" : "/local" },
-          { label: t(`modes.${chess.gameState.gameMode.id}.title`) },
-        ]}
-        onSurrender={!chess.gameState.gameOver ? handleResign : undefined}
-        onShowResult={
-          chess.gameState.gameOver && !gameOverVisible
-            ? () => setGameOverVisible(true)
-            : undefined
-        }
-        gameSettings={!p2p.isP2PMode ? chess.settings : null}
-        onGameSettingsChange={
-          !p2p.isP2PMode ? chess.handleSettingsChange : undefined
-        }
-        gameMode={modeId}
-      />
-
-      {p2p.isP2PMode && (
-        <P2PStatusBar
-          connectionState={p2p.connectionState}
-          playerColor={p2p.playerColor}
-          currentTurn={chess.gameState.currentTurn}
-          onLeave={handleLeaveP2P}
+      <div
+        className={`h-screen overflow-hidden flex flex-col ${boardSkinStyle.backgroundImage ? "" : "bg-gray-100"}`}
+        style={boardSkinStyle}
+      >
+        <NavBar
+          breadcrumbs={[
+            { label: playTypeLabel, path: p2p.isP2PMode ? "/p2p" : "/local" },
+            { label: t(`modes.${chess.gameState.gameMode.id}.title`) },
+          ]}
+          onSurrender={!chess.gameState.gameOver ? handleResign : undefined}
+          onShowResult={
+            chess.gameState.gameOver && !gameOverVisible
+              ? () => setGameOverVisible(true)
+              : undefined
+          }
+          gameSettings={!p2p.isP2PMode ? chess.settings : null}
+          onGameSettingsChange={
+            !p2p.isP2PMode ? chess.handleSettingsChange : undefined
+          }
+          gameMode={modeId}
         />
-      )}
 
-      {layout === "side" && !hasCamps ? (
-        <div
-          className="flex-1 flex flex-row items-center p-2 sm:p-4 min-h-0 relative"
-          style={{ isolation: "isolate" }}
-        >
-          {campSkinDef.campBottom && (
-            <SideCamp
-              src={campSkinDef.campBottom}
-              angle={90}
-              side="left"
-              width={sideMargin}
-              zoneHeight={boardSize}
-            />
-          )}
-          {campSkinDef.campTop && (
-            <SideCamp
-              src={campSkinDef.campTop}
-              angle={-90}
-              side="right"
-              width={sideMargin}
-              zoneHeight={boardSize}
-            />
-          )}
-          {/* Left panel — PromotionPicker */}
-          <div className="flex-1 flex flex-col items-center justify-start pt-3 min-w-0">
-            {chess.pendingPromotion && (
-              <PromotionPicker
-                color={chess.pendingPromotion.piece.color}
-                onSelect={confirmPromotion}
+        {p2p.isP2PMode && (
+          <P2PStatusBar
+            connectionState={p2p.connectionState}
+            playerColor={p2p.playerColor}
+            currentTurn={chess.gameState.currentTurn}
+            onLeave={handleLeaveP2P}
+          />
+        )}
+
+        {layout === "side" && !hasCamps ? (
+          <div
+            className="flex-1 flex flex-row items-center p-2 sm:p-4 min-h-0 relative"
+            style={{ isolation: "isolate" }}
+          >
+            {campSkinDef.campBottom && (
+              <SideCamp
+                src={campSkinDef.campBottom}
+                angle={90}
+                side="left"
+                width={sideMargin}
+                zoneHeight={boardSize}
               />
             )}
-          </div>
-
-          <ChessBoard
-            pieces={chess.gameState.pieces}
-            currentTurn={chess.gameState.currentTurn}
-            selectedPiece={chess.gameState.selectedPiece}
-            validMoves={chess.gameState.validMoves}
-            isCheck={chess.gameState.isCheck}
-            onPieceSelect={handlePieceSelect}
-            onMove={handleMove}
-            gameMode={chess.gameState.gameMode}
-            lockedColor={lockedColor}
-            flipped={boardFlipped}
-            rotateBlackPieces={rotatePieces}
-            movablePieceIds={movablePieceIds}
-            endangeredPieceIds={endangeredPieceIds}
-            hintMove={hintMove}
-            dangerousValidMoves={dangerousValidMoves}
-            skin={effectiveSkin}
-            peerSkin={p2p.peerSkin ?? undefined}
-          />
-
-          {/* Right panel — GameLabels */}
-          <div className="flex-1 flex flex-col items-center justify-start pt-3 min-w-0">
-            <GameLabels items={gameLabels} onDismiss={dismissLabel} />
-          </div>
-        </div>
-      ) : overlayOutside ? (
-        <div className="flex-1 overflow-hidden flex flex-col">
-          <CampDecoration
-            campTop={campSkinDef.campTop}
-            campBottom={campSkinDef.campBottom}
-          >
-            {/* Zero-height overlay: PromotionPicker floats above the board without shifting it */}
-            <div style={{ height: 0, overflow: "visible", width: "100%" }}>
-              <div
-                style={{
-                  transform: "translateY(-100%) translateY(-12px)",
-                  pointerEvents: chess.pendingPromotion ? "auto" : "none",
-                }}
-              >
-                {chess.pendingPromotion && (
-                  <PromotionPicker
-                    color={chess.pendingPromotion.piece.color}
-                    onSelect={confirmPromotion}
-                  />
-                )}
-              </div>
+            {campSkinDef.campTop && (
+              <SideCamp
+                src={campSkinDef.campTop}
+                angle={-90}
+                side="right"
+                width={sideMargin}
+                zoneHeight={boardSize}
+              />
+            )}
+            {/* Left panel — PromotionPicker */}
+            <div className="flex-1 flex flex-col items-center justify-start pt-3 min-w-0">
+              {chess.pendingPromotion && (
+                <PromotionPicker
+                  color={chess.pendingPromotion.piece.color}
+                  onSelect={confirmPromotion}
+                />
+              )}
             </div>
 
             <ChessBoard
@@ -1185,29 +1152,32 @@ export default function Game() {
               peerSkin={p2p.peerSkin ?? undefined}
             />
 
-            {/* Zero-height overlay: labels float below the board without shifting it */}
-            <div style={{ height: 0, overflow: "visible", width: "100%" }}>
-              <div style={{ paddingTop: "12px" }}>
-                <GameLabels items={gameLabels} onDismiss={dismissLabel} />
-              </div>
+            {/* Right panel — GameLabels */}
+            <div className="flex-1 flex flex-col items-center justify-start pt-3 min-w-0">
+              <GameLabels items={gameLabels} onDismiss={dismissLabel} />
             </div>
-          </CampDecoration>
-        </div>
-      ) : (
-        /* Gray zone: not enough top/bottom margin — overlays render inside the board */
-        <div className="flex-1 overflow-hidden flex flex-col">
-          <CampDecoration
-            campTop={campSkinDef.campTop}
-            campBottom={campSkinDef.campBottom}
-          >
-            <div className="relative">
-              <div className="absolute inset-x-0 top-0 z-[60] flex justify-center">
-                {chess.pendingPromotion && (
-                  <PromotionPicker
-                    color={chess.pendingPromotion.piece.color}
-                    onSelect={confirmPromotion}
-                  />
-                )}
+          </div>
+        ) : overlayOutside ? (
+          <div className="flex-1 overflow-hidden flex flex-col">
+            <CampDecoration
+              campTop={campSkinDef.campTop}
+              campBottom={campSkinDef.campBottom}
+            >
+              {/* Zero-height overlay: PromotionPicker floats above the board without shifting it */}
+              <div style={{ height: 0, overflow: "visible", width: "100%" }}>
+                <div
+                  style={{
+                    transform: "translateY(-100%) translateY(-12px)",
+                    pointerEvents: chess.pendingPromotion ? "auto" : "none",
+                  }}
+                >
+                  {chess.pendingPromotion && (
+                    <PromotionPicker
+                      color={chess.pendingPromotion.piece.color}
+                      onSelect={confirmPromotion}
+                    />
+                  )}
+                </div>
               </div>
 
               <ChessBoard
@@ -1230,41 +1200,87 @@ export default function Game() {
                 peerSkin={p2p.peerSkin ?? undefined}
               />
 
-              <div className="absolute inset-x-0 bottom-0 z-[60]">
-                <GameLabels items={gameLabels} onDismiss={dismissLabel} />
+              {/* Zero-height overlay: labels float below the board without shifting it */}
+              <div style={{ height: 0, overflow: "visible", width: "100%" }}>
+                <div style={{ paddingTop: "12px" }}>
+                  <GameLabels items={gameLabels} onDismiss={dismissLabel} />
+                </div>
               </div>
-            </div>
-          </CampDecoration>
-        </div>
-      )}
+            </CampDecoration>
+          </div>
+        ) : (
+          /* Gray zone: not enough top/bottom margin — overlays render inside the board */
+          <div className="flex-1 overflow-hidden flex flex-col">
+            <CampDecoration
+              campTop={campSkinDef.campTop}
+              campBottom={campSkinDef.campBottom}
+            >
+              <div className="relative">
+                <div className="absolute inset-x-0 top-0 z-[60] flex justify-center">
+                  {chess.pendingPromotion && (
+                    <PromotionPicker
+                      color={chess.pendingPromotion.piece.color}
+                      onSelect={confirmPromotion}
+                    />
+                  )}
+                </div>
 
-      {chess.gameState.gameOver && gameOverVisible && (
-        <GameOver
-          winner={chess.gameState.winner}
-          drawReason={chess.gameState.drawReason}
-          surrenderedBy={chess.gameState.surrenderedBy}
-          duration={frozenDuration}
-          moveCount={
-            chess.gameState.winner
-              ? chess.gameState.moveCount[chess.gameState.winner]
-              : chess.gameState.moveCount.white +
-                chess.gameState.moveCount.black
-          }
-          onReplay={chess.handleReplay}
-          aiEnabled={chess.aiEnabled}
-          aiDifficulty={chess.settings.aiDifficulty}
-          isP2PMode={p2p.isP2PMode}
-          playerColor={p2p.playerColor}
-          rematchState={p2pGame.rematchState}
-          peerLeft={p2pGame.peerLeft}
-          onRematch={p2pGame.handleRematch}
-          onAcceptRematch={p2pGame.handleAcceptRematch}
-          onDeclineRematch={p2pGame.handleDeclineRematch}
-          onMainMenu={p2p.isP2PMode ? handleLeaveP2P : undefined}
-          returnPath={returnPath}
-          onDismiss={() => setGameOverVisible(false)}
-        />
-      )}
-    </div>
+                <ChessBoard
+                  pieces={chess.gameState.pieces}
+                  currentTurn={chess.gameState.currentTurn}
+                  selectedPiece={chess.gameState.selectedPiece}
+                  validMoves={chess.gameState.validMoves}
+                  isCheck={chess.gameState.isCheck}
+                  onPieceSelect={handlePieceSelect}
+                  onMove={handleMove}
+                  gameMode={chess.gameState.gameMode}
+                  lockedColor={lockedColor}
+                  flipped={boardFlipped}
+                  rotateBlackPieces={rotatePieces}
+                  movablePieceIds={movablePieceIds}
+                  endangeredPieceIds={endangeredPieceIds}
+                  hintMove={hintMove}
+                  dangerousValidMoves={dangerousValidMoves}
+                  skin={effectiveSkin}
+                  peerSkin={p2p.peerSkin ?? undefined}
+                />
+
+                <div className="absolute inset-x-0 bottom-0 z-[60]">
+                  <GameLabels items={gameLabels} onDismiss={dismissLabel} />
+                </div>
+              </div>
+            </CampDecoration>
+          </div>
+        )}
+
+        {chess.gameState.gameOver && gameOverVisible && (
+          <GameOver
+            winner={chess.gameState.winner}
+            drawReason={chess.gameState.drawReason}
+            surrenderedBy={chess.gameState.surrenderedBy}
+            duration={frozenDuration}
+            moveCount={
+              chess.gameState.winner
+                ? chess.gameState.moveCount[chess.gameState.winner]
+                : chess.gameState.moveCount.white +
+                  chess.gameState.moveCount.black
+            }
+            onReplay={chess.handleReplay}
+            aiEnabled={chess.aiEnabled}
+            aiDifficulty={chess.settings.aiDifficulty}
+            isP2PMode={p2p.isP2PMode}
+            playerColor={p2p.playerColor}
+            rematchState={p2pGame.rematchState}
+            peerLeft={p2pGame.peerLeft}
+            onRematch={p2pGame.handleRematch}
+            onAcceptRematch={p2pGame.handleAcceptRematch}
+            onDeclineRematch={p2pGame.handleDeclineRematch}
+            onMainMenu={p2p.isP2PMode ? handleLeaveP2P : undefined}
+            returnPath={returnPath}
+            onDismiss={() => setGameOverVisible(false)}
+          />
+        )}
+      </div>
+    </BoardSkinContext.Provider>
   );
 }
