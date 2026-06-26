@@ -1,4 +1,4 @@
-export type BoardSkin = "default" | "royal-arena" | "zombie";
+export type BoardSkin = "default" | "royal-arena" | "apocalypse";
 
 export interface BoardSkinDef {
   id: BoardSkin;
@@ -35,7 +35,7 @@ export const BOARD_SKINS: BoardSkinDef[] = [
     campBottom: "/ressources/board/royal-arena/camp-bottom-left.png",
   },
   {
-    id: "zombie",
+    id: "apocalypse",
     lightSquare: "/ressources/board/zombie/light_square.png",
     darkSquare: "/ressources/board/zombie/dark_square.png",
     border: "/ressources/board/zombie/border.png",

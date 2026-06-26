@@ -38,6 +38,7 @@ export const gameModes: GameMode[] = [
     description: "Battle on a unique procedurally-generated arena.",
     image: "/ressources/modes/coliseum.webp",
     rules: { coliseum: true },
+    forcedSkins: { pieces: "fantasy", board: "royal-arena" },
   },
   {
     id: "zombie-horde",
@@ -46,5 +47,6 @@ export const gameModes: GameMode[] = [
       "Survive endless waves of zombie pieces. Kill as many as you can before checkmate!",
     image: "/ressources/modes/zombie-horde.webp",
     rules: { zombieHorde: true },
+    forcedSkins: { pieces: "zombie", board: "apocalypse" },
   },
 ];

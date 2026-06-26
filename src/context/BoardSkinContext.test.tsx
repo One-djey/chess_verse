@@ -42,6 +42,13 @@ describe("BoardSkinProvider — initial value", () => {
     expect(result.current.boardSkin).toBe("default");
   });
 
+  it("migrates legacy 'zombie' board skin to 'apocalypse' on mount", () => {
+    localStorage.setItem(STORAGE_KEY, "zombie");
+    const { result } = renderBoardSkin();
+    expect(result.current.boardSkin).toBe("apocalypse");
+    expect(localStorage.getItem(STORAGE_KEY)).toBe("apocalypse");
+  });
+
   it("falls back to 'default' when an empty string is stored (BUG-014 fixed)", () => {
     localStorage.setItem(STORAGE_KEY, "");
     const { result } = renderBoardSkin();

@@ -10,10 +10,10 @@ import GameLabels, { type GameLabelItem } from "./GameLabels";
 import { useColiseumGame } from "../hooks/useColiseumGame";
 import { useColiseumP2PGame } from "../hooks/useColiseumP2PGame";
 import { useP2P } from "../hooks/useP2P";
-import { useSkin } from "../hooks/useSkin";
 import { useBoardSkinStyle } from "../hooks/useBoardSkinStyle";
 import { useBoardSkin } from "../hooks/useBoardSkin";
 import { getBoardSkinDef } from "../utils/boardSkin";
+import { BoardSkinContext } from "../context/BoardSkinContext";
 import { CampDecoration } from "./CampDecoration";
 import {
   getColiseumLegalMoves,
@@ -74,7 +74,6 @@ function ColiseumUI({
   onDeclineRematch,
 }: ColiseumUIProps) {
   const { t } = useTranslation();
-  const { skin } = useSkin();
   const [gameOverVisible, setGameOverVisible] = useState(true);
   const [bannerDismissed, setBannerDismissed] = useState(false);
   const [settings, setSettings] = useState<LocalSettings>(() => {
@@ -334,7 +333,7 @@ function ColiseumUI({
               onPieceSelect={wrappedHandlePieceSelect}
               onMove={handleMove}
               onDeselect={handleDeselect}
-              skin={skin}
+              skin="fantasy"
               endangeredPieceIds={
                 settings.showDangerIndicator ? endangeredPieceIds : undefined
               }
@@ -453,7 +452,13 @@ function ColiseumGameP2P({
     handleRematch,
     handleAcceptRematch,
     handleDeclineRematch,
-  } = useColiseumP2PGame({ arena, role, playerColor, actions, connectionState });
+  } = useColiseumP2PGame({
+    arena,
+    role,
+    playerColor,
+    actions,
+    connectionState,
+  });
 
   const handleLeave = () => {
     leaveRoom();
@@ -491,25 +496,35 @@ export default function ColiseumGame() {
   const { t } = useTranslation();
   const { isP2PMode, role, playerColor, actions, initialArena } = useP2P();
 
+  let content: React.ReactNode;
   if (isP2PMode && role) {
     if (!initialArena) {
-      return (
+      content = (
         <div className="h-screen flex items-center justify-center bg-gray-100">
           <p className="text-gray-500 text-lg animate-pulse font-medium">
             {t("coliseum.generating", "Generating arena…")}
           </p>
         </div>
       );
+    } else {
+      content = (
+        <ColiseumGameP2P
+          arena={initialArena}
+          role={role}
+          playerColor={playerColor}
+          actions={actions}
+        />
+      );
     }
-    return (
-      <ColiseumGameP2P
-        arena={initialArena}
-        role={role}
-        playerColor={playerColor}
-        actions={actions}
-      />
-    );
+  } else {
+    content = <ColiseumGameLocal />;
   }
 
-  return <ColiseumGameLocal />;
+  return (
+    <BoardSkinContext.Provider
+      value={{ boardSkin: "royal-arena", setBoardSkin: () => {} }}
+    >
+      {content}
+    </BoardSkinContext.Provider>
+  );
 }

@@ -15,6 +15,7 @@ import { useSkin } from "../hooks/useSkin";
 import { SKINS, getPieceImageSrc } from "../utils/pieceImage";
 import { useBoardSkin } from "../hooks/useBoardSkin";
 import { BOARD_SKINS } from "../utils/boardSkin";
+import { gameModes } from "../utils/gameModes";
 import FeedbackModal from "./FeedbackModal";
 import type { LocalSettings } from "../hooks/useChessGame";
 import { recordCoffeeDonation } from "../services/statsService";
@@ -172,6 +173,15 @@ export default function GameSettings({
   const { skin, setSkin } = useSkin();
   const { boardSkin, setBoardSkin } = useBoardSkin();
   const isColiseum = gameMode === "coliseum";
+  const forcedSkins = gameModes.find((m) => m.id === gameMode)?.forcedSkins;
+  const visiblePieceSkins = forcedSkins
+    ? SKINS.filter((s) => s.id === "classic" || s.id === forcedSkins.pieces)
+    : SKINS;
+  const visibleBoardSkins = forcedSkins
+    ? BOARD_SKINS.filter(
+        (s) => s.id === "default" || s.id === forcedSkins.board,
+      )
+    : BOARD_SKINS;
   // feedbackOpen lives outside the isOpen guard so it survives Settings closing
   const [feedbackOpen, setFeedbackOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<Tab>(
@@ -376,7 +386,7 @@ export default function GameSettings({
                       {t("gameSettings.pieceAppearance")}
                     </SectionLabel>
                     <div className="grid grid-cols-2 gap-3">
-                      {SKINS.map((s) => (
+                      {visiblePieceSkins.map((s) => (
                         <button
                           key={s.id}
                           onClick={() => setSkin(s.id)}
@@ -422,7 +432,7 @@ export default function GameSettings({
                       {t("gameSettings.boardAppearance")}
                     </SectionLabel>
                     <div className="grid grid-cols-2 gap-3">
-                      {BOARD_SKINS.map((bs) => (
+                      {visibleBoardSkins.map((bs) => (
                         <button
                           key={bs.id}
                           onClick={() => setBoardSkin(bs.id)}

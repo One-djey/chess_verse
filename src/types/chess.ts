@@ -34,6 +34,11 @@ export interface GameMode {
     coliseum?: boolean;
     zombieHorde?: boolean;
   };
+  /** Piece and board skins automatically applied when playing this mode. */
+  forcedSkins?: {
+    pieces: string;
+    board: string;
+  };
 }
 
 /** A record of a single move, appended after each half-move. */

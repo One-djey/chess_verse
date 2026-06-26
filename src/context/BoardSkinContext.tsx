@@ -16,6 +16,10 @@ export const BoardSkinContext = createContext<BoardSkinContextValue | null>(
 export function BoardSkinProvider({ children }: { children: ReactNode }) {
   const [boardSkin, setBoardSkinState] = useState<BoardSkin>(() => {
     try {
+      // Migrate legacy value from before the rename.
+      if (localStorage.getItem(STORAGE_KEY) === "zombie") {
+        localStorage.setItem(STORAGE_KEY, "apocalypse");
+      }
       // BUG-014: validate against known skins — an arbitrary stored value
       // would silently break the board rendering.
       const saved = localStorage.getItem(STORAGE_KEY);

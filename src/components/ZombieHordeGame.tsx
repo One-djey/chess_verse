@@ -21,7 +21,7 @@ import { BoardSkinContext } from "../context/BoardSkinContext";
 import { getBoardSkinDef } from "../utils/boardSkin";
 import type { GameMode, Piece, PieceType, Position } from "../types/chess";
 
-const _zombieBoardDef = getBoardSkinDef("zombie");
+const _zombieBoardDef = getBoardSkinDef("apocalypse");
 const ZOMBIE_BOARD_STYLE: CSSProperties = _zombieBoardDef.ground
   ? {
       backgroundImage: `url(${_zombieBoardDef.ground})`,
@@ -462,7 +462,7 @@ export default function ZombieHordeGame() {
 
   return (
     <BoardSkinContext.Provider
-      value={{ boardSkin: "zombie", setBoardSkin: () => {} }}
+      value={{ boardSkin: "apocalypse", setBoardSkin: () => {} }}
     >
       <div
         className={`h-screen overflow-hidden flex flex-col ${ZOMBIE_BOARD_STYLE.backgroundImage ? "" : "bg-gray-100"}`}

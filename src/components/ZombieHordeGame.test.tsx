@@ -26,7 +26,12 @@ vi.mock("../hooks/useZombieHordeGame", () => ({
       isCheck: false,
       gameOver: false,
       winner: null,
-      wave: { currentWave: 1, zombiesKilled: 0, playerMovesSinceLastSpawn: 0, isZombiesThinking: false },
+      wave: {
+        currentWave: 1,
+        zombiesKilled: 0,
+        playerMovesSinceLastSpawn: 0,
+        isZombiesThinking: false,
+      },
       pendingPromotion: null,
       startTime: Date.now(),
       firstMoveTime: null,
@@ -55,11 +60,17 @@ vi.mock("../hooks/useBoardSkin", () => ({
 }));
 
 vi.mock("./ChessBoard", () => ({
-  default: () => <div data-testid="chess-board" />,
+  default: ({ skin }: { skin?: string }) => (
+    <div data-testid="chess-board" data-skin={skin} />
+  ),
 }));
 
 vi.mock("./NavBar", () => ({
-  default: ({ breadcrumbs }: { breadcrumbs: { label: string; path?: string }[] }) => (
+  default: ({
+    breadcrumbs,
+  }: {
+    breadcrumbs: { label: string; path?: string }[];
+  }) => (
     <nav data-testid="navbar">
       {breadcrumbs.map((b) => (
         <span key={b.label}>{b.label}</span>
@@ -122,6 +133,14 @@ describe("ZombieHordeGame — smoke tests", () => {
     renderGame();
     expect(screen.queryByTestId("game-over")).not.toBeInTheDocument();
   });
+
+  it('forces the zombie piece skin on the board ("apocalypse" rename)', () => {
+    renderGame();
+    expect(screen.getByTestId("chess-board")).toHaveAttribute(
+      "data-skin",
+      "zombie",
+    );
+  });
 });
 
 describe("ZombieHordeGame — game over states", () => {
@@ -135,7 +154,12 @@ describe("ZombieHordeGame — game over states", () => {
           isCheck: true,
           gameOver: true,
           winner: "zombie",
-          wave: { currentWave: 3, zombiesKilled: 5, playerMovesSinceLastSpawn: 0, isZombiesThinking: false },
+          wave: {
+            currentWave: 3,
+            zombiesKilled: 5,
+            playerMovesSinceLastSpawn: 0,
+            isZombiesThinking: false,
+          },
           pendingPromotion: null,
           startTime: Date.now(),
           firstMoveTime: Date.now() - 60000,
