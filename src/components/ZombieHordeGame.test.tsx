@@ -47,8 +47,9 @@ vi.mock("../hooks/useZombieHordeGame", () => ({
   }),
 }));
 
+let mockSkin = "classic";
 vi.mock("../hooks/useSkin", () => ({
-  useSkin: () => ({ skin: "classic", setSkin: vi.fn() }),
+  useSkin: () => ({ skin: mockSkin, setSkin: vi.fn() }),
 }));
 
 vi.mock("../hooks/useBoardSkinStyle", () => ({
@@ -134,12 +135,23 @@ describe("ZombieHordeGame — smoke tests", () => {
     expect(screen.queryByTestId("game-over")).not.toBeInTheDocument();
   });
 
-  it('forces the zombie piece skin on the board ("apocalypse" rename)', () => {
+  it("uses classic skin when user has classic selected (accessibility override)", () => {
+    // useSkin mock returns "classic" by default (see top-level mock)
+    renderGame();
+    expect(screen.getByTestId("chess-board")).toHaveAttribute(
+      "data-skin",
+      "classic",
+    );
+  });
+
+  it("forces zombie skin when user has a non-classic skin", () => {
+    mockSkin = "fantasy";
     renderGame();
     expect(screen.getByTestId("chess-board")).toHaveAttribute(
       "data-skin",
       "zombie",
     );
+    mockSkin = "classic";
   });
 });
 

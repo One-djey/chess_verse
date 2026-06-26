@@ -20,6 +20,7 @@ import { ChessAI } from "../services/ChessAI";
 import { BoardSkinContext } from "../context/BoardSkinContext";
 import { getBoardSkinDef } from "../utils/boardSkin";
 import type { GameMode, Piece, PieceType, Position } from "../types/chess";
+import { useSkin } from "../hooks/useSkin";
 
 const _zombieBoardDef = getBoardSkinDef("apocalypse");
 const ZOMBIE_BOARD_STYLE: CSSProperties = _zombieBoardDef.ground
@@ -147,6 +148,8 @@ function WaveStatusBar({
 export default function ZombieHordeGame() {
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const { skin } = useSkin();
+  const effectiveSkin = skin === "classic" ? "classic" : "zombie";
 
   const {
     state,
@@ -516,7 +519,7 @@ export default function ZombieHordeGame() {
               onMove={handleMoveWithAnnotations}
               gameMode={CLASSIC_MODE}
               lockedColor="white"
-              skin="zombie"
+              skin={effectiveSkin}
               movablePieceIds={movablePieceIds}
               hintMove={settings.showHint ? hintMove : null}
               endangeredPieceIds={endangeredPieceIds}

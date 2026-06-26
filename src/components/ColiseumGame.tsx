@@ -12,6 +12,7 @@ import { useColiseumP2PGame } from "../hooks/useColiseumP2PGame";
 import { useP2P } from "../hooks/useP2P";
 import { useBoardSkinStyle } from "../hooks/useBoardSkinStyle";
 import { useBoardSkin } from "../hooks/useBoardSkin";
+import { useSkin } from "../hooks/useSkin";
 import { getBoardSkinDef } from "../utils/boardSkin";
 import { BoardSkinContext } from "../context/BoardSkinContext";
 import { CampDecoration } from "./CampDecoration";
@@ -74,6 +75,8 @@ function ColiseumUI({
   onDeclineRematch,
 }: ColiseumUIProps) {
   const { t } = useTranslation();
+  const { skin } = useSkin();
+  const effectiveSkin = skin === "classic" ? "classic" : "fantasy";
   const [gameOverVisible, setGameOverVisible] = useState(true);
   const [bannerDismissed, setBannerDismissed] = useState(false);
   const [settings, setSettings] = useState<LocalSettings>(() => {
@@ -333,7 +336,7 @@ function ColiseumUI({
               onPieceSelect={wrappedHandlePieceSelect}
               onMove={handleMove}
               onDeselect={handleDeselect}
-              skin="fantasy"
+              skin={effectiveSkin}
               endangeredPieceIds={
                 settings.showDangerIndicator ? endangeredPieceIds : undefined
               }

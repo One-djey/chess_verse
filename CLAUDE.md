@@ -128,6 +128,17 @@ Defined in `src/utils/pieceImage.ts`. Convention: `public/ressources/pieces/{ski
 - **To add a skin**: add images to `public/ressources/pieces/<id>/`, add entry to `SKINS` in `pieceImage.ts`, add `skins.<id>` key to all 8 locale files
 - **P2P sync**: host embeds `hostSkin` in `color_assign`; guest sends `guest_ready { skin }` before navigating — both players see their own skin on their pieces and the opponent's skin on opponent pieces
 
+### Forced skins per mode
+
+Modes with a strong visual identity declare `forcedSkins` in `gameModes.ts` (`{ pieces, board }`). Two rules apply:
+
+1. **Picker restriction** (`GameSettings.tsx`) — when `forcedSkins` is set, the skin picker only shows `classic` + the mode's forced skin (other skins like `fantasy` are hidden to preserve the mode's identity).
+2. **Effective skin at render time** — components compute `effectiveSkin`: if the user has `classic` selected it is always respected (accessibility override); any other stored skin falls back to the mode's forced skin.
+   - `ZombieHordeGame.tsx` / `ColiseumGame.tsx`: `effectiveSkin = skin === "classic" ? "classic" : "<mode-skin>"`
+   - `Game.tsx` (borderless, etc.): `effectiveSkin = forcedPieceSkin && skin !== "classic" ? forcedPieceSkin : skin`
+
+The board skin follows the same pattern via `BoardSkinContext` (separate localStorage key `chessverse_board_skin`).
+
 ## AI fallback system
 
 Stockfish operates on standard chess rules and can suggest illegal moves in special modes (borderless, assimilation). When this happens — or when all Stockfish retries have failed — `getSmartFallbackMove` (in `aiFallback.ts`) is called.
