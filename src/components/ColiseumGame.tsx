@@ -498,6 +498,9 @@ function ColiseumGameP2P({
 export default function ColiseumGame() {
   const { t } = useTranslation();
   const { isP2PMode, role, playerColor, actions, initialArena } = useP2P();
+  const { boardSkin, setBoardSkin } = useBoardSkin();
+  const effectiveBoardSkin =
+    boardSkin === "default" ? "default" : "royal-arena";
 
   let content: React.ReactNode;
   if (isP2PMode && role) {
@@ -525,7 +528,7 @@ export default function ColiseumGame() {
 
   return (
     <BoardSkinContext.Provider
-      value={{ boardSkin: "royal-arena", setBoardSkin: () => {} }}
+      value={{ boardSkin: effectiveBoardSkin, setBoardSkin }}
     >
       {content}
     </BoardSkinContext.Provider>

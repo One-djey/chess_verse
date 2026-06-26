@@ -19,6 +19,7 @@ import type { LocalSettings } from "../hooks/useChessGame";
 import { ChessAI } from "../services/ChessAI";
 import { BoardSkinContext } from "../context/BoardSkinContext";
 import { getBoardSkinDef } from "../utils/boardSkin";
+import { useBoardSkin } from "../hooks/useBoardSkin";
 import type { GameMode, Piece, PieceType, Position } from "../types/chess";
 import { useSkin } from "../hooks/useSkin";
 
@@ -150,6 +151,10 @@ export default function ZombieHordeGame() {
   const { t } = useTranslation();
   const { skin } = useSkin();
   const effectiveSkin = skin === "classic" ? "classic" : "zombie";
+  const { boardSkin, setBoardSkin } = useBoardSkin();
+  const effectiveBoardSkin = boardSkin === "default" ? "default" : "apocalypse";
+  const zombieBoardStyle =
+    effectiveBoardSkin === "apocalypse" ? ZOMBIE_BOARD_STYLE : {};
 
   const {
     state,
@@ -465,11 +470,11 @@ export default function ZombieHordeGame() {
 
   return (
     <BoardSkinContext.Provider
-      value={{ boardSkin: "apocalypse", setBoardSkin: () => {} }}
+      value={{ boardSkin: effectiveBoardSkin, setBoardSkin }}
     >
       <div
-        className={`h-screen overflow-hidden flex flex-col ${ZOMBIE_BOARD_STYLE.backgroundImage ? "" : "bg-gray-100"}`}
-        style={ZOMBIE_BOARD_STYLE}
+        className={`h-screen overflow-hidden flex flex-col ${zombieBoardStyle.backgroundImage ? "" : "bg-gray-100"}`}
+        style={zombieBoardStyle}
       >
         <NavBar
           breadcrumbs={breadcrumbs}

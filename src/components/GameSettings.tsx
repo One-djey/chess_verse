@@ -182,6 +182,13 @@ export default function GameSettings({
         (s) => s.id === "default" || s.id === forcedSkins.board,
       )
     : BOARD_SKINS;
+  // Checked skin = what's actually rendered, not the raw stored value.
+  // If stored value is neither "classic" nor the mode's forced skin,
+  // the forced skin is what the board displays — so highlight that card.
+  const checkedPieceSkin =
+    forcedSkins && skin !== "classic" ? forcedSkins.pieces : skin;
+  const checkedBoardSkin =
+    forcedSkins && boardSkin !== "default" ? forcedSkins.board : boardSkin;
   // feedbackOpen lives outside the isOpen guard so it survives Settings closing
   const [feedbackOpen, setFeedbackOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<Tab>(
@@ -391,7 +398,7 @@ export default function GameSettings({
                           key={s.id}
                           onClick={() => setSkin(s.id)}
                           className={`relative p-3 rounded-lg border-2 transition-all duration-200 text-left ${
-                            skin === s.id
+                            checkedPieceSkin === s.id
                               ? "border-blue-600 bg-blue-50"
                               : "border-gray-200 hover:border-gray-300"
                           }`}
@@ -410,12 +417,14 @@ export default function GameSettings({
                           </div>
                           <span
                             className={`text-sm font-medium ${
-                              skin === s.id ? "text-blue-700" : "text-gray-600"
+                              checkedPieceSkin === s.id
+                                ? "text-blue-700"
+                                : "text-gray-600"
                             }`}
                           >
                             {t(`skins.${s.id}`)}
                           </span>
-                          {skin === s.id && (
+                          {checkedPieceSkin === s.id && (
                             <Check
                               size={14}
                               className="absolute top-2 right-2 text-blue-600"
@@ -437,7 +446,7 @@ export default function GameSettings({
                           key={bs.id}
                           onClick={() => setBoardSkin(bs.id)}
                           className={`relative p-3 rounded-lg border-2 transition-all duration-200 text-left ${
-                            boardSkin === bs.id
+                            checkedBoardSkin === bs.id
                               ? "border-blue-600 bg-blue-50"
                               : "border-gray-200 hover:border-gray-300"
                           }`}
@@ -464,14 +473,14 @@ export default function GameSettings({
                           </div>
                           <span
                             className={`text-sm font-medium ${
-                              boardSkin === bs.id
+                              checkedBoardSkin === bs.id
                                 ? "text-blue-700"
                                 : "text-gray-600"
                             }`}
                           >
                             {t(`skins.board.${bs.id}`)}
                           </span>
-                          {boardSkin === bs.id && (
+                          {checkedBoardSkin === bs.id && (
                             <Check
                               size={14}
                               className="absolute top-2 right-2 text-blue-600"

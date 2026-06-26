@@ -1072,6 +1072,7 @@ export default function Game() {
         onGameSettingsChange={
           !p2p.isP2PMode ? chess.handleSettingsChange : undefined
         }
+        gameMode={modeId}
       />
 
       {p2p.isP2PMode && (
