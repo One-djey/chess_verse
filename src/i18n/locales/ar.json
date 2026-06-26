@@ -243,9 +243,11 @@
   "skins": {
     "classic": "كلاسيكي",
     "fantasy": "فانتازيا",
+    "zombie": "زومبي",
     "board": {
       "default": "افتراضي",
-      "royal-arena": "الساحة الملكية"
+      "royal-arena": "الساحة الملكية",
+      "zombie": "زومبي"
     }
   },
   "languages": {

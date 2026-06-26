@@ -243,9 +243,11 @@
   "skins": {
     "classic": "Classic",
     "fantasy": "Fantasy",
+    "zombie": "Zombie",
     "board": {
       "default": "Default",
-      "royal-arena": "Royal Arena"
+      "royal-arena": "Royal Arena",
+      "zombie": "Zombie"
     }
   },
   "languages": {
