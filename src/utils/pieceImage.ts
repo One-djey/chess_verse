@@ -1,8 +1,9 @@
-export type PieceSkin = "classic" | "fantasy";
+export type PieceSkin = "classic" | "fantasy" | "zombie";
 
 export const SKINS: { id: PieceSkin; label: string; ext: string }[] = [
   { id: "classic", label: "Classic", ext: "png" },
   { id: "fantasy", label: "Fantasy", ext: "webp" },
+  { id: "zombie", label: "Zombie", ext: "png" },
 ];
 
 export function getPieceImageSrc(

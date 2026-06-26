@@ -256,9 +256,11 @@
   "skins": {
     "classic": "クラシック",
     "fantasy": "ファンタジー",
+    "zombie": "ゾンビ",
     "board": {
       "default": "デフォルト",
-      "royal-arena": "ロイヤルアリーナ"
+      "royal-arena": "ロイヤルアリーナ",
+      "zombie": "ゾンビ"
     }
   },
   "languages": {

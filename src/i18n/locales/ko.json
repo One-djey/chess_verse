@@ -256,9 +256,11 @@
   "skins": {
     "classic": "클래식",
     "fantasy": "판타지",
+    "zombie": "좀비",
     "board": {
       "default": "기본",
-      "royal-arena": "로열 아레나"
+      "royal-arena": "로열 아레나",
+      "zombie": "좀비"
     }
   },
   "languages": {
