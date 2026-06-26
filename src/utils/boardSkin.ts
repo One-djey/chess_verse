@@ -1,4 +1,4 @@
-export type BoardSkin = "default" | "royal-arena" | "apocalypse";
+export type BoardSkin = "default" | "royal-arena" | "apocalypse" | "spaceship";
 
 export interface BoardSkinDef {
   id: BoardSkin;
@@ -41,6 +41,14 @@ export const BOARD_SKINS: BoardSkinDef[] = [
     border: "/ressources/board/zombie/border.png",
     borderInset: "10cqw",
     ground: "/ressources/board/zombie/ground.png",
+  },
+  {
+    id: "spaceship",
+    lightSquare: "/ressources/board/spaceship/light_square.png",
+    darkSquare: "/ressources/board/spaceship/dark_square.png",
+    border: "/ressources/board/spaceship/border.png",
+    borderInset: "10cqw",
+    ground: "/ressources/board/spaceship/ground.png",
   },
 ];
 

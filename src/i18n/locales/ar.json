@@ -260,8 +260,10 @@
     "board": {
       "default": "افتراضي",
       "royal-arena": "الساحة الملكية",
-      "apocalypse": "نهاية العالم"
-    }
+      "apocalypse": "نهاية العالم",
+      "spaceship": "Spaceship"
+    },
+    "robot": "Robot"
   },
   "languages": {
     "en": "English",

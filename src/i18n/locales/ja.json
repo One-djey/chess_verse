@@ -260,8 +260,10 @@
     "board": {
       "default": "デフォルト",
       "royal-arena": "ロイヤルアリーナ",
-      "apocalypse": "黙示録"
-    }
+      "apocalypse": "黙示録",
+      "spaceship": "Spaceship"
+    },
+    "robot": "Robot"
   },
   "languages": {
     "en": "English",

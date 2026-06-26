@@ -260,8 +260,10 @@
     "board": {
       "default": "默认",
       "royal-arena": "皇家竞技场",
-      "apocalypse": "启示录"
-    }
+      "apocalypse": "启示录",
+      "spaceship": "Spaceship"
+    },
+    "robot": "Robot"
   },
   "languages": {
     "en": "English",

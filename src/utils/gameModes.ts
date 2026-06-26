@@ -15,6 +15,7 @@ export const gameModes: GameMode[] = [
       "A borderless mode where pieces can cross the edges of the board.",
     image: "/ressources/modes/borderless.webp",
     rules: { borderless: true, randomPieces: false },
+    forcedSkins: { pieces: "robot", board: "spaceship" },
   },
   {
     id: "all-random",

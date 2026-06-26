@@ -260,8 +260,10 @@
     "board": {
       "default": "Predefinito",
       "royal-arena": "Arena Reale",
-      "apocalypse": "Apocalisse"
-    }
+      "apocalypse": "Apocalisse",
+      "spaceship": "Spaceship"
+    },
+    "robot": "Robot"
   },
   "languages": {
     "en": "English",
