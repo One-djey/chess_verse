@@ -40,7 +40,20 @@
       "title": "Coliseum",
       "description": "A new organic board shape every game. No two matches alike.",
       "localOnlyBanner": "Coliseum is pass-and-play only — no AI opponent available in this mode."
+    },
+    "zombie-horde": {
+      "title": "Zombie Horde",
+      "description": "Survive endless waves of zombie pieces. Kill as many as you can before checkmate!"
     }
+  },
+  "zombieHorde": {
+    "wave": "Wave",
+    "zombiesKilled": "Zombies killed",
+    "hordeThinking": "The horde is moving...",
+    "defeatTitle": "The horde overwhelmed you",
+    "victoryTitle": "I Am Legend!",
+    "wavesCleared": "Waves cleared",
+    "score": "Score"
   },
   "p2p": {
     "joinGame": "Join game",
@@ -466,7 +479,9 @@
       "coward": "Coward",
       "cowardDesc": "Surrender 10 times",
       "assiduous": "Assiduous",
-      "assiduousDesc": "Play 7 days in a row"
+      "assiduousDesc": "Play 7 days in a row",
+      "iAmLegend": "I Am Legend",
+      "iAmLegendDesc": "Survived all 10 zombie waves and defeated the final horde"
     },
     "pieces": {
       "queen": "Queen",

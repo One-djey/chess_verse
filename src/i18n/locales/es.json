@@ -40,7 +40,20 @@
       "title": "Coliseo",
       "description": "El tablero cambia de forma en cada partida. Ninguna igual a la anterior.",
       "localOnlyBanner": "El Coliseo es solo para juego local: sin IA disponible."
+    },
+    "zombie-horde": {
+      "title": "Horda Zombie",
+      "description": "Sobrevive a oleadas interminables de piezas zombie. ¡Mata tantas como puedas antes del jaque mate!"
     }
+  },
+  "zombieHorde": {
+    "wave": "Oleada",
+    "zombiesKilled": "Zombies eliminados",
+    "hordeThinking": "La horda se mueve...",
+    "defeatTitle": "La horda te aplastó",
+    "victoryTitle": "¡Soy una leyenda!",
+    "wavesCleared": "Oleadas superadas",
+    "score": "Puntuación"
   },
   "p2p": {
     "joinGame": "Unirse a la partida",
@@ -466,7 +479,9 @@
       "coward": "Cobarde",
       "cowardDesc": "Rendirse 10 veces",
       "assiduous": "Asiduo",
-      "assiduousDesc": "Jugar 7 días seguidos"
+      "assiduousDesc": "Jugar 7 días seguidos",
+      "iAmLegend": "Soy una leyenda",
+      "iAmLegendDesc": "Sobrevivió a las 10 oleadas zombie y derrotó a la horda final"
     },
     "pieces": {
       "queen": "Reina",

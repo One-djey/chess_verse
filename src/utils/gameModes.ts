@@ -39,4 +39,12 @@ export const gameModes: GameMode[] = [
     image: "/ressources/modes/coliseum.webp",
     rules: { coliseum: true },
   },
+  {
+    id: "zombie-horde",
+    title: "Zombie Horde",
+    description:
+      "Survive endless waves of zombie pieces. Kill as many as you can before checkmate!",
+    image: "/ressources/modes/zombie-horde.webp",
+    rules: { zombieHorde: true },
+  },
 ];
