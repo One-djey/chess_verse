@@ -130,14 +130,15 @@ Defined in `src/utils/pieceImage.ts`. Convention: `public/ressources/pieces/{ski
 
 ### Forced skins per mode
 
-Modes with a strong visual identity declare `forcedSkins` in `gameModes.ts` (`{ pieces, board }`). Two rules apply:
+Modes with a strong visual identity declare `forcedSkins` in `gameModes.ts` (`{ pieces, board }`). Three rules apply:
 
-1. **Picker restriction** (`GameSettings.tsx`) — when `forcedSkins` is set, the skin picker only shows `classic` + the mode's forced skin (other skins like `fantasy` are hidden to preserve the mode's identity).
-2. **Effective skin at render time** — components compute `effectiveSkin`: if the user has `classic` selected it is always respected (accessibility override); any other stored skin falls back to the mode's forced skin.
-   - `ZombieHordeGame.tsx` / `ColiseumGame.tsx`: `effectiveSkin = skin === "classic" ? "classic" : "<mode-skin>"`
-   - `Game.tsx` (borderless, etc.): `effectiveSkin = forcedPieceSkin && skin !== "classic" ? forcedPieceSkin : skin`
+1. **Picker restriction** (`GameSettings.tsx`) — when `forcedSkins` is set, the skin picker only shows `classic` + the mode's forced piece skin, and `default` + the mode's forced board skin. `gameMode` prop must be passed to `NavBar` → `GameSettings` for the restriction to apply.
 
-The board skin follows the same pattern via `BoardSkinContext` (separate localStorage key `chessverse_board_skin`).
+2. **Picker checked state** — the highlighted card is the _effective_ skin, not the raw stored value. `checkedPieceSkin = forcedSkins && skin !== "classic" ? forcedSkins.pieces : skin`. `checkedBoardSkin = forcedSkins && boardSkin !== "default" ? forcedSkins.board : boardSkin`.
+
+3. **Effective skin at render time** — `classic` (pieces) and `default` (board) are the user accessibility overrides; any other stored value falls back to the mode's forced skin. Implemented via `BoardSkinContext.Provider` so `ChessBoard` (which reads the context) receives the correct value:
+   - `ZombieHordeGame.tsx` / `ColiseumGame.tsx`: wrap tree in `<BoardSkinContext.Provider value={{ boardSkin: effectiveBoardSkin, setBoardSkin }}>` where `effectiveBoardSkin = boardSkin === "default" ? "default" : "<forced-board-skin>"`. Board style computed from `effectiveBoardSkin`, not the global context.
+   - `Game.tsx` (borderless, etc.): same Provider pattern for board skin; piece skin computed as `effectiveSkin = forcedPieceSkin && skin !== "classic" ? forcedPieceSkin : skin` and passed directly to `ChessBoard`.
 
 ## AI fallback system
 
