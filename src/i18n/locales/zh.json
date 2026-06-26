@@ -256,9 +256,11 @@
   "skins": {
     "classic": "经典",
     "fantasy": "幻想",
+    "zombie": "僵尸",
     "board": {
       "default": "默认",
-      "royal-arena": "皇家竞技场"
+      "royal-arena": "皇家竞技场",
+      "zombie": "僵尸"
     }
   },
   "languages": {
