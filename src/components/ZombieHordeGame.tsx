@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import type { CSSProperties } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Skull, Swords } from "lucide-react";
@@ -12,16 +13,22 @@ import GameLabels, {
 } from "./GameLabels";
 import { PromotionPicker } from "./PromotionPicker";
 import { useZombieHordeGame } from "../hooks/useZombieHordeGame";
-import { useSkin } from "../hooks/useSkin";
-import { useBoardSkin } from "../hooks/useBoardSkin";
-import { useBoardSkinStyle } from "../hooks/useBoardSkinStyle";
 import { getValidMoves, isSquareUnderAttack } from "../utils/chess/moves";
 import { detectTactic, type MoveContext } from "../utils/chess/tactics";
 import type { LocalSettings } from "../hooks/useChessGame";
 import { ChessAI } from "../services/ChessAI";
+import { BoardSkinContext } from "../context/BoardSkinContext";
+import { getBoardSkinDef } from "../utils/boardSkin";
 import type { GameMode, Piece, PieceType, Position } from "../types/chess";
-import type { PieceSkin } from "../utils/pieceImage";
-import type { BoardSkin } from "../utils/boardSkin";
+
+const _zombieBoardDef = getBoardSkinDef("zombie");
+const ZOMBIE_BOARD_STYLE: CSSProperties = _zombieBoardDef.ground
+  ? {
+      backgroundImage: `url(${_zombieBoardDef.ground})`,
+      backgroundRepeat: "repeat",
+      backgroundSize: "1000px 1000px",
+    }
+  : {};
 
 const CLASSIC_MODE: GameMode = {
   id: "classic",
@@ -83,16 +90,22 @@ function computeNextPiecesForAnnotation(
     target.y === enPassantTarget.y &&
     !captured;
 
-  let result = captured ? pieces.filter((p) => p.id !== captured.id) : [...pieces];
+  let result = captured
+    ? pieces.filter((p) => p.id !== captured.id)
+    : [...pieces];
   if (isEpCapture) {
     result = result.filter(
       (p) => !(p.position.x === target.x && p.position.y === from.y),
     );
   }
   const finalType: PieceType =
-    piece.type === "pawn" && target.y === 0 ? (promotionType ?? "queen") : piece.type;
+    piece.type === "pawn" && target.y === 0
+      ? (promotionType ?? "queen")
+      : piece.type;
   return result.map((p) =>
-    p.id === piece.id ? { ...p, type: finalType, position: target, hasMoved: true } : p,
+    p.id === piece.id
+      ? { ...p, type: finalType, position: target, hasMoved: true }
+      : p,
   );
 }
 
@@ -134,28 +147,6 @@ function WaveStatusBar({
 export default function ZombieHordeGame() {
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const { skin, setSkin } = useSkin();
-  const { setBoardSkin } = useBoardSkin();
-  const boardSkinStyle = useBoardSkinStyle();
-
-  // ── Auto-apply zombie skins for the duration of this mode ───────────────────
-
-  const initialSkinRef = useRef<PieceSkin>(skin);
-  const initialBoardSkinRef = useRef<BoardSkin>("default");
-
-  useEffect(() => {
-    // Read persisted values at mount — context may not yet reflect localStorage
-    initialSkinRef.current =
-      (localStorage.getItem("chessverse_skin") as PieceSkin | null) ?? "classic";
-    initialBoardSkinRef.current =
-      (localStorage.getItem("chessverse_board_skin") as BoardSkin | null) ?? "default";
-    setSkin("zombie");
-    setBoardSkin("zombie");
-    return () => {
-      setSkin(initialSkinRef.current);
-      setBoardSkin(initialBoardSkinRef.current);
-    };
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const {
     state,
@@ -175,7 +166,11 @@ export default function ZombieHordeGame() {
   const [settings, setSettings] = useState<LocalSettings>(loadSettings);
 
   const handleSettingsChange = useCallback(
-    (partial: { aiEnabled: boolean; aiDifficulty: number; flipBoard: boolean }) => {
+    (partial: {
+      aiEnabled: boolean;
+      aiDifficulty: number;
+      flipBoard: boolean;
+    }) => {
       setSettings((prev) => {
         const next = { ...prev, ...partial };
         saveSettings(next);
@@ -189,16 +184,29 @@ export default function ZombieHordeGame() {
 
   const movablePieceIds = useMemo(() => {
     const ids = new Set<string>();
-    if (state.gameOver || state.wave.isZombiesThinking || state.pendingPromotion)
+    if (
+      state.gameOver ||
+      state.wave.isZombiesThinking ||
+      state.pendingPromotion
+    )
       return ids;
     state.pieces
       .filter((p) => p.color === "white")
       .forEach((p) => {
-        if (getValidMoves(p, state.pieces, CLASSIC_MODE, enPassantTarget).length > 0)
+        if (
+          getValidMoves(p, state.pieces, CLASSIC_MODE, enPassantTarget).length >
+          0
+        )
           ids.add(p.id);
       });
     return ids;
-  }, [state.pieces, state.gameOver, state.wave.isZombiesThinking, state.pendingPromotion, enPassantTarget]);
+  }, [
+    state.pieces,
+    state.gameOver,
+    state.wave.isZombiesThinking,
+    state.pendingPromotion,
+    enPassantTarget,
+  ]);
 
   // ── Danger indicator ─────────────────────────────────────────────────────────
 
@@ -208,7 +216,9 @@ export default function ZombieHordeGame() {
     state.pieces
       .filter((p) => p.color === "white")
       .forEach((p) => {
-        if (isSquareUnderAttack(p.position, "black", state.pieces, CLASSIC_MODE)) {
+        if (
+          isSquareUnderAttack(p.position, "black", state.pieces, CLASSIC_MODE)
+        ) {
           ids.add(p.id);
         }
       });
@@ -224,12 +234,20 @@ export default function ZombieHordeGame() {
       }
     });
     return result;
-  }, [settings.showDangerIndicator, state.selectedPiece, state.validMoves, state.pieces]);
+  }, [
+    settings.showDangerIndicator,
+    state.selectedPiece,
+    state.validMoves,
+    state.pieces,
+  ]);
 
   // ── Hint move ────────────────────────────────────────────────────────────────
 
   const hintAiRef = useRef<ChessAI | null>(null);
-  const [hintMove, setHintMove] = useState<{ from: Position; to: Position } | null>(null);
+  const [hintMove, setHintMove] = useState<{
+    from: Position;
+    to: Position;
+  } | null>(null);
 
   useEffect(() => {
     hintAiRef.current = new ChessAI();
@@ -304,7 +322,9 @@ export default function ZombieHordeGame() {
         addLabel("capture", {
           pieceName: t(`profile.pieces.${ctx.piece.type}`).toLowerCase(),
           pieceColor: t(`chess.colors.${ctx.piece.color}`),
-          capturedName: t(`profile.pieces.${ctx.capturedPiece.type}`).toLowerCase(),
+          capturedName: t(
+            `profile.pieces.${ctx.capturedPiece.type}`,
+          ).toLowerCase(),
           capturedColor: t(`chess.colors.${ctx.capturedPiece.color}`),
           square: sq,
         });
@@ -321,7 +341,11 @@ export default function ZombieHordeGame() {
     (to: Position) => {
       const { selectedPiece, pieces } = state;
       // Pawn promotion path: just forward, annotation happens in handlePromotionWithAnnotations
-      if (selectedPiece?.type === "pawn" && to.y === 0 && selectedPiece.color === "white") {
+      if (
+        selectedPiece?.type === "pawn" &&
+        to.y === 0 &&
+        selectedPiece.color === "white"
+      ) {
         handleMove(to);
         return;
       }
@@ -370,7 +394,13 @@ export default function ZombieHordeGame() {
       }
       handleMove(to);
     },
-    [state, enPassantTarget, settings.showMoveAnnotations, triggerAnnotation, handleMove],
+    [
+      state,
+      enPassantTarget,
+      settings.showMoveAnnotations,
+      triggerAnnotation,
+      handleMove,
+    ],
   );
 
   const handlePromotionWithAnnotations = useCallback(
@@ -406,7 +436,13 @@ export default function ZombieHordeGame() {
       }
       handlePromotion(promotionType);
     },
-    [state, enPassantTarget, settings.showMoveAnnotations, triggerAnnotation, handlePromotion],
+    [
+      state,
+      enPassantTarget,
+      settings.showMoveAnnotations,
+      triggerAnnotation,
+      handlePromotion,
+    ],
   );
 
   // ── Navigation helpers ───────────────────────────────────────────────────────
@@ -425,78 +461,85 @@ export default function ZombieHordeGame() {
   ];
 
   return (
-    <div
-      className={`h-screen overflow-hidden flex flex-col ${boardSkinStyle.backgroundImage ? "" : "bg-gray-100"}`}
-      style={boardSkinStyle}
+    <BoardSkinContext.Provider
+      value={{ boardSkin: "zombie", setBoardSkin: () => {} }}
     >
-      <NavBar
-        breadcrumbs={breadcrumbs}
-        onSurrender={!state.gameOver ? handleSurrender : undefined}
-        onShowResult={
-          state.gameOver && !gameOverVisible
-            ? () => setGameOverVisible(true)
-            : undefined
-        }
-        gameSettings={settings}
-        onGameSettingsChange={handleSettingsChange}
-        gameMode="zombie-horde"
-      />
-
-      <WaveStatusBar
-        wave={state.wave.currentWave}
-        zombiesKilled={state.wave.zombiesKilled}
-        isThinking={state.wave.isZombiesThinking}
-      />
-
-      {/* Interaction blocker while zombies think */}
-      <div className="flex-1 overflow-hidden relative">
-        {state.wave.isZombiesThinking && (
-          <div className="absolute inset-0 z-50 cursor-not-allowed" />
-        )}
-
-        {/* Promotion picker floats above board */}
-        <div style={{ height: 0, overflow: "visible", position: "relative" }}>
-          {state.pendingPromotion && (
-            <div className="flex justify-center">
-              <PromotionPicker color="white" onSelect={handlePromotionWithAnnotations} />
-            </div>
-          )}
-        </div>
-
-        <div className="h-full flex items-center justify-center p-2">
-          <ChessBoard
-            pieces={state.pieces}
-            currentTurn="white"
-            selectedPiece={state.selectedPiece}
-            validMoves={state.validMoves}
-            isCheck={state.isCheck}
-            onPieceSelect={(piece: Piece) => handlePieceSelect(piece)}
-            onMove={handleMoveWithAnnotations}
-            gameMode={CLASSIC_MODE}
-            lockedColor="white"
-            skin={skin}
-            movablePieceIds={movablePieceIds}
-            hintMove={settings.showHint ? hintMove : null}
-            endangeredPieceIds={endangeredPieceIds}
-            dangerousValidMoves={dangerousValidMoves}
-          />
-        </div>
-
-        <GameLabels items={gameLabels} onDismiss={dismissLabel} />
-      </div>
-
-      {state.gameOver && gameOverVisible && (
-        <GameOver
-          winner={isVictory ? "white" : "black"}
-          duration={getDuration()}
-          moveCount={state.moveCount}
-          aiEnabled={!isVictory}
-          onReplay={handleReplay}
-          returnPath="/local"
-          onMainMenu={handleMainMenu}
-          onDismiss={() => setGameOverVisible(false)}
+      <div
+        className={`h-screen overflow-hidden flex flex-col ${ZOMBIE_BOARD_STYLE.backgroundImage ? "" : "bg-gray-100"}`}
+        style={ZOMBIE_BOARD_STYLE}
+      >
+        <NavBar
+          breadcrumbs={breadcrumbs}
+          onSurrender={!state.gameOver ? handleSurrender : undefined}
+          onShowResult={
+            state.gameOver && !gameOverVisible
+              ? () => setGameOverVisible(true)
+              : undefined
+          }
+          gameSettings={settings}
+          onGameSettingsChange={handleSettingsChange}
+          gameMode="zombie-horde"
         />
-      )}
-    </div>
+
+        <WaveStatusBar
+          wave={state.wave.currentWave}
+          zombiesKilled={state.wave.zombiesKilled}
+          isThinking={state.wave.isZombiesThinking}
+        />
+
+        {/* Interaction blocker while zombies think */}
+        <div className="flex-1 overflow-hidden relative">
+          {state.wave.isZombiesThinking && (
+            <div className="absolute inset-0 z-50 cursor-not-allowed" />
+          )}
+
+          {/* Promotion picker floats above board */}
+          <div style={{ height: 0, overflow: "visible", position: "relative" }}>
+            {state.pendingPromotion && (
+              <div className="flex justify-center">
+                <PromotionPicker
+                  color="white"
+                  onSelect={handlePromotionWithAnnotations}
+                />
+              </div>
+            )}
+          </div>
+
+          <div className="h-full flex items-center justify-center p-2">
+            <ChessBoard
+              pieces={state.pieces}
+              currentTurn="white"
+              selectedPiece={state.selectedPiece}
+              validMoves={state.validMoves}
+              isCheck={state.isCheck}
+              onPieceSelect={(piece: Piece) => handlePieceSelect(piece)}
+              onMove={handleMoveWithAnnotations}
+              gameMode={CLASSIC_MODE}
+              lockedColor="white"
+              skin="zombie"
+              movablePieceIds={movablePieceIds}
+              hintMove={settings.showHint ? hintMove : null}
+              endangeredPieceIds={endangeredPieceIds}
+              dangerousValidMoves={dangerousValidMoves}
+            />
+          </div>
+
+          <GameLabels items={gameLabels} onDismiss={dismissLabel} />
+        </div>
+
+        {state.gameOver && gameOverVisible && (
+          <GameOver
+            winner={isVictory ? "white" : "black"}
+            duration={getDuration()}
+            moveCount={state.moveCount}
+            aiEnabled={!isVictory}
+            onReplay={handleReplay}
+            returnPath="/local"
+            onMainMenu={handleMainMenu}
+            onDismiss={() => setGameOverVisible(false)}
+          />
+        )}
+      </div>
+    </BoardSkinContext.Provider>
   );
 }
