@@ -13,12 +13,15 @@ import GameLabels, {
 import { PromotionPicker } from "./PromotionPicker";
 import { useZombieHordeGame } from "../hooks/useZombieHordeGame";
 import { useSkin } from "../hooks/useSkin";
+import { useBoardSkin } from "../hooks/useBoardSkin";
 import { useBoardSkinStyle } from "../hooks/useBoardSkinStyle";
 import { getValidMoves, isSquareUnderAttack } from "../utils/chess/moves";
 import { detectTactic, type MoveContext } from "../utils/chess/tactics";
 import type { LocalSettings } from "../hooks/useChessGame";
 import { ChessAI } from "../services/ChessAI";
 import type { GameMode, Piece, PieceType, Position } from "../types/chess";
+import type { PieceSkin } from "../utils/pieceImage";
+import type { BoardSkin } from "../utils/boardSkin";
 
 const CLASSIC_MODE: GameMode = {
   id: "classic",
@@ -131,8 +134,28 @@ function WaveStatusBar({
 export default function ZombieHordeGame() {
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const { skin } = useSkin();
+  const { skin, setSkin } = useSkin();
+  const { setBoardSkin } = useBoardSkin();
   const boardSkinStyle = useBoardSkinStyle();
+
+  // ── Auto-apply zombie skins for the duration of this mode ───────────────────
+
+  const initialSkinRef = useRef<PieceSkin>(skin);
+  const initialBoardSkinRef = useRef<BoardSkin>("default");
+
+  useEffect(() => {
+    // Read persisted values at mount — context may not yet reflect localStorage
+    initialSkinRef.current =
+      (localStorage.getItem("chessverse_skin") as PieceSkin | null) ?? "classic";
+    initialBoardSkinRef.current =
+      (localStorage.getItem("chessverse_board_skin") as BoardSkin | null) ?? "default";
+    setSkin("zombie");
+    setBoardSkin("zombie");
+    return () => {
+      setSkin(initialSkinRef.current);
+      setBoardSkin(initialBoardSkinRef.current);
+    };
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const {
     state,

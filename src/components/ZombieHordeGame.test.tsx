@@ -43,7 +43,7 @@ vi.mock("../hooks/useZombieHordeGame", () => ({
 }));
 
 vi.mock("../hooks/useSkin", () => ({
-  useSkin: () => ({ skin: "classic" }),
+  useSkin: () => ({ skin: "classic", setSkin: vi.fn() }),
 }));
 
 vi.mock("../hooks/useBoardSkinStyle", () => ({
@@ -51,7 +51,7 @@ vi.mock("../hooks/useBoardSkinStyle", () => ({
 }));
 
 vi.mock("../hooks/useBoardSkin", () => ({
-  useBoardSkin: () => ({ boardSkin: "default" }),
+  useBoardSkin: () => ({ boardSkin: "default", setBoardSkin: vi.fn() }),
 }));
 
 vi.mock("./ChessBoard", () => ({
