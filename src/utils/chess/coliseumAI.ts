@@ -9,13 +9,36 @@ import { PIECE_VALUES } from "./constants";
 
 const DEPTH = 2;
 const CHECKMATE_SCORE = 100_000;
+// 1 centipawn per distance unit — too small to override any material gain/loss,
+// but enough to break ties in quiet positions and prevent oscillation.
+const PROXIMITY_WEIGHT = 0.01;
 
-function materialScore(pieces: Piece[]): number {
-  return pieces.reduce(
+function evaluate(pieces: Piece[]): number {
+  const material = pieces.reduce(
     (acc, p) =>
       acc + (p.color === "black" ? PIECE_VALUES[p.type] : -PIECE_VALUES[p.type]),
     0,
   );
+
+  // Proximity bonus: reward black non-king pieces being close to white non-king pieces.
+  // Per move, at most one piece moves, so the max bonus shift is ~0.38 (<1 pawn).
+  const blackNonKing = pieces.filter((p) => p.color === "black" && p.type !== "king");
+  const whiteNonKing = pieces.filter((p) => p.color === "white" && p.type !== "king");
+  if (blackNonKing.length === 0 || whiteNonKing.length === 0) return material;
+
+  let totalMinDist = 0;
+  for (const bp of blackNonKing) {
+    let minDist = Infinity;
+    for (const wp of whiteNonKing) {
+      const d =
+        Math.abs(bp.position.x - wp.position.x) +
+        Math.abs(bp.position.y - wp.position.y);
+      if (d < minDist) minDist = d;
+    }
+    totalMinDist += minDist;
+  }
+
+  return material - totalMinDist * PROXIMITY_WEIGHT;
 }
 
 function getAllLegalMoves(
@@ -40,7 +63,7 @@ function minimax(
   beta: number,
   isMaximizing: boolean,
 ): number {
-  if (depth === 0) return materialScore(pieces);
+  if (depth === 0) return evaluate(pieces);
 
   const color: PieceColor = isMaximizing ? "black" : "white";
   const moves = getAllLegalMoves(color, pieces, arena);
