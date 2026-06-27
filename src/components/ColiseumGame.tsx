@@ -369,6 +369,7 @@ function ColiseumUI({
           returnPath={returnPath}
           onMainMenu={onMainMenu}
           onDismiss={() => setGameOverVisible(false)}
+          aiEnabled={!isP2PMode && settings.aiEnabled}
           isP2PMode={isP2PMode}
           playerColor={playerColor}
           rematchState={rematchState}
