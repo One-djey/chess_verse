@@ -1,121 +1,102 @@
-import type { Piece, Position } from "../../types/chess";
+import type { Piece, Position, PieceColor } from "../../types/chess";
 import type { Arena } from "../../types/coliseum";
 import {
   getColiseumLegalMoves,
   isColiseumInCheck,
-  isColiseumSquareUnderAttack,
   applyColiseumMove,
 } from "./coliseumMoves";
 import { PIECE_VALUES } from "./constants";
 
-interface Candidate {
-  piece: Piece;
-  to: Position;
-  isCapture: boolean;
-  isSafe: boolean;
-}
+const DEPTH = 2;
+const CHECKMATE_SCORE = 100_000;
 
-function isMoveSafe(piece: Piece, to: Position, pieces: Piece[], arena: Arena): boolean {
-  const simulated = applyColiseumMove(piece, to, pieces);
-  return !isColiseumSquareUnderAttack(to, "white", simulated, arena);
-}
-
-function captureValue(to: Position, pieces: Piece[]): number {
-  const target = pieces.find(
-    (p) => p.color === "white" && p.position.x === to.x && p.position.y === to.y,
+function materialScore(pieces: Piece[]): number {
+  return pieces.reduce(
+    (acc, p) =>
+      acc + (p.color === "black" ? PIECE_VALUES[p.type] : -PIECE_VALUES[p.type]),
+    0,
   );
-  return target ? PIECE_VALUES[target.type] : 0;
 }
 
-function toMove(c: Candidate): { from: Position; to: Position } {
-  return { from: c.piece.position, to: c.to };
-}
-
-function pickCheckFallback(
-  candidates: Candidate[],
-): { from: Position; to: Position } | null {
-  const byValueAsc = (a: Candidate, b: Candidate) =>
-    PIECE_VALUES[a.piece.type] - PIECE_VALUES[b.piece.type];
-
-  const nonKing = candidates.filter((c) => c.piece.type !== "king");
-
-  const safeNonKing = nonKing.filter((c) => c.isSafe).sort(byValueAsc);
-  if (safeNonKing.length > 0) return toMove(safeNonKing[0]);
-
-  const riskyNonKing = nonKing.filter((c) => !c.isSafe).sort(byValueAsc);
-  if (riskyNonKing.length > 0) return toMove(riskyNonKing[0]);
-
-  const kingMoves = candidates.filter((c) => c.piece.type === "king");
-  if (kingMoves.length > 0) return toMove(kingMoves[0]);
-
-  return null;
-}
-
-function pickNormalFallback(
-  candidates: Candidate[],
+function getAllLegalMoves(
+  color: PieceColor,
   pieces: Piece[],
-): { from: Position; to: Position } | null {
-  const byCaptureDescThenMoverAsc = (a: Candidate, b: Candidate) => {
-    const capDiff = captureValue(b.to, pieces) - captureValue(a.to, pieces);
-    if (capDiff !== 0) return capDiff;
-    return PIECE_VALUES[a.piece.type] - PIECE_VALUES[b.piece.type];
-  };
-  const byMoverAsc = (a: Candidate, b: Candidate) =>
-    PIECE_VALUES[a.piece.type] - PIECE_VALUES[b.piece.type];
+  arena: Arena,
+): Array<{ piece: Piece; to: Position }> {
+  const result: Array<{ piece: Piece; to: Position }> = [];
+  for (const piece of pieces.filter((p) => p.color === color)) {
+    for (const to of getColiseumLegalMoves(piece, pieces, arena)) {
+      result.push({ piece, to });
+    }
+  }
+  return result;
+}
 
-  const safeCaptures = candidates
-    .filter((c) => c.isSafe && c.isCapture)
-    .sort(byCaptureDescThenMoverAsc);
-  if (safeCaptures.length > 0) return toMove(safeCaptures[0]);
+function minimax(
+  pieces: Piece[],
+  arena: Arena,
+  depth: number,
+  alpha: number,
+  beta: number,
+  isMaximizing: boolean,
+): number {
+  if (depth === 0) return materialScore(pieces);
 
-  const safeMoves = candidates
-    .filter((c) => c.isSafe && !c.isCapture)
-    .sort(byMoverAsc);
-  if (safeMoves.length > 0) return toMove(safeMoves[0]);
+  const color: PieceColor = isMaximizing ? "black" : "white";
+  const moves = getAllLegalMoves(color, pieces, arena);
 
-  const riskyCaptures = candidates
-    .filter((c) => !c.isSafe && c.isCapture)
-    .sort(byCaptureDescThenMoverAsc);
-  if (riskyCaptures.length > 0) return toMove(riskyCaptures[0]);
+  if (moves.length === 0) {
+    const inCheck = isColiseumInCheck(color, pieces, arena);
+    return inCheck ? (isMaximizing ? -CHECKMATE_SCORE : CHECKMATE_SCORE) : 0;
+  }
 
-  const riskyMoves = candidates
-    .filter((c) => !c.isSafe && !c.isCapture)
-    .sort(byMoverAsc);
-  if (riskyMoves.length > 0) return toMove(riskyMoves[0]);
-
-  return null;
+  if (isMaximizing) {
+    let best = -Infinity;
+    for (const { piece, to } of moves) {
+      const newPieces = applyColiseumMove(piece, to, pieces);
+      const score = minimax(newPieces, arena, depth - 1, alpha, beta, false);
+      if (score > best) best = score;
+      if (best > alpha) alpha = best;
+      if (beta <= alpha) break;
+    }
+    return best;
+  } else {
+    let best = Infinity;
+    for (const { piece, to } of moves) {
+      const newPieces = applyColiseumMove(piece, to, pieces);
+      const score = minimax(newPieces, arena, depth - 1, alpha, beta, true);
+      if (score < best) best = score;
+      if (best < beta) beta = best;
+      if (beta <= alpha) break;
+    }
+    return best;
+  }
 }
 
 /**
- * Selects the best move for black in Coliseum mode using the same priority chain
- * as getSmartFallbackMove, but with arena-aware move generation and attack detection.
+ * Selects the best move for black in Coliseum mode using Minimax (depth 2) with
+ * alpha-beta pruning. Evaluates by material balance so the AI naturally avoids
+ * losing exchanges, advances toward the enemy, and never oscillates.
  * Used as the sole AI engine (no Stockfish) since Coliseum uses an irregular arena.
  */
 export function getColiseumAIMove(
   pieces: Piece[],
   arena: Arena,
 ): { from: Position; to: Position } | null {
-  const blackPieces = pieces.filter((p) => p.color === "black");
+  const moves = getAllLegalMoves("black", pieces, arena);
+  if (moves.length === 0) return null;
 
-  const candidates: Candidate[] = [];
-  for (const piece of blackPieces) {
-    const moves = getColiseumLegalMoves(piece, pieces, arena);
-    for (const to of moves) {
-      const isCapture = pieces.some(
-        (p) => p.color === "white" && p.position.x === to.x && p.position.y === to.y,
-      );
-      // getColiseumLegalMoves already guarantees king moves don't leave king in check,
-      // which is equivalent to the destination being safe for the king.
-      const isSafe =
-        piece.type === "king" ? true : isMoveSafe(piece, to, pieces, arena);
-      candidates.push({ piece, to, isCapture, isSafe });
+  let bestScore = -Infinity;
+  let bestMove: { from: Position; to: Position } | null = null;
+
+  for (const { piece, to } of moves) {
+    const newPieces = applyColiseumMove(piece, to, pieces);
+    const score = minimax(newPieces, arena, DEPTH - 1, -Infinity, Infinity, false);
+    if (score > bestScore) {
+      bestScore = score;
+      bestMove = { from: piece.position, to };
     }
   }
 
-  if (candidates.length === 0) return null;
-
-  const inCheck = isColiseumInCheck("black", pieces, arena);
-  return inCheck
-    ? pickCheckFallback(candidates)
-    : pickNormalFallback(candidates, pieces);
+  return bestMove;
 }

@@ -63,19 +63,21 @@ describe("getColiseumAIMove", () => {
     expect(move!.to).toEqual({ x: 4, y: 3 });
   });
 
-  it("prefers safe non-capture over risky capture", () => {
-    // Black pawn at (2,2): can capture white queen at (3,1) diagonally, but white king
-    // at (2,0) guards (3,1) → risky. Safe moves (1,2) and (2,3) are available instead.
+  it("avoids a losing exchange (queen for pawn defended by rook)", () => {
+    // Black queen at (2,2) could capture white pawn at (3,1), but white rook at (3,3)
+    // defends (3,1): queen (9) would be recaptured for a pawn (1) → net −8 for black.
+    // Minimax depth 2 sees the recapture and prefers any other move.
     const arena = makeArena(4, 4);
     const pieces: Piece[] = [
       p("king", "black", 0, 3),
-      p("pawn", "black", 2, 2),
-      p("queen", "white", 3, 1),
-      p("king", "white", 2, 0),
+      p("queen", "black", 2, 2),
+      p("pawn", "white", 3, 1),
+      p("rook", "white", 3, 3),
+      p("king", "white", 0, 0),
     ];
     const move = getColiseumAIMove(pieces, arena);
     expect(move).not.toBeNull();
-    // Must NOT take the queen — that square is guarded by the white king
+    // Must NOT sacrifice the queen for a pawn
     expect(move!.to).not.toEqual({ x: 3, y: 1 });
   });
 

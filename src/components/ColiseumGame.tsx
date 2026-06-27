@@ -1,7 +1,6 @@
 import { useMemo, useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Users, X } from "lucide-react";
 import NavBar from "./NavBar";
 import GameOver from "./GameOver";
 import ColiseumBoard from "./ColiseumBoard";
@@ -81,7 +80,6 @@ function ColiseumUI({
   const { skin } = useSkin();
   const effectiveSkin = skin === "classic" ? "classic" : "fantasy";
   const [gameOverVisible, setGameOverVisible] = useState(true);
-  const [bannerDismissed, setBannerDismissed] = useState(false);
   const [settings, setSettings] = useState<LocalSettings>(() => {
     try {
       return {
@@ -313,23 +311,8 @@ function ColiseumUI({
         />
       )}
 
-      {!isP2PMode && !bannerDismissed && (
-        <div className="bg-amber-50 border-b border-amber-200 text-amber-800 px-4 py-2 flex items-center justify-between gap-2 text-sm">
-          <div className="flex items-center gap-2">
-            <Users size={15} className="shrink-0 text-amber-600" />
-            <span>{t("modes.coliseum.localOnlyBanner")}</span>
-          </div>
-          <button
-            onClick={() => setBannerDismissed(true)}
-            className="shrink-0 text-amber-500 hover:text-amber-700 transition-colors"
-            aria-label="Dismiss"
-          >
-            <X size={15} />
-          </button>
-        </div>
-      )}
 
-      <div className="flex-1 overflow-hidden flex flex-col">
+<div className="flex-1 overflow-hidden flex flex-col">
         <CampDecoration
           campTop={skinDef.campTop}
           campBottom={skinDef.campBottom}
