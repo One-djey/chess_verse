@@ -33,6 +33,7 @@ export const gameModes: GameMode[] = [
       "When a piece captures another, it permanently acquires its movement abilities.",
     image: "/ressources/modes/assimilation.webp",
     rules: { borderless: false, randomPieces: false, assimilation: true },
+    forcedSkins: { pieces: "alien", board: "biome" },
   },
   {
     id: "coliseum",

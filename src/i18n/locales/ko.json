@@ -262,10 +262,12 @@
       "royal-arena": "로열 아레나",
       "apocalypse": "묵시록",
       "spaceship": "Spaceship",
-      "nexus": "넥서스"
+      "nexus": "넥서스",
+      "biome": "바이옴"
     },
     "robot": "Robot",
-    "legends": "전설"
+    "legends": "전설",
+    "alien": "에일리언"
   },
   "languages": {
     "en": "English",

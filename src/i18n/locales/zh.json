@@ -262,10 +262,12 @@
       "royal-arena": "皇家竞技场",
       "apocalypse": "启示录",
       "spaceship": "Spaceship",
-      "nexus": "纽带"
+      "nexus": "纽带",
+      "biome": "生物群系"
     },
     "robot": "Robot",
-    "legends": "传奇"
+    "legends": "传奇",
+    "alien": "外星人"
   },
   "languages": {
     "en": "English",

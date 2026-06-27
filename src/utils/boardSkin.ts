@@ -1,9 +1,5 @@
 export type BoardSkin =
-  | "default"
-  | "royal-arena"
-  | "apocalypse"
-  | "spaceship"
-  | "nexus";
+  "default" | "royal-arena" | "apocalypse" | "spaceship" | "nexus" | "biome";
 
 export interface BoardSkinDef {
   id: BoardSkin;
@@ -62,6 +58,14 @@ export const BOARD_SKINS: BoardSkinDef[] = [
     border: "/ressources/board/nexus/border.png",
     borderInset: "5.30cqw",
     ground: "/ressources/board/nexus/ground.png",
+  },
+  {
+    id: "biome",
+    lightSquare: "/ressources/board/biome/light_square.png",
+    darkSquare: "/ressources/board/biome/dark_square.png",
+    border: "/ressources/board/biome/border.png",
+    borderInset: "7cqw",
+    ground: "/ressources/board/biome/ground.png",
   },
 ];
 

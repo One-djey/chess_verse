@@ -262,10 +262,12 @@
       "royal-arena": "Arena Reale",
       "apocalypse": "Apocalisse",
       "spaceship": "Spaceship",
-      "nexus": "Nexus"
+      "nexus": "Nexus",
+      "biome": "Bioma"
     },
     "robot": "Robot",
-    "legends": "Leggende"
+    "legends": "Leggende",
+    "alien": "Alien"
   },
   "languages": {
     "en": "English",

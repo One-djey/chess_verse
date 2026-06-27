@@ -262,10 +262,12 @@
       "royal-arena": "الساحة الملكية",
       "apocalypse": "نهاية العالم",
       "spaceship": "Spaceship",
-      "nexus": "نكسوس"
+      "nexus": "نكسوس",
+      "biome": "بيوم"
     },
     "robot": "Robot",
-    "legends": "الأساطير"
+    "legends": "الأساطير",
+    "alien": "فضائي"
   },
   "languages": {
     "en": "English",

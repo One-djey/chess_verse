@@ -262,10 +262,12 @@
       "royal-arena": "ロイヤルアリーナ",
       "apocalypse": "黙示録",
       "spaceship": "Spaceship",
-      "nexus": "ネクサス"
+      "nexus": "ネクサス",
+      "biome": "バイオーム"
     },
     "robot": "Robot",
-    "legends": "レジェンド"
+    "legends": "レジェンド",
+    "alien": "エイリアン"
   },
   "languages": {
     "en": "English",
