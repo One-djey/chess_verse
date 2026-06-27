@@ -20,6 +20,7 @@ import {
   getColiseumLegalMoves,
   isColiseumSquareUnderAttack,
 } from "../utils/chess/coliseumMoves";
+import { getColiseumAIMove } from "../utils/chess/coliseumAI";
 import type { LocalSettings } from "../hooks/useChessGame";
 import type { Arena, ColiseumGameState } from "../types/coliseum";
 import type { Piece, PieceColor } from "../types/chess";
@@ -36,6 +37,7 @@ interface ColiseumUIProps {
   handleDeselect: () => void;
   handleMove: (to: import("../types/chess").Position) => void;
   handleSurrender: (color: PieceColor) => void;
+  applyAIMove?: (from: import("../types/chess").Position, to: import("../types/chess").Position) => void;
   onReplay?: () => void;
   getDuration: () => number;
   getTotalMoveCount: () => number;
@@ -59,6 +61,7 @@ function ColiseumUI({
   handleDeselect,
   handleMove,
   handleSurrender,
+  applyAIMove,
   onReplay,
   getDuration,
   getTotalMoveCount,
@@ -136,10 +139,21 @@ function ColiseumUI({
     setGameOverVisible(true);
   }, [state.arena]);
 
+  // AI effect: fire when it's black's turn and AI is enabled
+  useEffect(() => {
+    if (!applyAIMove || !settings.aiEnabled || state.currentTurn !== "black" || state.gameOver) return;
+    const move = getColiseumAIMove(state.pieces, state.arena);
+    if (move) applyAIMove(move.from, move.to);
+  }, [state.currentTurn, state.gameOver, settings.aiEnabled, state.pieces, state.arena, applyAIMove]);
+
   const movablePieceIds = useMemo(() => {
     const ids = new Set<string>();
     // In P2P mode, only highlight pieces when it's the local player's turn
     if (isP2PMode && playerColor && state.currentTurn !== playerColor) {
+      return ids;
+    }
+    // When AI is active, black's pieces are not selectable by the user
+    if (!isP2PMode && settings.aiEnabled && state.currentTurn === "black") {
       return ids;
     }
     state.pieces
@@ -150,7 +164,7 @@ function ColiseumUI({
         }
       });
     return ids;
-  }, [state.pieces, state.currentTurn, state.arena, isP2PMode, playerColor]);
+  }, [state.pieces, state.currentTurn, state.arena, isP2PMode, playerColor, settings.aiEnabled]);
 
   const endangeredPieceIds = useMemo(() => {
     const ids = new Set<string>();
@@ -397,6 +411,7 @@ function ColiseumGameLocal() {
     handleDeselect,
     handleMove,
     handleSurrender,
+    applyAIMove,
     regenerate,
     getDuration,
     getTotalMoveCount,
@@ -416,6 +431,7 @@ function ColiseumGameLocal() {
       handleDeselect={handleDeselect}
       handleMove={handleMove}
       handleSurrender={handleSurrender}
+      applyAIMove={applyAIMove}
       onReplay={handleReplay}
       getDuration={getDuration}
       getTotalMoveCount={getTotalMoveCount}
