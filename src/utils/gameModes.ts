@@ -24,6 +24,7 @@ export const gameModes: GameMode[] = [
       "Pieces are randomly chosen and placed at the start of the game.",
     image: "/ressources/modes/all-random.webp",
     rules: { borderless: false, randomPieces: true },
+    forcedSkins: { pieces: "legends", board: "nexus" },
   },
   {
     id: "assimilation",

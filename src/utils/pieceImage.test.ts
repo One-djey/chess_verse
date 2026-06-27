@@ -23,19 +23,30 @@ describe("getPieceImageSrc", () => {
 
 describe("SKINS", () => {
   it("contains all entries with the expected shape", () => {
-    expect(SKINS).toHaveLength(4);
+    expect(SKINS).toHaveLength(5);
     expect(SKINS.map((s) => s.id)).toEqual([
       "classic",
       "fantasy",
       "zombie",
       "robot",
+      "legends",
     ]);
     expect(SKINS).toEqual([
       { id: "classic", label: "Classic", ext: "png" },
       { id: "fantasy", label: "Fantasy", ext: "webp" },
       { id: "zombie", label: "Zombie", ext: "png" },
       { id: "robot", label: "Robot", ext: "png" },
+      { id: "legends", label: "Legends", ext: "png" },
     ]);
+  });
+
+  it("resolves legends skin images as .png", () => {
+    expect(getPieceImageSrc("white", "king", "legends")).toBe(
+      "/ressources/pieces/legends/white_king.png",
+    );
+    expect(getPieceImageSrc("black", "pawn", "legends")).toBe(
+      "/ressources/pieces/legends/black_pawn.png",
+    );
   });
 
   it("resolves zombie skin images as .png", () => {

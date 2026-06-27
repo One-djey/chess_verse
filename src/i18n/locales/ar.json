@@ -261,9 +261,11 @@
       "default": "افتراضي",
       "royal-arena": "الساحة الملكية",
       "apocalypse": "نهاية العالم",
-      "spaceship": "Spaceship"
+      "spaceship": "Spaceship",
+      "nexus": "نكسوس"
     },
-    "robot": "Robot"
+    "robot": "Robot",
+    "legends": "الأساطير"
   },
   "languages": {
     "en": "English",

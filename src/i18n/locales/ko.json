@@ -261,9 +261,11 @@
       "default": "기본",
       "royal-arena": "로열 아레나",
       "apocalypse": "묵시록",
-      "spaceship": "Spaceship"
+      "spaceship": "Spaceship",
+      "nexus": "넥서스"
     },
-    "robot": "Robot"
+    "robot": "Robot",
+    "legends": "전설"
   },
   "languages": {
     "en": "English",

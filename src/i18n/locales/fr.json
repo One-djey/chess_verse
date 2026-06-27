@@ -261,9 +261,11 @@
       "default": "Par défaut",
       "royal-arena": "Arène Royale",
       "apocalypse": "Apocalypse",
-      "spaceship": "Spaceship"
+      "spaceship": "Spaceship",
+      "nexus": "Nexus"
     },
-    "robot": "Robot"
+    "robot": "Robot",
+    "legends": "Légendes"
   },
   "languages": {
     "en": "English",

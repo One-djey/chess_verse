@@ -261,9 +261,11 @@
       "default": "默认",
       "royal-arena": "皇家竞技场",
       "apocalypse": "启示录",
-      "spaceship": "Spaceship"
+      "spaceship": "Spaceship",
+      "nexus": "纽带"
     },
-    "robot": "Robot"
+    "robot": "Robot",
+    "legends": "传奇"
   },
   "languages": {
     "en": "English",

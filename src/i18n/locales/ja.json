@@ -261,9 +261,11 @@
       "default": "デフォルト",
       "royal-arena": "ロイヤルアリーナ",
       "apocalypse": "黙示録",
-      "spaceship": "Spaceship"
+      "spaceship": "Spaceship",
+      "nexus": "ネクサス"
     },
-    "robot": "Robot"
+    "robot": "Robot",
+    "legends": "レジェンド"
   },
   "languages": {
     "en": "English",
