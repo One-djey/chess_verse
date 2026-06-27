@@ -191,9 +191,7 @@ export default function GameSettings({
     forcedSkins && boardSkin !== "default" ? forcedSkins.board : boardSkin;
   // feedbackOpen lives outside the isOpen guard so it survives Settings closing
   const [feedbackOpen, setFeedbackOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<Tab>(
-    isColiseum ? "assistance" : "partie",
-  );
+  const [activeTab, setActiveTab] = useState<Tab>("partie");
 
   const hasGameSettings = settings != null && onSettingsChange != null;
 
@@ -217,9 +215,7 @@ export default function GameSettings({
       };
 
   const TABS: { id: Tab; label: string }[] = [
-    ...(!isColiseum
-      ? [{ id: "partie" as Tab, label: t("gameSettings.tab.partie") }]
-      : []),
+    { id: "partie" as Tab, label: t("gameSettings.tab.partie") },
     { id: "assistance", label: t("gameSettings.tab.assistance") },
     { id: "apparence", label: t("gameSettings.tab.apparence") },
   ];
@@ -302,10 +298,10 @@ export default function GameSettings({
                     </div>
                   </div>
 
-                  {/* Flip board — solo only */}
+                  {/* Flip board — solo only, not applicable to Coliseum */}
                   <div
                     className={`transition-all duration-300 ease-in-out overflow-hidden ${
-                      !effectiveSettings.aiEnabled
+                      !effectiveSettings.aiEnabled && !isColiseum
                         ? "opacity-100 max-h-28"
                         : "opacity-0 max-h-0"
                     }`}
@@ -320,10 +316,10 @@ export default function GameSettings({
                     />
                   </div>
 
-                  {/* AI Difficulty gauge — AI only */}
+                  {/* AI Difficulty gauge — AI only, not applicable to Coliseum (single level) */}
                   <div
                     className={`transition-all duration-300 ease-in-out overflow-hidden ${
-                      effectiveSettings.aiEnabled
+                      effectiveSettings.aiEnabled && !isColiseum
                         ? "opacity-100 max-h-40"
                         : "opacity-0 max-h-0"
                     }`}

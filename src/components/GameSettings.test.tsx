@@ -115,12 +115,12 @@ describe("GameSettings — tabs", () => {
     expect(screen.getByRole("combobox")).toBeInTheDocument();
   });
 
-  it("hides the 'partie' tab for coliseum mode", () => {
+  it("shows the 'partie' tab for coliseum mode so the AI toggle is accessible", () => {
     renderSettings({ gameMode: "coliseum" });
+    // partie tab must be present so the user can enable/disable AI (no difficulty shown)
     expect(
-      screen.queryByRole("button", { name: "gameSettings.tab.partie" }),
-    ).not.toBeInTheDocument();
-    // The assistance tab should be the first visible tab
+      screen.getByRole("button", { name: "gameSettings.tab.partie" }),
+    ).toBeInTheDocument();
     expect(
       screen.getByRole("button", { name: "gameSettings.tab.assistance" }),
     ).toBeInTheDocument();

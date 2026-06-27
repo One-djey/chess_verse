@@ -10,7 +10,7 @@ React 18 + TypeScript + Vite + Tailwind CSS. No backend. P2P via Trystero (WebRT
 - Commands: `npm run test` | `npm run test:watch` | `npm run test:coverage` (per-file coverage thresholds on P0 modules) | `npm run test:e2e` (Playwright — requires a `npm run build` first or uses cached `dist/`).
 - Tests are colocated (`src/utils/chess/moves.test.ts` next to `moves.ts`). Shared fixtures in `src/test/helpers.ts` (`makePiece`, `makeState`, `CLASSIC`/`BORDERLESS`/`ALL_RANDOM`/`ASSIMILATION` modes). E2E specs in `e2e/` (`navigation.spec.ts`, `settings-persistence.spec.ts`, `game-board.spec.ts`).
 - Full QA strategy & test-case catalog: `docs/TEST_STRATEGY.md`. Known bugs/debt registry (causes, locations, recommended fixes — read before fixing any listed bug): `docs/KNOWN_ISSUES.md`. CI: `.github/workflows/test.yml` (lint + unit tests + build + e2e in separate job).
-- Other chess modules not listed below: `src/utils/chess/tactics.ts` (tactic detection), `src/utils/chess/coliseumMoves.ts` + `src/components/ColiseumGame.tsx` (coliseum mode), `src/utils/chess/legendaryPatterns.ts` (famous mate detection).
+- Other chess modules not listed below: `src/utils/chess/tactics.ts` (tactic detection), `src/utils/chess/coliseumMoves.ts` + `src/components/ColiseumGame.tsx` (coliseum mode), `src/utils/chess/coliseumAI.ts` (coliseum AI — minimax depth 2, see below), `src/utils/chess/legendaryPatterns.ts` (famous mate detection).
 
 ### Test policy — MANDATORY for every code change
 
@@ -139,6 +139,20 @@ Modes with a strong visual identity declare `forcedSkins` in `gameModes.ts` (`{ 
 3. **Effective skin at render time** — `classic` (pieces) and `default` (board) are the user accessibility overrides; any other stored value falls back to the mode's forced skin. Implemented via `BoardSkinContext.Provider` so `ChessBoard` (which reads the context) receives the correct value:
    - `ZombieHordeGame.tsx` / `ColiseumGame.tsx`: wrap tree in `<BoardSkinContext.Provider value={{ boardSkin: effectiveBoardSkin, setBoardSkin }}>` where `effectiveBoardSkin = boardSkin === "default" ? "default" : "<forced-board-skin>"`. Board style computed from `effectiveBoardSkin`, not the global context.
    - `Game.tsx` (borderless, etc.): same Provider pattern for board skin; piece skin computed as `effectiveSkin = forcedPieceSkin && skin !== "classic" ? forcedPieceSkin : skin` and passed directly to `ChessBoard`.
+
+## Coliseum AI
+
+Coliseum uses an irregular arena (variable-shape grid), making Stockfish (FEN-based, 8×8 only) and the standard fallback (`getSmartFallbackMove`, which uses `getValidMoves`/`isSquareUnderAttack`) inapplicable. The coliseum AI is **100 % local**, implemented in `src/utils/chess/coliseumAI.ts`.
+
+**Algorithm:** Minimax depth 2 with alpha-beta pruning.
+
+- Evaluation function: material balance (`Σ PIECE_VALUES[black] − Σ PIECE_VALUES[white]`).
+- At depth 0 (leaf): return material score.
+- Checkmate/stalemate detected via `isColiseumInCheck` + `getAllLegalMoves` length = 0: score ±100 000 / 0.
+- Branching factor ~30–40 moves; alpha-beta reduces effective search to ~300–500 node evaluations → well under 1 ms.
+- Reuses: `getColiseumLegalMoves`, `isColiseumInCheck`, `applyColiseumMove` from `coliseumMoves.ts`.
+
+AI toggle lives in the `chess_settings` localStorage key (`aiEnabled`). The AI is triggered by a `useEffect` in `ColiseumGame.tsx` when `state.currentTurn === "black"` and `settings.aiEnabled`. There is no difficulty selector for Coliseum (single level).
 
 ## AI fallback system
 

@@ -128,6 +128,53 @@ export function useColiseumGame() {
     });
   }, []);
 
+  const applyAIMove = useCallback((from: Position, to: Position) => {
+    setState((prev) => {
+      if (prev.gameOver || prev.currentTurn !== "black") return prev;
+      const piece = prev.pieces.find(
+        (p) => p.position.x === from.x && p.position.y === from.y && p.color === "black",
+      );
+      if (!piece) return prev;
+
+      const legalMoves = getColiseumLegalMoves(piece, prev.pieces, prev.arena);
+      if (!legalMoves.some((m) => m.x === to.x && m.y === to.y)) return prev;
+
+      const newPieces = applyColiseumMove(piece, to, prev.pieces);
+      const opponentInCheck = isColiseumInCheck("white", newPieces, prev.arena);
+      const opponentHasNoMoves = hasNoLegalMoves("white", newPieces, prev.arena);
+      const gameOver = opponentHasNoMoves;
+      const winner: "white" | "black" | null = opponentHasNoMoves
+        ? opponentInCheck
+          ? "black"
+          : null
+        : null;
+
+      return {
+        ...prev,
+        pieces: newPieces,
+        currentTurn: "white",
+        selectedPiece: null,
+        validMoves: [],
+        isCheck: opponentInCheck,
+        gameOver,
+        winner,
+        moveCount: { ...prev.moveCount, black: prev.moveCount.black + 1 },
+        moves: [
+          ...prev.moves,
+          {
+            piece,
+            from: piece.position,
+            to,
+            capturedPiece:
+              prev.pieces.find((p) => p.position.x === to.x && p.position.y === to.y) ??
+              null,
+            wasPromotion: false,
+          },
+        ],
+      };
+    });
+  }, []);
+
   const handleSurrender = useCallback((color: "white" | "black") => {
     setState((prev) => ({
       ...prev,
@@ -200,6 +247,7 @@ export function useColiseumGame() {
     handleDeselect,
     handleMove,
     handleSurrender,
+    applyAIMove,
     regenerate,
     getDuration,
     getTotalMoveCount,
