@@ -72,3 +72,19 @@ export const BOARD_SKINS: BoardSkinDef[] = [
 export function getBoardSkinDef(skin: BoardSkin): BoardSkinDef {
   return BOARD_SKINS.find((s) => s.id === skin) ?? BOARD_SKINS[0];
 }
+
+/**
+ * Resolves the board skin that should actually be rendered.
+ *
+ * `boardSkin === null` means no explicit user preference has been saved yet —
+ * defers to the mode's forced skin if any, else "default". An explicit
+ * "default" choice is an accessibility override and always wins.
+ */
+export function resolveEffectiveBoardSkin(
+  boardSkin: BoardSkin | null,
+  forcedSkin?: BoardSkin,
+): BoardSkin {
+  if (boardSkin === null) return forcedSkin ?? "default";
+  if (forcedSkin && boardSkin !== "default") return forcedSkin;
+  return boardSkin;
+}

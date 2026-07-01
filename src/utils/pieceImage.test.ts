@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { SKINS, getPieceImageSrc } from "./pieceImage";
+import { SKINS, getPieceImageSrc, resolveEffectivePieceSkin } from "./pieceImage";
 
 describe("getPieceImageSrc", () => {
   it("resolves classic skin images as .png", () => {
@@ -67,5 +67,27 @@ describe("SKINS", () => {
     expect(getPieceImageSrc("black", "pawn", "robot")).toBe(
       "/ressources/pieces/robot/black_pawn.png",
     );
+  });
+});
+
+describe("resolveEffectivePieceSkin (BUG-016)", () => {
+  it("falls back to classic when unset and no forced skin", () => {
+    expect(resolveEffectivePieceSkin(null, undefined)).toBe("classic");
+  });
+
+  it("applies the mode's forced skin for a brand-new visitor (unset preference)", () => {
+    expect(resolveEffectivePieceSkin(null, "zombie")).toBe("zombie");
+  });
+
+  it("lets an explicit 'classic' choice override the forced skin (accessibility)", () => {
+    expect(resolveEffectivePieceSkin("classic", "zombie")).toBe("classic");
+  });
+
+  it("applies the forced skin over any other explicit user choice", () => {
+    expect(resolveEffectivePieceSkin("fantasy", "zombie")).toBe("zombie");
+  });
+
+  it("keeps the explicit user choice when the mode has no forced skin", () => {
+    expect(resolveEffectivePieceSkin("fantasy", undefined)).toBe("fantasy");
   });
 });

@@ -8,6 +8,10 @@ import { GameMode } from "../types/chess";
 import { generateRoomId } from "../services/TrysteroService";
 import { gameModes } from "../utils/gameModes";
 import { useSkin } from "../hooks/useSkin";
+import {
+  resolveEffectivePieceSkin,
+  type PieceSkin,
+} from "../utils/pieceImage";
 import GameModeSelect from "./GameModeSelect";
 import NavBar from "./NavBar";
 
@@ -95,7 +99,11 @@ export default function P2PLobby() {
   useEffect(() => {
     if (isGuest && roomParam && !joinedRef.current) {
       joinedRef.current = true;
-      joinExistingRoom(roomParam, guestMode, skin, () => {
+      const resolvedSkin = resolveEffectivePieceSkin(
+        skin,
+        guestMode?.forcedSkins?.pieces as PieceSkin | undefined,
+      );
+      joinExistingRoom(roomParam, guestMode, resolvedSkin, () => {
         navigatingToGameRef.current = true;
         navigate(guestMode?.rules?.coliseum ? "/game/coliseum" : "/game/p2p");
       });
@@ -116,7 +124,11 @@ export default function P2PLobby() {
     if (isP2PMode) leaveRoom();
     const id = generateRoomId();
     setRoomId(id);
-    startRoom(id, mode, skin, () => {
+    const resolvedSkin = resolveEffectivePieceSkin(
+      skin,
+      mode.forcedSkins?.pieces as PieceSkin | undefined,
+    );
+    startRoom(id, mode, resolvedSkin, () => {
       navigatingToGameRef.current = true;
       navigate(mode.rules?.coliseum ? "/game/coliseum" : "/game/p2p");
     });

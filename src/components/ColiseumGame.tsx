@@ -12,8 +12,9 @@ import { useP2P } from "../hooks/useP2P";
 import { useBoardSkinStyle } from "../hooks/useBoardSkinStyle";
 import { useBoardSkin } from "../hooks/useBoardSkin";
 import { useSkin } from "../hooks/useSkin";
-import { getBoardSkinDef } from "../utils/boardSkin";
+import { getBoardSkinDef, resolveEffectiveBoardSkin } from "../utils/boardSkin";
 import { BoardSkinContext } from "../context/BoardSkinContext";
+import { resolveEffectivePieceSkin } from "../utils/pieceImage";
 import { CampDecoration } from "./CampDecoration";
 import {
   getColiseumLegalMoves,
@@ -78,7 +79,7 @@ function ColiseumUI({
 }: ColiseumUIProps) {
   const { t } = useTranslation();
   const { skin } = useSkin();
-  const effectiveSkin = skin === "classic" ? "classic" : "fantasy";
+  const effectiveSkin = resolveEffectivePieceSkin(skin, "fantasy");
   const [gameOverVisible, setGameOverVisible] = useState(true);
   const [settings, setSettings] = useState<LocalSettings>(() => {
     try {
@@ -499,8 +500,10 @@ export default function ColiseumGame() {
   const { t } = useTranslation();
   const { isP2PMode, role, playerColor, actions, initialArena } = useP2P();
   const { boardSkin, setBoardSkin } = useBoardSkin();
-  const effectiveBoardSkin =
-    boardSkin === "default" ? "default" : "royal-arena";
+  const effectiveBoardSkin = resolveEffectiveBoardSkin(
+    boardSkin,
+    "royal-arena",
+  );
 
   let content: React.ReactNode;
   if (isP2PMode && role) {

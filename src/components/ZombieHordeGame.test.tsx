@@ -47,7 +47,7 @@ vi.mock("../hooks/useZombieHordeGame", () => ({
   }),
 }));
 
-let mockSkin = "classic";
+let mockSkin: string | null = "classic";
 vi.mock("../hooks/useSkin", () => ({
   useSkin: () => ({ skin: mockSkin, setSkin: vi.fn() }),
 }));
@@ -146,6 +146,16 @@ describe("ZombieHordeGame — smoke tests", () => {
 
   it("forces zombie skin when user has a non-classic skin", () => {
     mockSkin = "fantasy";
+    renderGame();
+    expect(screen.getByTestId("chess-board")).toHaveAttribute(
+      "data-skin",
+      "zombie",
+    );
+    mockSkin = "classic";
+  });
+
+  it("forces zombie skin for a brand-new visitor with no skin preference (BUG-016 fixed)", () => {
+    mockSkin = null;
     renderGame();
     expect(screen.getByTestId("chess-board")).toHaveAttribute(
       "data-skin",
