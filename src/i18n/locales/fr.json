@@ -12,7 +12,8 @@
     "localDesc": "Jouez contre l'IA ou en passant l'appareil à votre adversaire.",
     "multiplayer": "Multijoueur",
     "multiplayerDesc": "Défiez un ami à distance, sans compte.",
-    "offline": "Hors ligne : multijoueur indisponible"
+    "offline": "Hors ligne : multijoueur indisponible",
+    "offlineMode": "Mode hors ligne"
   },
   "gameModeSelect": {
     "title": "Choisissez votre mode de jeu",

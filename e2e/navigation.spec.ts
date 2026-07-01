@@ -1,17 +1,18 @@
 import { test, expect } from "@playwright/test";
 
 test.describe("Navigation — home screen", () => {
-  test("home page loads and shows mode select", async ({ page }) => {
+  test("home page loads and shows the Local/Multiplayer toggle with the mode grid", async ({
+    page,
+  }) => {
     await page.goto("/");
     await expect(page.getByText("ChessVerse")).toBeVisible();
-    // Local and Multiplayer cards
-    await expect(page.locator("button").filter({ hasText: /local/i }).first()).toBeVisible();
-  });
-
-  test("navigates to /local on Local card click", async ({ page }) => {
-    await page.goto("/");
-    await page.getByRole("button", { name: /local/i }).first().click();
-    await expect(page).toHaveURL("/local");
+    // Toggle replaces the old two-step mode chooser
+    await expect(page.getByRole("button", { name: /^local$/i })).toBeVisible();
+    await expect(
+      page.getByRole("button", { name: /multiplayer/i }),
+    ).toBeVisible();
+    // The mode grid is already shown, no extra navigation step needed
+    await expect(page.getByText("Classic", { exact: false }).first()).toBeVisible();
   });
 
   test("navigates to /profile via the profile icon", async ({ page }) => {
@@ -24,18 +25,20 @@ test.describe("Navigation — home screen", () => {
 });
 
 test.describe("Navigation — game mode selection", () => {
-  test("local → Classic starts a game", async ({ page }) => {
-    await page.goto("/local");
-    // Click the Classic mode card
+  test("home → Classic starts a local game directly", async ({ page }) => {
+    await page.goto("/");
+    // Local is selected by default; click the Classic mode card
     await page.getByText("Classic", { exact: false }).first().click();
     await expect(page).toHaveURL(/\/game\/classic/);
   });
 
-  test("breadcrumb 'Local' navigates back from game", async ({ page }) => {
+  test("breadcrumb 'Local' navigates back from game to the home page", async ({
+    page,
+  }) => {
     await page.goto("/game/classic");
     // The NavBar breadcrumbs show "Local"
     await page.getByRole("button", { name: /Local/i }).click();
-    await expect(page).toHaveURL("/local");
+    await expect(page).toHaveURL("/");
   });
 
   test("profile page shows empty state when no games played", async ({

@@ -19,6 +19,47 @@ const PLAY_TYPE_CONFIG = {
   multiplayer: { Icon: Globe, ring: "hover:ring-indigo-400" },
 } as const;
 
+interface ModeGridProps {
+  onSelect: (mode: GameMode) => void;
+  filterModes?: (mode: GameMode) => boolean;
+  ring: string;
+}
+
+export function ModeGrid({ onSelect, filterModes, ring }: ModeGridProps) {
+  const { t } = useTranslation();
+
+  return (
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      {gameModes.filter((mode) => !filterModes || filterModes(mode)).map((mode) => (
+        <div
+          key={mode.id}
+          onClick={() => onSelect(mode)}
+          className={`group bg-white rounded-xl overflow-hidden cursor-pointer
+            shadow-md hover:shadow-xl
+            ring-2 ring-transparent ${ring}
+            transition-all duration-200 hover:-translate-y-1`}
+        >
+          <div className="overflow-hidden">
+            <img
+              src={mode.image}
+              alt={t(`modes.${mode.id}.title`)}
+              className="w-full h-44 object-cover transition-transform duration-300 group-hover:scale-105"
+            />
+          </div>
+          <div className="p-5">
+            <h2 className="text-xl font-bold text-gray-900 mb-1">
+              {t(`modes.${mode.id}.title`)}
+            </h2>
+            <p className="text-sm text-gray-500 leading-relaxed">
+              {t(`modes.${mode.id}.description`)}
+            </p>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export default function GameModeSelect({
   playType,
   onSelect,
@@ -45,34 +86,7 @@ export default function GameModeSelect({
           {t("gameModeSelect.title")}
         </h1>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {gameModes.filter((mode) => !filterModes || filterModes(mode)).map((mode) => (
-            <div
-              key={mode.id}
-              onClick={() => onSelect(mode)}
-              className={`group bg-white rounded-xl overflow-hidden cursor-pointer
-                shadow-md hover:shadow-xl
-                ring-2 ring-transparent ${ring}
-                transition-all duration-200 hover:-translate-y-1`}
-            >
-              <div className="overflow-hidden">
-                <img
-                  src={mode.image}
-                  alt={t(`modes.${mode.id}.title`)}
-                  className="w-full h-44 object-cover transition-transform duration-300 group-hover:scale-105"
-                />
-              </div>
-              <div className="p-5">
-                <h2 className="text-xl font-bold text-gray-900 mb-1">
-                  {t(`modes.${mode.id}.title`)}
-                </h2>
-                <p className="text-sm text-gray-500 leading-relaxed">
-                  {t(`modes.${mode.id}.description`)}
-                </p>
-              </div>
-            </div>
-          ))}
-        </div>
+        <ModeGrid onSelect={onSelect} filterModes={filterModes} ring={ring} />
       </div>
     </div>
   );

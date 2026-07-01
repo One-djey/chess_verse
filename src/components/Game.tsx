@@ -1024,7 +1024,7 @@ export default function Game() {
     }));
   };
 
-  const returnPath = p2p.isP2PMode ? "/p2p" : "/local";
+  const returnPath = p2p.isP2PMode ? "/p2p" : "/";
   const handleLeaveP2P = () => {
     p2p.leaveRoom();
     navigate(returnPath);
@@ -1079,7 +1079,7 @@ export default function Game() {
       >
         <NavBar
           breadcrumbs={[
-            { label: playTypeLabel, path: p2p.isP2PMode ? "/p2p" : "/local" },
+            { label: playTypeLabel, path: p2p.isP2PMode ? "/p2p" : "/" },
             { label: t(`modes.${chess.gameState.gameMode.id}.title`) },
           ]}
           onSurrender={!chess.gameState.gameOver ? handleResign : undefined}

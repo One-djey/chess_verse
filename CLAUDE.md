@@ -26,8 +26,8 @@ React 18 + TypeScript + Vite + Tailwind CSS. No backend. P2P via Trystero (WebRT
 | -------------------- | ------------------------------------------------------------------------------------------------------------ |
 | Routing              | `src/App.tsx`                                                                                                |
 | Shared nav bar       | `src/components/NavBar.tsx`                                                                                  |
-| Home screen          | `src/components/ModeSelect.tsx`                                                                              |
-| Local mode select    | `src/components/GameModes.tsx` + `GameModeSelect.tsx`                                                        |
+| Home screen (mode select) | `src/components/ModeSelect.tsx` — merged Local/Multiplayer toggle + mode grid, see "Home screen" below  |
+| Mode grid (shared)   | `src/components/GameModeSelect.tsx` (exports `ModeGrid`, reused by `ModeSelect.tsx` and the P2P host fallback) |
 | P2P lobby            | `src/components/P2PLobby.tsx`                                                                                |
 | Game (main logic)    | `src/components/Game.tsx`                                                                                    |
 | Game end modal       | `src/components/GameOver.tsx`                                                                                |
@@ -51,11 +51,22 @@ React 18 + TypeScript + Vite + Tailwind CSS. No backend. P2P via Trystero (WebRT
 
 ## Routes
 
-- `/` → ModeSelect (home)
-- `/local` → GameModes (local mode lobby)
-- `/p2p` → P2PLobby (host/guest P2P lobby)
+- `/` → ModeSelect (home — Local/Multiplayer toggle + mode grid, see "Home screen" below)
+- `/p2p` → P2PLobby (host/guest P2P lobby; also reachable directly, e.g. via an invite link)
 - `/game/:modeId` → Game (`classic`, `borderless`, `all-random`, `assimilation`, or `p2p`)
 - `/profile` → ProfilePage (player stats, heatmap, badges)
+
+## Home screen (`ModeSelect.tsx`)
+
+The former two-step flow (choose Local vs Multiplayer, then choose a game mode) is merged into a single screen to minimize clicks before a new user can play:
+
+- `useOnlineStatus()` (`src/hooks/useOnlineStatus.ts`, `navigator.onLine` + `online`/`offline` listeners) drives the header:
+  - **Online**: a Local/Multiplayer segmented toggle (local `playTypeState`, always defaults to `"local"` on load — not persisted).
+  - **Offline**: toggle is replaced by static text `t("modeSelect.offlineMode")`; `playType` is forced to `"local"` regardless of the last toggle state.
+- Below the header, `ModeGrid` (exported from `GameModeSelect.tsx`) renders the mode cards directly — no extra navigation step.
+- Selecting a mode:
+  - `playType === "local"` → `navigate(\`/game/${mode.id}\`)`
+  - `playType === "multiplayer"` → `navigate("/p2p", { state: { presetModeId: mode.id } })` — `P2PLobby` reads `location.state.presetModeId` and auto-creates the room (calling the same `handleCreateGame` used by its own fallback mode-selection screen), skipping a second "choose your game mode" step. If `/p2p` is opened directly (no preset, e.g. a bookmark), it falls back to rendering `GameModeSelect` (`playType="multiplayer"`) as before.
 
 ## NavBar
 
@@ -68,9 +79,9 @@ React 18 + TypeScript + Vite + Tailwind CSS. No backend. P2P via Trystero (WebRT
 Breadcrumb map:
 | Page | Breadcrumbs |
 |---|---|
-| ModeSelect | _(none)_ |
-| GameModes | `[Local]` |
-| P2PLobby – mode select | `[Multiplayer]` |
+| ModeSelect (home) | _(none)_ |
+| P2PLobby – mode select (fallback, no preset) | `[Multiplayer]` |
+| P2PLobby – auto-starting from preset mode | _(none — loading state)_ |
 | P2PLobby – invite/waiting | `[Multiplayer, Invite]` |
 | Game (local) | `[Local, <mode title>]` |
 | Game (P2P) | `[Multiplayer, <mode title>]` |
@@ -78,7 +89,7 @@ Breadcrumb map:
 
 ## Navigation rules
 
-- "Main Menu" from a local game → `/local`
+- "Main Menu" from a local game → `/` (home)
 - "Main Menu" from a P2P game → `/p2p`
 - Controlled by `returnPath` prop on `GameOver`, computed in `Game.tsx`
 - In-game breadcrumb items have no `path` (non-clickable) to prevent accidental quit

@@ -12,7 +12,8 @@
     "localDesc": "Gioca contro l'IA o a turni con un amico sullo stesso dispositivo.",
     "multiplayer": "Multigiocatore",
     "multiplayerDesc": "Sfida un amico da remoto, senza server.",
-    "offline": "Offline: multigiocatore non disponibile"
+    "offline": "Offline: multigiocatore non disponibile",
+    "offlineMode": "Modalità offline"
   },
   "gameModeSelect": {
     "title": "Scegli la modalità di gioco",

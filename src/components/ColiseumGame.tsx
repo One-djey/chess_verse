@@ -275,7 +275,7 @@ function ColiseumUI({
         { label: t("modes.coliseum.title") },
       ]
     : [
-        { label: t("modeSelect.local"), path: "/local" },
+        { label: t("modeSelect.local"), path: "/" },
         { label: t("modes.coliseum.title") },
       ];
 
@@ -420,8 +420,8 @@ function ColiseumGameLocal() {
       onReplay={handleReplay}
       getDuration={getDuration}
       getTotalMoveCount={getTotalMoveCount}
-      returnPath="/local"
-      onMainMenu={() => navigate("/local")}
+      returnPath="/"
+      onMainMenu={() => navigate("/")}
     />
   );
 }

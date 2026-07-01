@@ -26,7 +26,11 @@ vi.mock("../hooks/useOnlineStatus", () => ({
 
 function LocationProbe() {
   const location = useLocation();
-  return <div data-testid="location">{location.pathname}</div>;
+  return (
+    <div data-testid="location">
+      {location.pathname}|{JSON.stringify(location.state)}
+    </div>
+  );
 }
 
 function renderModeSelect() {
@@ -44,62 +48,53 @@ function renderModeSelect() {
 
 afterEach(() => {
   cleanup();
+  mockIsOnline = true;
 });
 
-describe("ModeSelect — rendering", () => {
-  it("shows the subtitle and both mode cards", () => {
+describe("ModeSelect — online toggle", () => {
+  it("shows the Local/Multiplayer toggle and the mode grid", () => {
     renderModeSelect();
-    expect(screen.getByText("modeSelect.subtitle")).toBeInTheDocument();
     expect(
-      screen.getByRole("button", { name: /modeSelect\.local/i }),
+      screen.getByRole("button", { name: "modeSelect.local" }),
     ).toBeInTheDocument();
     expect(
-      screen.getByRole("button", { name: /modeSelect\.multiplayer/i }),
+      screen.getByRole("button", { name: "modeSelect.multiplayer" }),
     ).toBeInTheDocument();
+    expect(screen.getByText("modes.classic.title")).toBeInTheDocument();
   });
-});
 
-describe("ModeSelect — navigation", () => {
-  it("navigates to /local when Local is clicked", async () => {
+  it("defaults to Local: selecting a mode navigates to /game/:id", async () => {
     const user = userEvent.setup();
     renderModeSelect();
-    await user.click(screen.getByRole("button", { name: /modeSelect\.local/i }));
-    expect(screen.getByTestId("location")).toHaveTextContent("/local");
+    await user.click(screen.getByText("modes.classic.title"));
+    expect(screen.getByTestId("location")).toHaveTextContent("/game/classic");
   });
 
-  it("navigates to /p2p when Multiplayer is clicked while online", async () => {
+  it("switching to Multiplayer routes mode selection through /p2p with the preset mode", async () => {
     const user = userEvent.setup();
     renderModeSelect();
     await user.click(
-      screen.getByRole("button", { name: /modeSelect\.multiplayer/i }),
+      screen.getByRole("button", { name: "modeSelect.multiplayer" }),
     );
-    expect(screen.getByTestId("location")).toHaveTextContent("/p2p");
+    await user.click(screen.getByText("modes.classic.title"));
+    expect(screen.getByTestId("location")).toHaveTextContent(
+      '/p2p|{"presetModeId":"classic"}',
+    );
   });
 });
 
 describe("ModeSelect — offline state", () => {
-  it("disables the Multiplayer button and shows offline label when offline", async () => {
+  it("replaces the toggle with an offline label and stays in local mode", async () => {
     mockIsOnline = false;
-    cleanup();
+    const user = userEvent.setup();
+    renderModeSelect();
 
-    render(
-      <MemoryRouter initialEntries={["/"]}>
-        <SkinProvider>
-          <BoardSkinProvider>
-            <ModeSelect />
-          </BoardSkinProvider>
-        </SkinProvider>
-        <LocationProbe />
-      </MemoryRouter>,
-    );
+    expect(screen.getByText("modeSelect.offlineMode")).toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: "modeSelect.multiplayer" }),
+    ).not.toBeInTheDocument();
 
-    const multiBtn = screen.getByRole("button", { name: /modeSelect\.offline/i });
-    expect(multiBtn).toBeDisabled();
-
-    // Clicking a disabled button must not navigate
-    await userEvent.setup().click(multiBtn);
-    expect(screen.getByTestId("location")).toHaveTextContent("/");
-
-    mockIsOnline = true;
+    await user.click(screen.getByText("modes.classic.title"));
+    expect(screen.getByTestId("location")).toHaveTextContent("/game/classic");
   });
 });
