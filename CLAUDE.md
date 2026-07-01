@@ -123,7 +123,7 @@ Defined in `src/utils/pieceImage.ts`. Convention: `public/ressources/pieces/{ski
 | `fantasy` | `pieces/fantasy/` | `.webp` |
 
 - `getPieceImageSrc(color, type, skin)` — resolves image path
-- `SkinContext` / `useSkin()` — global preference, persisted in localStorage `chessverse_skin`
+- `SkinContext` / `useSkin()` — global preference, persisted in localStorage `chessverse_skin`; `null` until the user explicitly picks a skin (see "Forced skins per mode" below)
 - Skin picker in the Settings modal (always visible, visual cards with king/queen/knight preview)
 - **To add a skin**: add images to `public/ressources/pieces/<id>/`, add entry to `SKINS` in `pieceImage.ts`, add `skins.<id>` key to all 8 locale files
 - **P2P sync**: host embeds `hostSkin` in `color_assign`; guest sends `guest_ready { skin }` before navigating — both players see their own skin on their pieces and the opponent's skin on opponent pieces
@@ -136,9 +136,10 @@ Modes with a strong visual identity declare `forcedSkins` in `gameModes.ts` (`{ 
 
 2. **Picker checked state** — the highlighted card is the _effective_ skin, not the raw stored value. `checkedPieceSkin = forcedSkins && skin !== "classic" ? forcedSkins.pieces : skin`. `checkedBoardSkin = forcedSkins && boardSkin !== "default" ? forcedSkins.board : boardSkin`.
 
-3. **Effective skin at render time** — `classic` (pieces) and `default` (board) are the user accessibility overrides; any other stored value falls back to the mode's forced skin. Implemented via `BoardSkinContext.Provider` so `ChessBoard` (which reads the context) receives the correct value:
-   - `ZombieHordeGame.tsx` / `ColiseumGame.tsx`: wrap tree in `<BoardSkinContext.Provider value={{ boardSkin: effectiveBoardSkin, setBoardSkin }}>` where `effectiveBoardSkin = boardSkin === "default" ? "default" : "<forced-board-skin>"`. Board style computed from `effectiveBoardSkin`, not the global context.
-   - `Game.tsx` (borderless, etc.): same Provider pattern for board skin; piece skin computed as `effectiveSkin = forcedPieceSkin && skin !== "classic" ? forcedPieceSkin : skin` and passed directly to `ChessBoard`.
+3. **Effective skin at render time** — `SkinContext`/`BoardSkinContext` expose `skin`/`boardSkin` as `PieceSkin | null` / `BoardSkin | null`: `null` means no explicit preference has ever been saved (nothing written to `localStorage` until the user picks a skin in `GameSettings`). The resolution `null` → mode's forced skin (or `classic`/`default` if none) → `classic`/`default` (pieces/board) as the user accessibility override, always wins, even under a forced-skin mode → any other explicit choice defers to the forced skin if one exists — is centralized in `resolveEffectivePieceSkin` (`src/utils/pieceImage.ts`) and `resolveEffectiveBoardSkin` (`src/utils/boardSkin.ts`); every call site imports these instead of re-implementing the ternary (BUG-016). Implemented via `BoardSkinContext.Provider` so `ChessBoard` (which reads the context) receives the correct value:
+   - `ZombieHordeGame.tsx` / `ColiseumGame.tsx`: wrap tree in `<BoardSkinContext.Provider value={{ boardSkin: effectiveBoardSkin, setBoardSkin }}>` where `effectiveBoardSkin = resolveEffectiveBoardSkin(boardSkin, "<forced-board-skin>")`. Board style computed from `effectiveBoardSkin`, not the global context.
+   - `Game.tsx` (borderless, etc.): same Provider pattern for board skin; piece skin computed as `effectiveSkin = resolveEffectivePieceSkin(skin, forcedPieceSkin)` and passed directly to `ChessBoard`.
+   - `P2PLobby.tsx`: resolves the local nullable `skin` to a concrete value via `resolveEffectivePieceSkin` before sending it as `hostSkin`/`guestSkin` over the wire (`types/p2p.ts` keeps `PieceSkin` non-nullable; `null` there means "not yet received from peer", a different concept handled in `P2PContext.tsx`).
 
 ## Coliseum AI
 
@@ -196,5 +197,5 @@ Accessible via a **Support section** at the bottom of the Settings modal (gear i
 - `chess_settings` — AI difficulty, flip board toggle
 - `chessverse_language` — UI language
 - `chessverse_stats` — Player stats (see `ChessverseStats` in `statsService.ts`): game counts, win/loss/draw, ELO, heatmap, piece stats, streaks, badge counters. Recorded at the end of every game via `recordGame()` called in `Game.tsx`'s `gameOver` effect.
-- `chessverse_skin` — selected piece skin (`classic` | `fantasy`)
-- `chessverse_board_skin` — selected board skin (`default` | `royal-arena`)
+- `chessverse_skin` — selected piece skin (`classic` | `fantasy` | ...); absent/unset until the user explicitly picks one (see BUG-016)
+- `chessverse_board_skin` — selected board skin (`default` | `royal-arena` | ...); absent/unset until the user explicitly picks one (see BUG-016)

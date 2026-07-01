@@ -9,19 +9,21 @@ function isValidSkin(value: string | null): value is PieceSkin {
 }
 
 export interface SkinContextValue {
-  skin: PieceSkin;
+  /** `null` = no explicit user preference yet — resolve via `resolveEffectivePieceSkin`. */
+  skin: PieceSkin | null;
   setSkin: (skin: PieceSkin) => void;
 }
 
 export const SkinContext = createContext<SkinContextValue | null>(null);
 
 export function SkinProvider({ children }: { children: ReactNode }) {
-  const [skin, setSkinState] = useState<PieceSkin>(() => {
+  const [skin, setSkinState] = useState<PieceSkin | null>(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved === null) return null;
       return isValidSkin(saved) ? saved : DEFAULT_SKIN;
     } catch {
-      return DEFAULT_SKIN;
+      return null;
     }
   });
 

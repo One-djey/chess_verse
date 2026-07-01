@@ -20,9 +20,9 @@ afterEach(() => {
 });
 
 describe("BoardSkinProvider — initial value", () => {
-  it('defaults to "default" when localStorage is empty', () => {
+  it("defaults to null when localStorage is empty (BUG-016 fixed)", () => {
     const { result } = renderBoardSkin();
-    expect(result.current.boardSkin).toBe("default");
+    expect(result.current.boardSkin).toBeNull();
   });
 
   it("reads the persisted board skin from localStorage on mount", () => {

@@ -32,6 +32,7 @@
 | BUG-013 | 🟠 Moyenne | useP2PGame / useColiseumP2PGame | `onPeerLeave` du hook écrase celui de `P2PContext` (slot unique Trystero) | ✅ Corrigé |
 | BUG-014 | 🟡 Faible | BoardSkinContext | Skin de plateau non validé à la lecture du storage | ✅ Corrigé |
 | BUG-015 | 🟢 Très faible | assimilation | `applyAssimilationCapture` peut acquérir le type `king` | ✅ Corrigé |
+| BUG-016 | 🟠 Moyenne | SkinContext / BoardSkinContext | Skin forcé jamais appliqué pour un nouveau visiteur (sentinelle "classic"/"default" ambiguë) | ✅ Corrigé |
 
 ---
 
@@ -249,6 +250,25 @@ Relevés par les tests composants (verrouillés par `// NOTE:` dans `src/compone
 - **Localisation** : `src/utils/chess/assimilation.ts:19`.
 - **Solution** : étendre le filtre — `.filter(t => t !== capturingPiece.type && t !== "king")`.
 - **Résolution** : filtre étendu + cas ajoutés à `assimilation.test.ts` (capture d'un roi, non-propagation depuis des `acquiredTypes` contenant `king`). Seuil de couverture 100 L/100 F/90 B inchangé.
+
+---
+
+## BUG-016 — Skin forcé jamais appliqué pour un nouveau visiteur
+
+- **Sévérité** : 🟠 Moyenne (visible pour **tout nouveau visiteur** : les modes à identité visuelle forcée — borderless, all-random, assimilation, coliseum, zombie-horde — s'affichent avec les skins `classic`/`default` au lieu du skin thématique prévu, dès la toute première partie, sans aucune action de l'utilisateur).
+- **Cause racine** : `SkinContext`/`BoardSkinContext` utilisaient la **même** chaîne (`"classic"`/`"default"`) comme sentinelle « aucune préférence enregistrée » et comme valeur « l'utilisateur a explicitement choisi classic/default en dérogation d'accessibilité ». Le calcul du skin effectif — répété à l'identique à plusieurs endroits — était de la forme `forcedSkin && skin !== "classic" ? forcedSkin : skin`. Pour un nouveau visiteur (`localStorage` vide), `skin` valait déjà `"classic"` par défaut : la condition `skin !== "classic"` était donc fausse et le skin forcé n'était **jamais** appliqué, exactement comme si l'utilisateur avait choisi de le désactiver.
+- **Localisation** :
+  - `src/context/SkinContext.tsx` (init du `useState`, valeur par défaut `"classic"`).
+  - `src/context/BoardSkinContext.tsx` (init du `useState`, valeur par défaut `"default"`).
+  - `src/components/Game.tsx` (skin de pièce et de plateau).
+  - `src/components/GameSettings.tsx` (`checkedPieceSkin`/`checkedBoardSkin`).
+  - `src/components/ZombieHordeGame.tsx`.
+  - `src/components/ColiseumGame.tsx`.
+  - `src/components/P2PLobby.tsx` (transmettait la préférence brute au protocole P2P, avant résolution).
+- **Solutions envisageables** :
+  - **A. Sentinelle `null` distincte** : le contexte expose `skin: PieceSkin | null` (resp. `boardSkin: BoardSkin | null`), `null` signifiant « aucune préférence enregistrée ». Un helper pur partagé (`resolveEffectivePieceSkin`/`resolveEffectiveBoardSkin`, colocalisé avec les types `PieceSkin`/`BoardSkin`) centralise la résolution : `null` → skin forcé du mode (ou `"classic"`/`"default"` si aucun) ; `"classic"`/`"default"` explicite → conserve la dérogation d'accessibilité (le skin forcé est ignoré) ; toute autre valeur explicite → appliquée telle quelle (skin forcé écrasé, comportement inchangé).
+  - B. Ajouter un flag `hasChosenSkin: boolean` séparé dans le contexte, en plus de `skin`. Résout le même problème mais ajoute un second bit d'état à synchroniser avec `localStorage`, pour un gain nul par rapport à A.
+- **Résolution** : `SkinContext`/`BoardSkinContext` initialisent désormais `skin`/`boardSkin` à `null` quand `localStorage` ne contient aucune valeur (au lieu de `"classic"`/`"default"`) ; une valeur stockée invalide continue de retomber sur `"classic"`/`"default"` (BUG-006/BUG-014, comportement distinct de « rien stocké »). Nouveaux helpers `resolveEffectivePieceSkin` (`src/utils/pieceImage.ts`) et `resolveEffectiveBoardSkin` (`src/utils/boardSkin.ts`) centralisent la résolution ; tous les sites d'appel migrés. `P2PLobby.tsx` résout la préférence nullable en valeur concrète avant `startRoom`/`joinExistingRoom` (le protocole P2P (`types/p2p.ts`) reste non-nullable, `null` y garde son sens propre « pas encore reçu du pair »).
 
 ---
 

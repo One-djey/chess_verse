@@ -34,12 +34,13 @@ import { detectScholarsMate } from "../utils/chess/tactics";
 import { resolveGameMode } from "../utils/gameLogic";
 import { gameModes } from "../utils/gameModes";
 import type { PieceSkin } from "../utils/pieceImage";
+import { resolveEffectivePieceSkin } from "../utils/pieceImage";
 import { useP2P } from "../hooks/useP2P";
 import { useChessGame, isAnyAssistanceActive } from "../hooks/useChessGame";
 import { useP2PGame } from "../hooks/useP2PGame";
 import { useSkin } from "../hooks/useSkin";
 import { useBoardSkin } from "../hooks/useBoardSkin";
-import { getBoardSkinDef } from "../utils/boardSkin";
+import { getBoardSkinDef, resolveEffectiveBoardSkin } from "../utils/boardSkin";
 import { BoardSkinContext } from "../context/BoardSkinContext";
 import type { BoardSkin } from "../utils/boardSkin";
 import { CampDecoration, SideCamp } from "./CampDecoration";
@@ -76,8 +77,10 @@ export default function Game() {
   const { skin } = useSkin();
   const forcedPieceSkin = gameModes.find((m) => m.id === modeId)?.forcedSkins
     ?.pieces as PieceSkin | undefined;
-  const effectiveSkin: PieceSkin =
-    forcedPieceSkin && skin !== "classic" ? forcedPieceSkin : skin;
+  const effectiveSkin: PieceSkin = resolveEffectivePieceSkin(
+    skin,
+    forcedPieceSkin,
+  );
   // Ref updated on every render so the cleanup always reads the *current* P2P state,
   // avoiding the stale-closure problem of capturing p2p.isP2PMode at first-render time.
   const isActiveP2PRef = React.useRef(false);
@@ -1049,8 +1052,10 @@ export default function Game() {
   const { boardSkin, setBoardSkin } = useBoardSkin();
   const forcedBoardSkin = gameModes.find((m) => m.id === modeId)?.forcedSkins
     ?.board as BoardSkin | undefined;
-  const effectiveBoardSkin: BoardSkin =
-    forcedBoardSkin && boardSkin !== "default" ? forcedBoardSkin : boardSkin;
+  const effectiveBoardSkin: BoardSkin = resolveEffectiveBoardSkin(
+    boardSkin,
+    forcedBoardSkin,
+  );
   const effectiveBoardDef = getBoardSkinDef(effectiveBoardSkin);
   const boardSkinStyle = effectiveBoardDef.ground
     ? {

@@ -12,9 +12,18 @@ import { getDifficultyKey } from "../utils/chess";
 import { SUPPORTED_LANGUAGES, SupportedLanguage } from "../i18n";
 import { useInstall } from "../hooks/useInstall";
 import { useSkin } from "../hooks/useSkin";
-import { SKINS, getPieceImageSrc } from "../utils/pieceImage";
+import {
+  SKINS,
+  getPieceImageSrc,
+  resolveEffectivePieceSkin,
+  type PieceSkin,
+} from "../utils/pieceImage";
 import { useBoardSkin } from "../hooks/useBoardSkin";
-import { BOARD_SKINS } from "../utils/boardSkin";
+import {
+  BOARD_SKINS,
+  resolveEffectiveBoardSkin,
+  type BoardSkin,
+} from "../utils/boardSkin";
 import { gameModes } from "../utils/gameModes";
 import FeedbackModal from "./FeedbackModal";
 import type { LocalSettings } from "../hooks/useChessGame";
@@ -183,12 +192,14 @@ export default function GameSettings({
       )
     : BOARD_SKINS;
   // Checked skin = what's actually rendered, not the raw stored value.
-  // If stored value is neither "classic" nor the mode's forced skin,
-  // the forced skin is what the board displays — so highlight that card.
-  const checkedPieceSkin =
-    forcedSkins && skin !== "classic" ? forcedSkins.pieces : skin;
-  const checkedBoardSkin =
-    forcedSkins && boardSkin !== "default" ? forcedSkins.board : boardSkin;
+  const checkedPieceSkin = resolveEffectivePieceSkin(
+    skin,
+    forcedSkins?.pieces as PieceSkin | undefined,
+  );
+  const checkedBoardSkin = resolveEffectiveBoardSkin(
+    boardSkin,
+    forcedSkins?.board as BoardSkin | undefined,
+  );
   // feedbackOpen lives outside the isOpen guard so it survives Settings closing
   const [feedbackOpen, setFeedbackOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<Tab>("partie");

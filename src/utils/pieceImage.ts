@@ -18,3 +18,19 @@ export function getPieceImageSrc(
   const s = SKINS.find((sk) => sk.id === skin)!;
   return `/ressources/pieces/${skin}/${color}_${type}.${s.ext}`;
 }
+
+/**
+ * Resolves the piece skin that should actually be rendered.
+ *
+ * `skin === null` means no explicit user preference has been saved yet —
+ * defers to the mode's forced skin if any, else "classic". An explicit
+ * "classic" choice is an accessibility override and always wins.
+ */
+export function resolveEffectivePieceSkin(
+  skin: PieceSkin | null,
+  forcedSkin?: PieceSkin,
+): PieceSkin {
+  if (skin === null) return forcedSkin ?? "classic";
+  if (forcedSkin && skin !== "classic") return forcedSkin;
+  return skin;
+}

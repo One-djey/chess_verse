@@ -18,10 +18,11 @@ import { detectTactic, type MoveContext } from "../utils/chess/tactics";
 import type { LocalSettings } from "../hooks/useChessGame";
 import { ChessAI } from "../services/ChessAI";
 import { BoardSkinContext } from "../context/BoardSkinContext";
-import { getBoardSkinDef } from "../utils/boardSkin";
+import { getBoardSkinDef, resolveEffectiveBoardSkin } from "../utils/boardSkin";
 import { useBoardSkin } from "../hooks/useBoardSkin";
 import type { GameMode, Piece, PieceType, Position } from "../types/chess";
 import { useSkin } from "../hooks/useSkin";
+import { resolveEffectivePieceSkin } from "../utils/pieceImage";
 
 const _zombieBoardDef = getBoardSkinDef("apocalypse");
 const ZOMBIE_BOARD_STYLE: CSSProperties = _zombieBoardDef.ground
@@ -150,9 +151,9 @@ export default function ZombieHordeGame() {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { skin } = useSkin();
-  const effectiveSkin = skin === "classic" ? "classic" : "zombie";
+  const effectiveSkin = resolveEffectivePieceSkin(skin, "zombie");
   const { boardSkin, setBoardSkin } = useBoardSkin();
-  const effectiveBoardSkin = boardSkin === "default" ? "default" : "apocalypse";
+  const effectiveBoardSkin = resolveEffectiveBoardSkin(boardSkin, "apocalypse");
   const zombieBoardStyle =
     effectiveBoardSkin === "apocalypse" ? ZOMBIE_BOARD_STYLE : {};
 

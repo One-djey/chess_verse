@@ -20,9 +20,9 @@ afterEach(() => {
 });
 
 describe("SkinProvider — initial value", () => {
-  it('defaults to "classic" when localStorage is empty', () => {
+  it("defaults to null when localStorage is empty (BUG-016 fixed)", () => {
     const { result } = renderSkin();
-    expect(result.current.skin).toBe("classic");
+    expect(result.current.skin).toBeNull();
   });
 
   it("reads the persisted skin from localStorage on mount", () => {
