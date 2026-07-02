@@ -269,15 +269,7 @@ function ColiseumUI({
     ],
   );
 
-  const breadcrumbs = isP2PMode
-    ? [
-        { label: t("modeSelect.multiplayer"), path: "/p2p" },
-        { label: t("modes.coliseum.title") },
-      ]
-    : [
-        { label: t("modeSelect.local"), path: "/local" },
-        { label: t("modes.coliseum.title") },
-      ];
+  const breadcrumbs = [{ label: t("modes.coliseum.title") }];
 
   const boardSkinStyle = useBoardSkinStyle();
   const { boardSkin } = useBoardSkin();
@@ -420,8 +412,8 @@ function ColiseumGameLocal() {
       onReplay={handleReplay}
       getDuration={getDuration}
       getTotalMoveCount={getTotalMoveCount}
-      returnPath="/local"
-      onMainMenu={() => navigate("/local")}
+      returnPath="/"
+      onMainMenu={() => navigate("/")}
     />
   );
 }

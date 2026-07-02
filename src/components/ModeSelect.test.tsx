@@ -7,6 +7,8 @@ import ModeSelect from "./ModeSelect";
 import { SkinProvider } from "../context/SkinContext";
 import { BoardSkinProvider } from "../context/BoardSkinContext";
 
+const PLAY_TYPE_KEY = "chessverse_play_type";
+
 vi.mock("react-i18next", () => ({
   useTranslation: () => ({
     t: (key: string) => key,
@@ -26,7 +28,11 @@ vi.mock("../hooks/useOnlineStatus", () => ({
 
 function LocationProbe() {
   const location = useLocation();
-  return <div data-testid="location">{location.pathname}</div>;
+  return (
+    <div data-testid="location">
+      {location.pathname}|{JSON.stringify(location.state)}
+    </div>
+  );
 }
 
 function renderModeSelect() {
@@ -44,62 +50,84 @@ function renderModeSelect() {
 
 afterEach(() => {
   cleanup();
+  mockIsOnline = true;
+  localStorage.clear();
 });
 
-describe("ModeSelect — rendering", () => {
-  it("shows the subtitle and both mode cards", () => {
+describe("ModeSelect — online toggle", () => {
+  it("shows the Local/Multiplayer toggle and the mode grid", () => {
     renderModeSelect();
-    expect(screen.getByText("modeSelect.subtitle")).toBeInTheDocument();
     expect(
-      screen.getByRole("button", { name: /modeSelect\.local/i }),
+      screen.getByRole("button", { name: "modeSelect.local" }),
     ).toBeInTheDocument();
     expect(
-      screen.getByRole("button", { name: /modeSelect\.multiplayer/i }),
+      screen.getByRole("button", { name: "modeSelect.multiplayer" }),
     ).toBeInTheDocument();
+    expect(screen.getByText("modes.classic.title")).toBeInTheDocument();
   });
-});
 
-describe("ModeSelect — navigation", () => {
-  it("navigates to /local when Local is clicked", async () => {
+  it("defaults to Local when nothing is stored: selecting a mode navigates to /game/:id", async () => {
     const user = userEvent.setup();
     renderModeSelect();
-    await user.click(screen.getByRole("button", { name: /modeSelect\.local/i }));
-    expect(screen.getByTestId("location")).toHaveTextContent("/local");
+    expect(
+      screen.getByRole("button", { name: "modeSelect.local" }),
+    ).toHaveAttribute("aria-pressed", "true");
+    await user.click(screen.getByText("modes.classic.title"));
+    expect(screen.getByTestId("location")).toHaveTextContent("/game/classic");
   });
 
-  it("navigates to /p2p when Multiplayer is clicked while online", async () => {
+  it("switching to Multiplayer routes mode selection through /p2p with the preset mode, and persists the choice", async () => {
     const user = userEvent.setup();
     renderModeSelect();
     await user.click(
-      screen.getByRole("button", { name: /modeSelect\.multiplayer/i }),
+      screen.getByRole("button", { name: "modeSelect.multiplayer" }),
     );
-    expect(screen.getByTestId("location")).toHaveTextContent("/p2p");
+    expect(localStorage.getItem(PLAY_TYPE_KEY)).toBe("multiplayer");
+
+    await user.click(screen.getByText("modes.classic.title"));
+    expect(screen.getByTestId("location")).toHaveTextContent(
+      '/p2p|{"presetModeId":"classic"}',
+    );
+  });
+
+  it("restores the Multiplayer choice from localStorage on mount", () => {
+    localStorage.setItem(PLAY_TYPE_KEY, "multiplayer");
+    renderModeSelect();
+    expect(
+      screen.getByRole("button", { name: "modeSelect.multiplayer" }),
+    ).toHaveAttribute("aria-pressed", "true");
+    expect(
+      screen.getByRole("button", { name: "modeSelect.local" }),
+    ).toHaveAttribute("aria-pressed", "false");
   });
 });
 
 describe("ModeSelect — offline state", () => {
-  it("disables the Multiplayer button and shows offline label when offline", async () => {
+  it("collapses the toggle to a single disabled 'offline' option and stays in local mode", async () => {
     mockIsOnline = false;
-    cleanup();
+    const user = userEvent.setup();
+    renderModeSelect();
 
-    render(
-      <MemoryRouter initialEntries={["/"]}>
-        <SkinProvider>
-          <BoardSkinProvider>
-            <ModeSelect />
-          </BoardSkinProvider>
-        </SkinProvider>
-        <LocationProbe />
-      </MemoryRouter>,
-    );
+    const offlineOption = screen.getByRole("button", {
+      name: "modeSelect.offlineMode",
+    });
+    expect(offlineOption).toBeDisabled();
+    expect(offlineOption).toHaveAttribute("aria-pressed", "true");
+    expect(
+      screen.queryByRole("button", { name: "modeSelect.multiplayer" }),
+    ).not.toBeInTheDocument();
 
-    const multiBtn = screen.getByRole("button", { name: /modeSelect\.offline/i });
-    expect(multiBtn).toBeDisabled();
+    await user.click(screen.getByText("modes.classic.title"));
+    expect(screen.getByTestId("location")).toHaveTextContent("/game/classic");
+  });
 
-    // Clicking a disabled button must not navigate
-    await userEvent.setup().click(multiBtn);
-    expect(screen.getByTestId("location")).toHaveTextContent("/");
+  it("forces local mode offline even when Multiplayer was previously stored", async () => {
+    mockIsOnline = false;
+    localStorage.setItem(PLAY_TYPE_KEY, "multiplayer");
+    const user = userEvent.setup();
+    renderModeSelect();
 
-    mockIsOnline = true;
+    await user.click(screen.getByText("modes.classic.title"));
+    expect(screen.getByTestId("location")).toHaveTextContent("/game/classic");
   });
 });

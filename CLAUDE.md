@@ -26,8 +26,8 @@ React 18 + TypeScript + Vite + Tailwind CSS. No backend. P2P via Trystero (WebRT
 | -------------------- | ------------------------------------------------------------------------------------------------------------ |
 | Routing              | `src/App.tsx`                                                                                                |
 | Shared nav bar       | `src/components/NavBar.tsx`                                                                                  |
-| Home screen          | `src/components/ModeSelect.tsx`                                                                              |
-| Local mode select    | `src/components/GameModes.tsx` + `GameModeSelect.tsx`                                                        |
+| Home screen (mode select) | `src/components/ModeSelect.tsx` — merged Local/Multiplayer toggle + mode grid, see "Home screen" below  |
+| Mode grid (shared)   | `src/components/GameModeSelect.tsx` (exports `ModeGrid`, reused by `ModeSelect.tsx` and the P2P host fallback) |
 | P2P lobby            | `src/components/P2PLobby.tsx`                                                                                |
 | Game (main logic)    | `src/components/Game.tsx`                                                                                    |
 | Game end modal       | `src/components/GameOver.tsx`                                                                                |
@@ -51,11 +51,22 @@ React 18 + TypeScript + Vite + Tailwind CSS. No backend. P2P via Trystero (WebRT
 
 ## Routes
 
-- `/` → ModeSelect (home)
-- `/local` → GameModes (local mode lobby)
-- `/p2p` → P2PLobby (host/guest P2P lobby)
+- `/` → ModeSelect (home — Local/Multiplayer toggle + mode grid, see "Home screen" below)
+- `/p2p` → P2PLobby (host/guest P2P lobby; also reachable directly, e.g. via an invite link)
 - `/game/:modeId` → Game (`classic`, `borderless`, `all-random`, `assimilation`, or `p2p`)
 - `/profile` → ProfilePage (player stats, heatmap, badges)
+
+## Home screen (`ModeSelect.tsx`)
+
+The former two-step flow (choose Local vs Multiplayer, then choose a game mode) is merged into a single screen to minimize clicks before a new user can play:
+
+- `useOnlineStatus()` (`src/hooks/useOnlineStatus.ts`, `navigator.onLine` + `online`/`offline` listeners) drives the header:
+  - **Online**: a Local/Multiplayer segmented toggle (`playTypeState`, initialized from and persisted to localStorage `chessverse_play_type` — see "Local storage keys" below).
+  - **Offline**: the toggle collapses to a single disabled pill labeled `t("modeSelect.offlineMode")` (same segmented-control look, one option) and `playType` is forced to `"local"` regardless of the stored preference.
+- Below the header, `ModeGrid` (exported from `GameModeSelect.tsx`) renders the mode cards directly — no extra navigation step.
+- Selecting a mode:
+  - `playType === "local"` → `navigate(\`/game/${mode.id}\`)`
+  - `playType === "multiplayer"` → `navigate("/p2p", { state: { presetModeId: mode.id } })` — `P2PLobby` reads `location.state.presetModeId` and auto-creates the room (calling the same `handleCreateGame` used by its own fallback mode-selection screen), skipping a second "choose your game mode" step. If `/p2p` is opened directly (no preset, e.g. a bookmark), it falls back to rendering `GameModeSelect` (`playType="multiplayer"`) as before.
 
 ## NavBar
 
@@ -65,20 +76,23 @@ React 18 + TypeScript + Vite + Tailwind CSS. No backend. P2P via Trystero (WebRT
 - `onSurrender?` — shows red Surrender button (only pass in active game)
 - `gameSettings?` / `onGameSettingsChange?` — passes local-game settings to the Settings modal; when absent, modal shows language-only
 
+Breadcrumbs never show the Local/Multiplayer distinction (`modeSelect.local`/`modeSelect.multiplayer`) — only the game mode's own title, so the trail always reads "ChessVerse > <mode title>" (+ a step suffix where relevant):
+
 Breadcrumb map:
 | Page | Breadcrumbs |
 |---|---|
-| ModeSelect | _(none)_ |
-| GameModes | `[Local]` |
-| P2PLobby – mode select | `[Multiplayer]` |
-| P2PLobby – invite/waiting | `[Multiplayer, Invite]` |
-| Game (local) | `[Local, <mode title>]` |
-| Game (P2P) | `[Multiplayer, <mode title>]` |
+| ModeSelect (home) | _(none)_ |
+| P2PLobby – guest, mode unknown yet | _(none)_ |
+| P2PLobby – guest, mode known (from invite link) | `[<mode title>]` |
+| P2PLobby – mode select (fallback, no preset) | _(none)_ |
+| P2PLobby – auto-starting from preset mode | _(none — loading state)_ |
+| P2PLobby – invite/waiting, connected | `[<mode title>, Invite]` |
+| Game (local or P2P) | `[<mode title>]` |
 | ProfilePage | `[profile.title]` |
 
 ## Navigation rules
 
-- "Main Menu" from a local game → `/local`
+- "Main Menu" from a local game → `/` (home)
 - "Main Menu" from a P2P game → `/p2p`
 - Controlled by `returnPath` prop on `GameOver`, computed in `Game.tsx`
 - In-game breadcrumb items have no `path` (non-clickable) to prevent accidental quit
@@ -199,3 +213,4 @@ Accessible via a **Support section** at the bottom of the Settings modal (gear i
 - `chessverse_stats` — Player stats (see `ChessverseStats` in `statsService.ts`): game counts, win/loss/draw, ELO, heatmap, piece stats, streaks, badge counters. Recorded at the end of every game via `recordGame()` called in `Game.tsx`'s `gameOver` effect.
 - `chessverse_skin` — selected piece skin (`classic` | `fantasy` | ...); absent/unset until the user explicitly picks one (see BUG-016)
 - `chessverse_board_skin` — selected board skin (`default` | `royal-arena` | ...); absent/unset until the user explicitly picks one (see BUG-016)
+- `chessverse_play_type` — home screen Local/Multiplayer toggle choice (`"local"` | `"multiplayer"`); absent/invalid defaults to `"local"` (`readStoredPlayType()` in `ModeSelect.tsx`)

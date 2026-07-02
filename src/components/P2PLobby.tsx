@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import QRCode from "qrcode";
 import { Copy, Share2, Loader2, CheckCircle, WifiOff } from "lucide-react";
 import { useTranslation } from "react-i18next";
@@ -63,12 +63,16 @@ function ModeInfoCard({
 // ── Main component ────────────────────────────────────────────────────────────
 export default function P2PLobby() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [searchParams] = useSearchParams();
   const { t } = useTranslation();
   const roomParam = searchParams.get("room");
   const modeParam = searchParams.get("mode");
   const isGuest = Boolean(roomParam);
   const guestMode = gameModes.find((m) => m.id === modeParam) ?? null;
+  const presetModeId = (location.state as { presetModeId?: string } | null)
+    ?.presetModeId;
+  const autoStartedRef = useRef(false);
 
   const {
     startRoom,
@@ -134,6 +138,15 @@ export default function P2PLobby() {
     });
   };
 
+  // ── HOST: auto-create room when a mode was preselected on the home page ────
+  useEffect(() => {
+    if (isGuest || autoStartedRef.current || !presetModeId) return;
+    const mode = gameModes.find((m) => m.id === presetModeId);
+    if (!mode) return;
+    autoStartedRef.current = true;
+    handleCreateGame(mode);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
   const handleCopy = async () => {
     await navigator.clipboard.writeText(shareUrl);
     setCopied(true);
@@ -168,7 +181,9 @@ export default function P2PLobby() {
     return (
       <div className="min-h-screen bg-gray-100 flex flex-col">
         <NavBar
-          breadcrumbs={[{ label: t("modeSelect.multiplayer"), path: "/p2p" }]}
+          breadcrumbs={
+            guestMode ? [{ label: t(`modes.${guestMode.id}.title`) }] : []
+          }
         />
 
         <div className="flex-1 flex items-center justify-center p-8">
@@ -222,8 +237,15 @@ export default function P2PLobby() {
     );
   }
 
-  // ── HOST STEP 1 – Mode selection ──────────────────────────────────────────
+  // ── HOST STEP 1 – Mode selection (or auto-start if a mode was preselected) ─
   if (!roomId) {
+    if (presetModeId) {
+      return (
+        <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+          <Loader2 size={28} className="animate-spin text-indigo-500" />
+        </div>
+      );
+    }
     return (
       <GameModeSelect
         playType="multiplayer"
@@ -239,7 +261,7 @@ export default function P2PLobby() {
       <div className="min-h-screen bg-gray-100 flex flex-col">
         <NavBar
           breadcrumbs={[
-            { label: t("modeSelect.multiplayer"), path: "/p2p" },
+            ...(gameMode ? [{ label: t(`modes.${gameMode.id}.title`) }] : []),
             { label: t("nav.invite") },
           ]}
         />
@@ -310,7 +332,7 @@ export default function P2PLobby() {
     <div className="min-h-screen bg-gray-100 flex flex-col">
       <NavBar
         breadcrumbs={[
-          { label: t("modeSelect.multiplayer") },
+          ...(gameMode ? [{ label: t(`modes.${gameMode.id}.title`) }] : []),
           { label: t("nav.invite") },
         ]}
       />

@@ -14,7 +14,6 @@ import { BoardSkinProvider } from "./context/BoardSkinContext";
 import "./i18n";
 
 const ModeSelect = React.lazy(() => import("./components/ModeSelect"));
-const GameModes = React.lazy(() => import("./components/GameModes"));
 const Game = React.lazy(() => import("./components/Game"));
 const P2PLobby = React.lazy(() => import("./components/P2PLobby"));
 const ProfilePage = React.lazy(() => import("./components/ProfilePage"));
@@ -53,7 +52,6 @@ function App() {
               >
                 <Routes>
                   <Route path="/" element={<ModeSelect />} />
-                  <Route path="/local" element={<GameModes />} />
                   <Route path="/p2p" element={<P2PLobby />} />
                   <Route path="/game/coliseum" element={<ColiseumGame />} />
                   <Route path="/game/zombie-horde" element={<ZombieHordeGame />} />

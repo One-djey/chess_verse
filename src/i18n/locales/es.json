@@ -12,7 +12,8 @@
     "localDesc": "Juega contra la IA o pasa el dispositivo a tu amigo.",
     "multiplayer": "Multijugador",
     "multiplayerDesc": "Desafía a un amigo a distancia, sin servidor.",
-    "offline": "Sin conexión: multijugador no disponible"
+    "offline": "Sin conexión: multijugador no disponible",
+    "offlineMode": "Modo sin conexión"
   },
   "gameModeSelect": {
     "title": "Elige tu modo de juego",

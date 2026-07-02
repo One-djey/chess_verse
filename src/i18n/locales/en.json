@@ -12,7 +12,8 @@
     "localDesc": "Play vs AI or pass-and-play with a friend on the same device.",
     "multiplayer": "Multiplayer",
     "multiplayerDesc": "Challenge a friend remotely — no server needed.",
-    "offline": "Offline — multiplayer unavailable"
+    "offline": "Offline — multiplayer unavailable",
+    "offlineMode": "Offline mode"
   },
   "gameModeSelect": {
     "title": "Choose your game mode",
