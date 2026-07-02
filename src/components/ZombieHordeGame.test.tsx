@@ -120,7 +120,7 @@ describe("ZombieHordeGame — smoke tests", () => {
   it("renders the NavBar with correct breadcrumbs", () => {
     renderGame();
     expect(screen.getByTestId("navbar")).toBeInTheDocument();
-    expect(screen.getByText("modeSelect.local")).toBeInTheDocument();
+    expect(screen.queryByText("modeSelect.local")).not.toBeInTheDocument();
     expect(screen.getByText("modes.zombie-horde.title")).toBeInTheDocument();
   });
 

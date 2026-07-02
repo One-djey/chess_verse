@@ -61,8 +61,8 @@ React 18 + TypeScript + Vite + Tailwind CSS. No backend. P2P via Trystero (WebRT
 The former two-step flow (choose Local vs Multiplayer, then choose a game mode) is merged into a single screen to minimize clicks before a new user can play:
 
 - `useOnlineStatus()` (`src/hooks/useOnlineStatus.ts`, `navigator.onLine` + `online`/`offline` listeners) drives the header:
-  - **Online**: a Local/Multiplayer segmented toggle (local `playTypeState`, always defaults to `"local"` on load — not persisted).
-  - **Offline**: toggle is replaced by static text `t("modeSelect.offlineMode")`; `playType` is forced to `"local"` regardless of the last toggle state.
+  - **Online**: a Local/Multiplayer segmented toggle (`playTypeState`, initialized from and persisted to localStorage `chessverse_play_type` — see "Local storage keys" below).
+  - **Offline**: the toggle collapses to a single disabled pill labeled `t("modeSelect.offlineMode")` (same segmented-control look, one option) and `playType` is forced to `"local"` regardless of the stored preference.
 - Below the header, `ModeGrid` (exported from `GameModeSelect.tsx`) renders the mode cards directly — no extra navigation step.
 - Selecting a mode:
   - `playType === "local"` → `navigate(\`/game/${mode.id}\`)`
@@ -76,15 +76,18 @@ The former two-step flow (choose Local vs Multiplayer, then choose a game mode) 
 - `onSurrender?` — shows red Surrender button (only pass in active game)
 - `gameSettings?` / `onGameSettingsChange?` — passes local-game settings to the Settings modal; when absent, modal shows language-only
 
+Breadcrumbs never show the Local/Multiplayer distinction (`modeSelect.local`/`modeSelect.multiplayer`) — only the game mode's own title, so the trail always reads "ChessVerse > <mode title>" (+ a step suffix where relevant):
+
 Breadcrumb map:
 | Page | Breadcrumbs |
 |---|---|
 | ModeSelect (home) | _(none)_ |
-| P2PLobby – mode select (fallback, no preset) | `[Multiplayer]` |
+| P2PLobby – guest, mode unknown yet | _(none)_ |
+| P2PLobby – guest, mode known (from invite link) | `[<mode title>]` |
+| P2PLobby – mode select (fallback, no preset) | _(none)_ |
 | P2PLobby – auto-starting from preset mode | _(none — loading state)_ |
-| P2PLobby – invite/waiting | `[Multiplayer, Invite]` |
-| Game (local) | `[Local, <mode title>]` |
-| Game (P2P) | `[Multiplayer, <mode title>]` |
+| P2PLobby – invite/waiting, connected | `[<mode title>, Invite]` |
+| Game (local or P2P) | `[<mode title>]` |
 | ProfilePage | `[profile.title]` |
 
 ## Navigation rules
@@ -210,3 +213,4 @@ Accessible via a **Support section** at the bottom of the Settings modal (gear i
 - `chessverse_stats` — Player stats (see `ChessverseStats` in `statsService.ts`): game counts, win/loss/draw, ELO, heatmap, piece stats, streaks, badge counters. Recorded at the end of every game via `recordGame()` called in `Game.tsx`'s `gameOver` effect.
 - `chessverse_skin` — selected piece skin (`classic` | `fantasy` | ...); absent/unset until the user explicitly picks one (see BUG-016)
 - `chessverse_board_skin` — selected board skin (`default` | `royal-arena` | ...); absent/unset until the user explicitly picks one (see BUG-016)
+- `chessverse_play_type` — home screen Local/Multiplayer toggle choice (`"local"` | `"multiplayer"`); absent/invalid defaults to `"local"` (`readStoredPlayType()` in `ModeSelect.tsx`)

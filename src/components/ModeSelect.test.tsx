@@ -7,6 +7,8 @@ import ModeSelect from "./ModeSelect";
 import { SkinProvider } from "../context/SkinContext";
 import { BoardSkinProvider } from "../context/BoardSkinContext";
 
+const PLAY_TYPE_KEY = "chessverse_play_type";
+
 vi.mock("react-i18next", () => ({
   useTranslation: () => ({
     t: (key: string) => key,
@@ -49,6 +51,7 @@ function renderModeSelect() {
 afterEach(() => {
   cleanup();
   mockIsOnline = true;
+  localStorage.clear();
 });
 
 describe("ModeSelect — online toggle", () => {
@@ -63,36 +66,66 @@ describe("ModeSelect — online toggle", () => {
     expect(screen.getByText("modes.classic.title")).toBeInTheDocument();
   });
 
-  it("defaults to Local: selecting a mode navigates to /game/:id", async () => {
+  it("defaults to Local when nothing is stored: selecting a mode navigates to /game/:id", async () => {
     const user = userEvent.setup();
     renderModeSelect();
+    expect(
+      screen.getByRole("button", { name: "modeSelect.local" }),
+    ).toHaveAttribute("aria-pressed", "true");
     await user.click(screen.getByText("modes.classic.title"));
     expect(screen.getByTestId("location")).toHaveTextContent("/game/classic");
   });
 
-  it("switching to Multiplayer routes mode selection through /p2p with the preset mode", async () => {
+  it("switching to Multiplayer routes mode selection through /p2p with the preset mode, and persists the choice", async () => {
     const user = userEvent.setup();
     renderModeSelect();
     await user.click(
       screen.getByRole("button", { name: "modeSelect.multiplayer" }),
     );
+    expect(localStorage.getItem(PLAY_TYPE_KEY)).toBe("multiplayer");
+
     await user.click(screen.getByText("modes.classic.title"));
     expect(screen.getByTestId("location")).toHaveTextContent(
       '/p2p|{"presetModeId":"classic"}',
     );
   });
+
+  it("restores the Multiplayer choice from localStorage on mount", () => {
+    localStorage.setItem(PLAY_TYPE_KEY, "multiplayer");
+    renderModeSelect();
+    expect(
+      screen.getByRole("button", { name: "modeSelect.multiplayer" }),
+    ).toHaveAttribute("aria-pressed", "true");
+    expect(
+      screen.getByRole("button", { name: "modeSelect.local" }),
+    ).toHaveAttribute("aria-pressed", "false");
+  });
 });
 
 describe("ModeSelect — offline state", () => {
-  it("replaces the toggle with an offline label and stays in local mode", async () => {
+  it("collapses the toggle to a single disabled 'offline' option and stays in local mode", async () => {
     mockIsOnline = false;
     const user = userEvent.setup();
     renderModeSelect();
 
-    expect(screen.getByText("modeSelect.offlineMode")).toBeInTheDocument();
+    const offlineOption = screen.getByRole("button", {
+      name: "modeSelect.offlineMode",
+    });
+    expect(offlineOption).toBeDisabled();
+    expect(offlineOption).toHaveAttribute("aria-pressed", "true");
     expect(
       screen.queryByRole("button", { name: "modeSelect.multiplayer" }),
     ).not.toBeInTheDocument();
+
+    await user.click(screen.getByText("modes.classic.title"));
+    expect(screen.getByTestId("location")).toHaveTextContent("/game/classic");
+  });
+
+  it("forces local mode offline even when Multiplayer was previously stored", async () => {
+    mockIsOnline = false;
+    localStorage.setItem(PLAY_TYPE_KEY, "multiplayer");
+    const user = userEvent.setup();
+    renderModeSelect();
 
     await user.click(screen.getByText("modes.classic.title"));
     expect(screen.getByTestId("location")).toHaveTextContent("/game/classic");

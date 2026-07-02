@@ -22,6 +22,24 @@ test.describe("Navigation — home screen", () => {
     await page.goto("/profile");
     await expect(page).toHaveURL("/profile");
   });
+
+  test("Local/Multiplayer toggle choice persists across reloads", async ({
+    page,
+  }) => {
+    await page.goto("/");
+    await page.getByRole("button", { name: /multiplayer/i }).click();
+    await expect(
+      page.getByRole("button", { name: /multiplayer/i }),
+    ).toHaveAttribute("aria-pressed", "true");
+
+    await page.reload();
+    await expect(
+      page.getByRole("button", { name: /multiplayer/i }),
+    ).toHaveAttribute("aria-pressed", "true");
+    await expect(
+      page.getByRole("button", { name: /^local$/i }),
+    ).toHaveAttribute("aria-pressed", "false");
+  });
 });
 
 test.describe("Navigation — game mode selection", () => {
@@ -32,12 +50,21 @@ test.describe("Navigation — game mode selection", () => {
     await expect(page).toHaveURL(/\/game\/classic/);
   });
 
-  test("breadcrumb 'Local' navigates back from game to the home page", async ({
+  test("in-game breadcrumb shows only the mode title, not Local/Multiplayer", async ({
     page,
   }) => {
     await page.goto("/game/classic");
-    // The NavBar breadcrumbs show "Local"
-    await page.getByRole("button", { name: /Local/i }).click();
+    const nav = page.locator("nav");
+    await expect(nav.getByText("Classic", { exact: false })).toBeVisible();
+    await expect(nav.getByText(/^local$/i)).toHaveCount(0);
+    await expect(nav.getByText(/multiplayer/i)).toHaveCount(0);
+    // The mode-title breadcrumb is a plain (non-clickable) label, not a button
+    await expect(
+      nav.getByRole("button", { name: "Classic", exact: false }),
+    ).toHaveCount(0);
+
+    // "ChessVerse" brand is still the way back home
+    await page.getByRole("button", { name: "ChessVerse" }).click();
     await expect(page).toHaveURL("/");
   });
 

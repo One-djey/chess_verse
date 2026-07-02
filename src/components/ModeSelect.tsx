@@ -14,12 +14,35 @@ const RING = {
   multiplayer: "hover:ring-indigo-400",
 } as const;
 
+const PLAY_TYPE_STORAGE_KEY = "chessverse_play_type";
+
+function readStoredPlayType(): PlayType {
+  try {
+    return localStorage.getItem(PLAY_TYPE_STORAGE_KEY) === "multiplayer"
+      ? "multiplayer"
+      : "local";
+  } catch {
+    return "local";
+  }
+}
+
 export default function ModeSelect() {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const isOnline = useOnlineStatus();
-  const [playTypeState, setPlayTypeState] = useState<PlayType>("local");
+  const [playTypeState, setPlayTypeState] = useState<PlayType>(
+    readStoredPlayType,
+  );
   const playType: PlayType = isOnline ? playTypeState : "local";
+
+  const handleToggle = (type: PlayType) => {
+    setPlayTypeState(type);
+    try {
+      localStorage.setItem(PLAY_TYPE_STORAGE_KEY, type);
+    } catch {
+      /* localStorage unavailable — in-memory state still works */
+    }
+  };
 
   const handleSelect = (mode: GameMode) => {
     if (playType === "local") {
@@ -35,16 +58,16 @@ export default function ModeSelect() {
 
       <div className="max-w-5xl mx-auto px-6 pt-10 pb-12 flex-1 w-full">
         <div className="mb-10 flex justify-center">
-          {isOnline ? (
-            <div
-              role="group"
-              aria-label={t("modeSelect.subtitle")}
-              className="inline-flex rounded-full bg-white shadow-md p-1"
-            >
-              {(["local", "multiplayer"] as const).map((type) => (
+          <div
+            role="group"
+            aria-label={t("modeSelect.subtitle")}
+            className="inline-flex rounded-full bg-white shadow-md p-1"
+          >
+            {isOnline ? (
+              (["local", "multiplayer"] as const).map((type) => (
                 <button
                   key={type}
-                  onClick={() => setPlayTypeState(type)}
+                  onClick={() => handleToggle(type)}
                   aria-pressed={playType === type}
                   className={`px-6 py-2.5 rounded-full text-sm font-semibold transition-colors duration-200 ${
                     playType === type
@@ -56,13 +79,17 @@ export default function ModeSelect() {
                     ? t("modeSelect.local")
                     : t("modeSelect.multiplayer")}
                 </button>
-              ))}
-            </div>
-          ) : (
-            <p className="text-gray-500 text-lg font-medium">
-              {t("modeSelect.offlineMode")}
-            </p>
-          )}
+              ))
+            ) : (
+              <button
+                disabled
+                aria-pressed="true"
+                className="px-6 py-2.5 rounded-full text-sm font-semibold bg-blue-600 text-white shadow cursor-not-allowed"
+              >
+                {t("modeSelect.offlineMode")}
+              </button>
+            )}
+          </div>
         </div>
 
         <ModeGrid

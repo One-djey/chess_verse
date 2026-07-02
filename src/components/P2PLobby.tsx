@@ -181,7 +181,9 @@ export default function P2PLobby() {
     return (
       <div className="min-h-screen bg-gray-100 flex flex-col">
         <NavBar
-          breadcrumbs={[{ label: t("modeSelect.multiplayer"), path: "/p2p" }]}
+          breadcrumbs={
+            guestMode ? [{ label: t(`modes.${guestMode.id}.title`) }] : []
+          }
         />
 
         <div className="flex-1 flex items-center justify-center p-8">
@@ -259,7 +261,7 @@ export default function P2PLobby() {
       <div className="min-h-screen bg-gray-100 flex flex-col">
         <NavBar
           breadcrumbs={[
-            { label: t("modeSelect.multiplayer"), path: "/p2p" },
+            ...(gameMode ? [{ label: t(`modes.${gameMode.id}.title`) }] : []),
             { label: t("nav.invite") },
           ]}
         />
@@ -330,7 +332,7 @@ export default function P2PLobby() {
     <div className="min-h-screen bg-gray-100 flex flex-col">
       <NavBar
         breadcrumbs={[
-          { label: t("modeSelect.multiplayer") },
+          ...(gameMode ? [{ label: t(`modes.${gameMode.id}.title`) }] : []),
           { label: t("nav.invite") },
         ]}
       />

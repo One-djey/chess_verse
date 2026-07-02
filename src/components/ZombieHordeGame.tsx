@@ -464,10 +464,7 @@ export default function ZombieHordeGame() {
   const handleMainMenu = () => navigate("/");
   const isVictory = state.winner === "white";
 
-  const breadcrumbs = [
-    { label: t("modeSelect.local"), path: "/" },
-    { label: t("modes.zombie-horde.title") },
-  ];
+  const breadcrumbs = [{ label: t("modes.zombie-horde.title") }];
 
   return (
     <BoardSkinContext.Provider

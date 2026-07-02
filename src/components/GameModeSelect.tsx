@@ -3,13 +3,11 @@ import { Monitor, Globe } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { GameMode } from "../types/chess";
 import { gameModes } from "../utils/gameModes";
-import NavBar, { Crumb } from "./NavBar";
+import NavBar from "./NavBar";
 
 interface GameModeSelectProps {
   playType: "local" | "multiplayer";
   onSelect: (mode: GameMode) => void;
-  /** Optional extra breadcrumb items appended after the play-type crumb */
-  extraCrumbs?: Crumb[];
   /** Optional filter to exclude specific modes (e.g., P2P-incompatible modes) */
   filterModes?: (mode: GameMode) => boolean;
 }
@@ -63,23 +61,14 @@ export function ModeGrid({ onSelect, filterModes, ring }: ModeGridProps) {
 export default function GameModeSelect({
   playType,
   onSelect,
-  extraCrumbs,
   filterModes,
 }: GameModeSelectProps) {
   const { t } = useTranslation();
   const { ring } = PLAY_TYPE_CONFIG[playType];
 
-  const playTypeLabel =
-    playType === "local" ? t("modeSelect.local") : t("modeSelect.multiplayer");
-
-  const breadcrumbs: Crumb[] = [
-    { label: playTypeLabel },
-    ...(extraCrumbs ?? []),
-  ];
-
   return (
     <div className="min-h-screen bg-gray-100">
-      <NavBar breadcrumbs={breadcrumbs} />
+      <NavBar />
 
       <div className="max-w-5xl mx-auto px-6 pt-10 pb-12">
         <h1 className="text-3xl font-bold text-gray-900 mb-10">

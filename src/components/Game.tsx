@@ -1044,10 +1044,6 @@ export default function Game() {
   const rotatePieces =
     !p2p.isP2PMode && !chess.aiEnabled && !chess.settings.flipBoard;
 
-  const playTypeLabel = p2p.isP2PMode
-    ? t("modeSelect.multiplayer")
-    : t("modeSelect.local");
-
   const { layout, overlayOutside, sideMargin, boardSize } = useGameLayout();
   const { boardSkin, setBoardSkin } = useBoardSkin();
   const forcedBoardSkin = gameModes.find((m) => m.id === modeId)?.forcedSkins
@@ -1079,7 +1075,6 @@ export default function Game() {
       >
         <NavBar
           breadcrumbs={[
-            { label: playTypeLabel, path: p2p.isP2PMode ? "/p2p" : "/" },
             { label: t(`modes.${chess.gameState.gameMode.id}.title`) },
           ]}
           onSurrender={!chess.gameState.gameOver ? handleResign : undefined}
